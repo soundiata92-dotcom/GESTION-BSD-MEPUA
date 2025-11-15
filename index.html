@@ -1,0 +1,2650 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Départementale - 36 Services</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f9fafb; }
+        .header { background-color: #2563eb; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 24px; }
+        .header-right { display: flex; gap: 16px; align-items: center; }
+        .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-success { background-color: #059669; color: white; }
+        .btn-danger { background-color: #dc2626; color: white; }
+        .btn-secondary { background-color: #6b7280; color: white; }
+        .btn-warning { background-color: #f59e0b; color: white; }
+        .nav { background-color: white; padding: 0 16px; display: flex; gap: 32px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav button { padding: 16px; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: 16px; }
+        .nav button.active { border-bottom-color: #2563eb; color: #2563eb; }
+        .main { max-width: 1280px; margin: 0 auto; padding: 32px 16px; }
+.cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; margin-top: 32px; }
+        .card { padding: 24px; border-radius: 8px; border-left: 4px solid; }
+        .card-blue { background-color: #dbeafe; border-color: #2563eb; }
+        .card-yellow { background-color: #fef3c7; border-color: #d97706; }
+        .card-green { background-color: #d1fae5; border-color: #059669; }
+        .card-orange { background-color: #fed7aa; border-color: #ea580c; }
+        .card-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; }
+        .card-value { font-size: 32px; font-weight: bold; }
+        .table-container { background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto; margin-top: 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px 16px; border: 1px solid #e5e7eb; }
+        th { background-color: #f9fafb; text-align: left; }
+        thead.blue th { background-color: #2563eb; color: white; }
+        tbody tr:nth-child(even) { background-color: #f9fafb; }
+        tbody tr:hover { background-color: #f3f4f6; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; display: inline-block; }
+        .badge-blue { background-color: #dbeafe; }
+        .badge-green { background-color: #d1fae5; }
+        .badge-purple { background-color: #e9d5ff; }
+        .badge-taux { padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: bold; }
+        .badge-taux-green { background-color: #d1fae5; color: #065f46; }
+        .badge-taux-yellow { background-color: #fef3c7; color: #92400e; }
+        .badge-taux-red { background-color: #fee2e2; color: #991b1b; }
+        .modal { position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+        .modal-content { background-color: white; border-radius: 8px; padding: 32px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        .form-control { width: 100%; padding: 8px 16px; border: 1px solid #ccc; border-radius: 8px; }
+        .btn-group { display: flex; gap: 8px; justify-content: center; }
+        .check-icon { color: #059669; font-size: 20px; }
+        input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.5; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        h2 { font-size: 24px; font-weight: bold; }
+        .empty-state { padding: 32px; text-align: center; color: #6b7280; font-size: 18px; }
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; }
+        .alert-info { background-color: #dbeafe; color: #1e40af; }
+        .alert-warning { background-color: #fef3c7; color: #92400e; border-left: 4px solid #d97706; }
+        .service-badge { display: inline-block; padding: 6px 12px; background-color: #7c3aed; color: white; border-radius: 6px; font-weight: bold; margin-left: 10px; }
+        .notif-button { position: relative; padding: 8px 16px; background-color: #7c3aed; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .notif-badge { position: absolute; top: -5px; right: -5px; background-color: #dc2626; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
+        .notif-panel { position: absolute; top: 60px; right: 16px; width: 450px; max-height: 600px; background-color: white; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 100; overflow: hidden; }
+        .notif-header { background-color: #7c3aed; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .notif-body { max-height: 500px; overflow-y: auto; }
+        .notif-item { padding: 16px; border-bottom: 1px solid #e5e7eb; cursor: pointer; transition: background-color 0.2s; }
+        .notif-item:hover { background-color: #f9fafb; }
+        .notif-item.unread { background-color: #eff6ff; border-left: 4px solid #2563eb; }
+        .notif-type { font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+        .notif-type.ajout { color: #059669; }
+        .notif-type.modification { color: #d97706; }
+        .notif-type.rapport { color: #7c3aed; }
+        .notif-type.preuve { color: #2563eb; }
+        .notif-message { font-size: 14px; margin-bottom: 8px; }
+        .notif-meta { font-size: 12px; color: #6b7280; display: flex; justify-content: space-between; align-items: center; }
+        .notif-delete { padding: 4px 8px; background-color: #fee2e2; color: #dc2626; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .fichier-item { padding: 8px; background-color: #f3f4f6; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .fichier-item:hover { background-color: #e5e7eb; }
+    </style>
+    <!-- ========== CONNEXION SUPABASE ========== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+</head>
+<body>
+    <div id="app">Chargement...</div>
+
+    <script>
+        // ========== DONNÉES DES 36 SERVICES ==========
+        function generateUsers() {
+            var users = [
+                { id: 1, user: 'admin', pass: 'admin123', role: 'admin', nom: 'Administrateur', service: 'TOUS', actif: true }
+            ];
+            
+            var id = 2;
+            var servicesAbr = [
+                'SNEAA', 'SNPUP', 'DRH', 'PRMP', 'DNEP', 'DNCaS', 'SG-E', 'DNAEFP-LN', 
+                'SNFCPE', 'DNEF', 'ANAFE', 'DNESGT', 'SNEC', 'SNIES', 'INRAP', 'SMSI', 
+                'SNSS', 'CRD', 'IGE', 'SNESU', 'SC', 'DAF', 'BSD', 'DGECS', 'ICESCO', 
+                'IRE_CONAKRY', 'IRE_BOKE', 'IRE_KINDIA', 'IRE_MAMOU', 'IRE_LABE', 
+                'IRE_FARANAH', 'IRE_KANKAN', 'IRE_NZEREKORE', 'SCRP', 'SLT', 'SA'
+            ];
+            
+            for (var i = 0; i < servicesAbr.length; i++) {
+                users.push({
+                    id: id++,
+                    user: 'chef.' + servicesAbr[i].toLowerCase().replace(/_/g, ''),
+                    pass: 'pass123',
+                    role: 'chef',
+                    nom: 'Chef ' + servicesAbr[i],
+                    service: servicesAbr[i],
+                    actif: true
+                });
+            }
+            
+            users.push({
+                id: id,
+                user: 'chefdept',
+                pass: 'pass123',
+                role: 'chefdept',
+                nom: 'Chef du Département',
+                service: 'TOUS',
+                actif: true
+            });
+            
+            return users;
+        }
+
+        function generateServices() {
+            return [
+                'SNEAA', 'SNPUP', 'DRH', 'PRMP', 'DNEP', 'DNCaS', 'SG-E', 'DNAEFP-LN', 
+                'SNFCPE', 'DNEF', 'ANAFE', 'DNESGT', 'SNEC', 'SNIES', 'INRAP', 'SMSI', 
+                'SNSS', 'CRD', 'IGE', 'SNESU', 'SC', 'DAF', 'BSD', 'DGECS', 'ICESCO', 
+                'IRE_CONAKRY', 'IRE_BOKE', 'IRE_KINDIA', 'IRE_MAMOU', 'IRE_LABE', 
+                'IRE_FARANAH', 'IRE_KANKAN', 'IRE_NZEREKORE', 'SCRP', 'SLT', 'SA'
+            ];
+        }
+
+        // ========== VARIABLES GLOBALES ==========
+        var users = generateUsers();
+        var services = generateServices();
+        var currentUser = null;
+        var data = [];
+        var commentairesEtPreuves = [];
+        var notifications = [];
+        var activeTab = 'dashboard';
+        var selectedServiceFilter = 'TOUS';
+        var selectedStatusFilter = 'TOUS';
+        var selectedObjectifFilter = 'TOUS';
+        var selectedTrimestreFilter = 'TOUS';
+        var suiviObjectifFilter = 'TOUS';
+        var suiviTrimestreFilter = 'TOUS';
+        var commentairesServiceFilter = 'TOUS';
+        var commentairesObjectifFilter = 'TOUS';
+        var showNotifications = false;
+        var connectedUsers = [];
+        var rapportTextes = {};
+        var initialData = [
+            {
+                id: 1, categorie: 'Objectifs Généraux', activite: 'Améliorer les compétences', service: 'SNEAA',
+                t1: false, t2: false, t3: false, t4: false,
+                tdr: false, eng: false, mand: false, ordo: false, liq: false, exec: false, valide: false
+            },
+            {
+                id: 2, categorie: 'Objectifs de Réforme', activite: 'Réforme fonction publique', service: 'DRH',
+                t1: false, t2: false, t3: false, t4: false,
+                tdr: false, eng: false, mand: false, ordo: false, liq: false, exec: false, valide: false
+            }
+        ];
+
+        // ========== FONCTIONS DE STOCKAGE ==========
+async function loadData() {
+    try {
+        // Charger les utilisateurs
+        const { data: usersData, error: usersError } = await supabase
+            .from('users')
+            .select('*');
+        
+        if (usersError) throw usersError;
+        
+        if (usersData && usersData.length > 0) {
+            users = usersData.map(u => ({
+                id: u.id,
+                user: u.username,
+                pass: u.password,
+                role: u.role,
+                nom: u.nom,
+                service: u.service,
+                actif: u.actif
+            }));
+        } else {
+            // Première utilisation : créer les utilisateurs par défaut
+            users = generateUsers();
+            await saveUsers();
+        }
+        
+        // Charger les activités
+        const { data: activitesData, error: activitesError } = await supabase
+            .from('activites')
+            .select('*');
+        
+        if (activitesError) throw activitesError;
+        
+        if (activitesData && activitesData.length > 0) {
+            data = activitesData;
+        } else {
+            data = initialData;
+            await saveData();
+        }
+        
+        // Charger commentaires et preuves
+        const { data: commentairesData, error: commentairesError } = await supabase
+            .from('commentaires_preuves')
+            .select('*');
+        
+        if (commentairesError) throw commentairesError;
+        
+        if (commentairesData) {
+            commentairesEtPreuves = commentairesData.map(c => ({
+                id: c.id,
+                type: c.type,
+                objectif: c.objectif,
+                activite: c.activite,
+                service: c.service,
+                commentaire: c.commentaire,
+                nomFichier: c.nom_fichier,
+                tailleFichier: c.taille_fichier,
+                creePar: c.cree_par,
+                dateCreation: c.date_creation,
+                deposePar: c.depose_par,
+                dateDepot: c.date_depot,
+                modifiePar: c.modifie_par,
+                dateModification: c.date_modification
+            }));
+        }
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement:', error);
+        alert('Erreur de connexion à la base de données');
+    }
+}
+        async function saveData() {
+    try {
+        // Supprimer toutes les activités existantes
+        await supabase.from('activites').delete().neq('id', 0);
+        
+        // Insérer les nouvelles données
+        const activitesToSave = data.map(d => ({
+            id: d.id,
+            categorie: d.categorie,
+            activite: d.activite,
+            service: d.service,
+            t1: d.t1 || false,
+            t2: d.t2 || false,
+            t3: d.t3 || false,
+            t4: d.t4 || false,
+            tdr: d.tdr || false,
+            eng: d.eng || false,
+            mand: d.mand || false,
+            ordo: d.ordo || false,
+            liq: d.liq || false,
+            exec: d.exec || false,
+            valide: d.valide || false,
+            valide_par: d.validePar || null,
+            date_validation: d.dateValidation || null,
+            derniere_maj: d.derniereMaj || null,
+            maj_par: d.majPar || null
+        }));
+        
+        if (activitesToSave.length > 0) {
+            const { error } = await supabase.from('activites').insert(activitesToSave);
+            if (error) throw error;
+        }
+    } catch (error) {
+        console.error('Erreur saveData:', error);
+    }
+}
+        async function saveCommentairesEtPreuves() {
+    try {
+        // Supprimer tous les commentaires existants
+        await supabase.from('commentaires_preuves').delete().neq('id', 0);
+        
+        // Insérer les nouveaux
+        const toSave = commentairesEtPreuves.map(c => ({
+            id: c.id,
+            type: c.type,
+            objectif: c.objectif,
+            activite: c.activite,
+            service: c.service,
+            commentaire: c.commentaire || null,
+            nom_fichier: c.nomFichier || null,
+            taille_fichier: c.tailleFichier || null,
+            cree_par: c.creePar,
+            date_creation: c.dateCreation || new Date().toISOString(),
+            depose_par: c.deposePar || null,
+            date_depot: c.dateDepot || null,
+            modifie_par: c.modifiePar || null,
+            date_modification: c.dateModification || null
+        }));
+        
+        if (toSave.length > 0) {
+            const { error } = await supabase.from('commentaires_preuves').insert(toSave);
+            if (error) throw error;
+        }
+    } catch (error) {
+        console.error('Erreur saveCommentaires:', error);
+    }
+}
+        async function saveUsers() {
+    try {
+        // Supprimer tous les utilisateurs existants
+        await supabase.from('users').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        
+        // Insérer les nouveaux utilisateurs
+        const usersToSave = users.map(u => ({
+            username: u.user,
+            password: u.pass,
+            role: u.role,
+            nom: u.nom,
+            service: u.service,
+            actif: u.actif !== false
+        }));
+        
+        if (usersToSave.length > 0) {
+            const { error } = await supabase.from('users').insert(usersToSave);
+            if (error) throw error;
+        }
+    } catch (error) {
+        console.error('Erreur saveUsers:', error);
+    }
+}
+
+        async function saveRapportTextes() {
+    try {
+        if (!currentUser) return;
+        
+        // Pour chaque clé dans rapportTextes, faire un upsert
+        for (var key in rapportTextes) {
+            const { error } = await supabase
+                .from('rapport_textes')
+                .upsert({
+                    user_key: currentUser.user,
+                    cle: key,
+                    valeur: rapportTextes[key],
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_key,cle'
+                });
+            
+            if (error) throw error;
+        }
+    } catch (error) {
+        console.error('Erreur saveRapportTextes:', error);
+    }
+}
+        async function loadRapportTextes() {
+    try {
+        if (!currentUser) return;
+        
+        const { data: textes, error } = await supabase
+            .from('rapport_textes')
+            .select('*')
+            .eq('user_key', currentUser.user);
+        
+        if (error) throw error;
+        
+        rapportTextes = {};
+        if (textes) {
+            for (var i = 0; i < textes.length; i++) {
+                rapportTextes[textes[i].cle] = textes[i].valeur;
+            }
+        }
+    } catch (error) {
+        console.error('Erreur loadRapportTextes:', error);
+    }
+}
+
+        // ========== FONCTIONS UTILITAIRES ==========
+        function calcTaux(item) {
+            var checks = 0;
+            if (item.tdr) checks++;
+            if (item.eng) checks++;
+            if (item.mand) checks++;
+            if (item.ordo) checks++;
+            if (item.liq) checks++;
+            if (item.exec) checks++;
+            return Math.round((checks / 6) * 100);
+        }
+
+        function canModify(activity) {
+            if (!currentUser) return false;
+            if (currentUser.role === 'chefdept') return false;
+            if (currentUser.role === 'admin') return true;
+            if (currentUser.role === 'chef' && activity.service === currentUser.service) return true;
+            return false;
+        }
+
+        function canValidate(activity) {
+            return currentUser && currentUser.role === 'admin';
+        }
+
+        function canDeleteInPlanning(activity) {
+            if (!currentUser) return false;
+            if (currentUser.role === 'admin') return true;
+            if (currentUser.role === 'chef' && activity.service === currentUser.service) return !activity.valide;
+            return false;
+        }
+
+        // ========== FONCTIONS DE NAVIGATION ==========
+async function login(username, password) {
+    try {
+        // Rechercher l'utilisateur dans les données déjà chargées
+        var user = null;
+        for (var i = 0; i < users.length; i++) {
+            if (users[i].user === username && users[i].pass === password) {
+                user = users[i];
+                break;
+            }
+        }
+        
+        if (user) {
+            if (user.actif === false) {
+                alert('Ce compte est désactivé');
+                return;
+            }
+            currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            await loadRapportTextes();
+            
+            var alreadyConnected = false;
+            for (var i = 0; i < connectedUsers.length; i++) {
+                if (connectedUsers[i].user === user.user) {
+                    alreadyConnected = true;
+                    connectedUsers[i].connectedAt = new Date().toLocaleString('fr-FR');
+                    break;
+                }
+            }
+            if (!alreadyConnected) {
+                connectedUsers.push({
+                    user: user.user,
+                    nom: user.nom,
+                    service: user.service,
+                    connectedAt: new Date().toLocaleString('fr-FR')
+                });
+            }
+            localStorage.setItem('connectedUsers', JSON.stringify(connectedUsers));
+            
+            render();
+        } else {
+            alert('Identifiants incorrects');
+        }
+    } catch (error) {
+        console.error('Erreur login:', error);
+        alert('Erreur de connexion');
+    }
+}
+        function logout() {
+            if (currentUser) {
+                var newConnectedUsers = [];
+                for (var i = 0; i < connectedUsers.length; i++) {
+                    if (connectedUsers[i].user !== currentUser.user) {
+                        newConnectedUsers.push(connectedUsers[i]);
+                    }
+                }
+                connectedUsers = newConnectedUsers;
+                localStorage.setItem('connectedUsers', JSON.stringify(connectedUsers));
+            }
+            
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            render();
+        }
+
+        function changeTab(tab) {
+            activeTab = tab;
+            render();
+        }
+
+async function attemptLogin() {
+    var username = document.getElementById('username').value.trim();
+    var password = document.getElementById('password').value;
+    await login(username, password);
+}
+        function changeServiceFilter(service) {
+            selectedServiceFilter = service;
+            render();
+        }
+
+        function closeModal() {
+            document.getElementById('modal-container').innerHTML = '';
+        }
+
+        // ========== FONCTION RENDER PRINCIPALE ==========
+        function changeStatusFilter(status) {
+    selectedStatusFilter = status;
+    render();
+}
+
+function changeDashboardObjectifFilter(objectif) {
+    selectedObjectifFilter = objectif;
+    render();
+}
+
+function changeDashboardTrimestreFilter(trimestre) {
+    selectedTrimestreFilter = trimestre;
+    render();
+}
+
+function getFilteredDataForDashboard() {
+    if (!currentUser) return [];
+    
+    var baseData = [];
+    for (var i = 0; i < data.length; i++) {
+        if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+            if (data[i].valide) baseData.push(data[i]);
+        } else {
+            if (data[i].service === currentUser.service && data[i].valide) {
+                baseData.push(data[i]);
+            }
+        }
+    }
+    
+    if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && selectedServiceFilter !== 'TOUS') {
+        var filtered = [];
+        for (var i = 0; i < baseData.length; i++) {
+            if (baseData[i].service === selectedServiceFilter) filtered.push(baseData[i]);
+        }
+        baseData = filtered;
+    }
+    
+    if (selectedStatusFilter !== 'TOUS') {
+        var statusFiltered = [];
+        for (var i = 0; i < baseData.length; i++) {
+            var taux = calcTaux(baseData[i]);
+            var status = taux === 100 ? 'Exécutée' : taux > 0 ? 'En cours' : 'Non commencée';
+            if (status === selectedStatusFilter) {
+                statusFiltered.push(baseData[i]);
+            }
+        }
+        baseData = statusFiltered;
+    }
+    
+    if (selectedObjectifFilter !== 'TOUS') {
+        var objectifFiltered = [];
+        for (var i = 0; i < baseData.length; i++) {
+            if (baseData[i].categorie === selectedObjectifFilter) {
+                objectifFiltered.push(baseData[i]);
+            }
+        }
+        baseData = objectifFiltered;
+    }
+    
+    if (selectedTrimestreFilter !== 'TOUS') {
+        var trimestreFiltered = [];
+        for (var i = 0; i < baseData.length; i++) {
+            var programmee = false;
+            if (selectedTrimestreFilter === 'T1' && baseData[i].t1) programmee = true;
+            else if (selectedTrimestreFilter === 'T2' && (baseData[i].t1 || baseData[i].t2)) programmee = true;
+            else if (selectedTrimestreFilter === 'T3' && (baseData[i].t1 || baseData[i].t2 || baseData[i].t3)) programmee = true;
+            else if (selectedTrimestreFilter === 'T4' && (baseData[i].t1 || baseData[i].t2 || baseData[i].t3 || baseData[i].t4)) programmee = true;
+            if (programmee) trimestreFiltered.push(baseData[i]);
+        }
+        baseData = trimestreFiltered;
+    }
+    
+    return baseData;
+}
+function getFilteredDataForPlanning() {
+    if (!currentUser) return [];
+    
+    var baseData = [];
+    if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+        baseData = data;
+    } else {
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].service === currentUser.service && !data[i].valide) {
+                baseData.push(data[i]);
+            }
+        }
+    }
+    
+    if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && selectedServiceFilter !== 'TOUS') {
+        var filtered = [];
+        for (var i = 0; i < baseData.length; i++) {
+            if (baseData[i].service === selectedServiceFilter) filtered.push(baseData[i]);
+        }
+        return filtered;
+    }
+    
+    return baseData;
+}
+
+async function toggle(activityId, field) {
+
+    var activity = null;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === activityId) {
+            activity = data[i];
+            break;
+        }
+    }
+    
+    if (!activity || !canModify(activity)) {
+        alert('Vous ne pouvez pas modifier');
+        return;
+    }
+
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === activityId) {
+            data[i][field] = !data[i][field];
+            data[i].derniereMaj = new Date().toLocaleString('fr-FR');
+            data[i].majPar = currentUser.nom;
+            break;
+        }
+    }
+    
+await saveData();
+render();
+}
+
+async function validateActivity(activityId) {
+    if (!canValidate()) {
+        alert('Seul l\'administrateur peut valider');
+        return;
+    }
+    if (confirm('Valider cette activité?')) {
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].id === activityId) {
+                data[i].valide = true;
+                data[i].validePar = currentUser.nom;
+                data[i].dateValidation = new Date().toLocaleString('fr-FR');
+                break;
+            }
+        }
+await saveData();
+render();
+    }
+}
+
+async function deleteActivity(activityId) {
+    var activity = null;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === activityId) {
+            activity = data[i];
+            break;
+        }
+    }
+    
+    if (!canDeleteInPlanning(activity)) {
+        alert('Vous ne pouvez pas supprimer cette activité');
+        return;
+    }
+
+    if (confirm('Supprimer cette activité?')) {
+        var newData = [];
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].id !== activityId) newData.push(data[i]);
+        }
+        data = newData;
+        await saveData();
+render();
+    }
+}
+
+function showAddModal() {
+    var modalContainer = document.getElementById('modal-container');
+    var defaultService = currentUser.role === 'chef' ? currentUser.service : services[0];
+    
+    var html = '<div class="modal"><div class="modal-content"><h2 style="margin-bottom: 24px;">Ajouter une activité</h2>';
+    
+    if (currentUser.role === 'chef') {
+        html += '<div class="alert alert-warning">Vous ne pouvez ajouter que pour votre service: <strong>' + currentUser.service + '</strong></div>';
+    }
+    
+    html += '<div class="form-group"><label>Objectif</label><select id="new-categorie" class="form-control"><option>Objectifs Généraux</option><option>Objectifs de Réforme</option><option>Objectifs Spécifiques</option><option>Décisions du CM</option><option>Décisions du PR</option></select></div>';
+    html += '<div class="form-group"><label>Activité</label><textarea id="new-activite" class="form-control" rows="3"></textarea></div>';
+    html += '<div class="form-group"><label>Service</label>';
+    
+    if (currentUser.role === 'chef') {
+        html += '<input type="text" class="form-control" value="' + currentUser.service + '" disabled><input type="hidden" id="new-service" value="' + currentUser.service + '">';
+    } else {
+        html += '<select id="new-service" class="form-control">';
+        for (var i = 0; i < services.length; i++) {
+            var selected = services[i] === defaultService ? ' selected' : '';
+            html += '<option value="' + services[i] + '"' + selected + '>' + services[i] + '</option>';
+        }
+        html += '</select>';
+    }
+    
+    html += '</div><div class="btn-group"><button class="btn btn-primary" onclick="submitNewActivity()">Ajouter</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div></div></div>';
+    
+    modalContainer.innerHTML = html;
+}
+
+async function submitNewActivity() {
+    var activite = document.getElementById('new-activite').value.trim();
+    
+    if (!activite) {
+        alert('Veuillez remplir l\'activité');
+        return;
+    }
+
+    var maxId = 0;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id > maxId) maxId = data[i].id;
+    }
+
+    var newActivity = {
+        id: maxId + 1,
+        categorie: document.getElementById('new-categorie').value,
+        activite: activite,
+        service: document.getElementById('new-service').value,
+        t1: false, t2: false, t3: false, t4: false,
+        tdr: false, eng: false, mand: false, ordo: false, liq: false, exec: false,
+        valide: false
+    };
+    
+    data.push(newActivity);
+    await saveData();    
+    closeModal();
+    render();
+}
+function changeSuiviObjectifFilter(objectif) {
+    suiviObjectifFilter = objectif;
+    render();
+}
+
+function changeSuiviTrimestreFilter(trimestre) {
+    suiviTrimestreFilter = trimestre;
+    render();
+}
+
+function getFilteredDataForSuivi() {
+    if (!currentUser) return [];
+    
+    var baseData = [];
+    for (var i = 0; i < data.length; i++) {
+        if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+            if (data[i].valide) baseData.push(data[i]);
+        } else {
+            if (data[i].service === currentUser.service && data[i].valide) {
+                baseData.push(data[i]);
+            }
+        }
+    }
+    
+    if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && selectedServiceFilter !== 'TOUS') {
+        var filtered = [];
+        for (var i = 0; i < baseData.length; i++) {
+            if (baseData[i].service === selectedServiceFilter) filtered.push(baseData[i]);
+        }
+        baseData = filtered;
+    }
+    
+    if (suiviObjectifFilter !== 'TOUS') {
+        var objectifFiltered = [];
+        for (var i = 0; i < baseData.length; i++) {
+            if (baseData[i].categorie === suiviObjectifFilter) {
+                objectifFiltered.push(baseData[i]);
+            }
+        }
+        baseData = objectifFiltered;
+    }
+    
+    if (suiviTrimestreFilter !== 'TOUS') {
+        var trimestreFiltered = [];
+        for (var i = 0; i < baseData.length; i++) {
+            var programmee = false;
+            if (suiviTrimestreFilter === 'T1' && baseData[i].t1) programmee = true;
+            else if (suiviTrimestreFilter === 'T2' && (baseData[i].t1 || baseData[i].t2)) programmee = true;
+            else if (suiviTrimestreFilter === 'T3' && (baseData[i].t1 || baseData[i].t2 || baseData[i].t3)) programmee = true;
+            else if (suiviTrimestreFilter === 'T4' && (baseData[i].t1 || baseData[i].t2 || baseData[i].t3 || baseData[i].t4)) programmee = true;
+            if (programmee) trimestreFiltered.push(baseData[i]);
+        }
+        baseData = trimestreFiltered;
+    }
+    
+    return baseData;
+}
+function changeCommentairesServiceFilter(service) {
+    commentairesServiceFilter = service;
+    render();
+}
+
+function changeCommentairesObjectifFilter(objectif) {
+    commentairesObjectifFilter = objectif;
+    render();
+}
+
+function updateActiviteSelection() {
+    var activiteSelect = document.getElementById('combined-activite');
+    var objectifDisplay = document.getElementById('objectif-display');
+    var serviceSelect = document.getElementById('combined-service');
+    var serviceHidden = document.getElementById('combined-service-hidden');
+    
+    if (!activiteSelect || !objectifDisplay) return;
+    
+    var selectedOption = activiteSelect.options[activiteSelect.selectedIndex];
+    var objectif = selectedOption.getAttribute('data-objectif');
+    var service = selectedOption.getAttribute('data-service');
+    
+    if (objectif) {
+        objectifDisplay.textContent = objectif;
+        objectifDisplay.style.color = '#2563eb';
+        objectifDisplay.style.fontWeight = 'bold';
+    } else {
+        objectifDisplay.textContent = '-';
+    }
+    
+    if (service) {
+        if (serviceSelect) serviceSelect.value = service;
+        if (serviceHidden) serviceHidden.value = service;
+    }
+}
+
+function showCommentaireEtPreuveModal() {
+    var modalContainer = document.getElementById('modal-container');
+    
+    var html = '<div class="modal"><div class="modal-content"><h2 style="margin-bottom: 24px;">📋 Déposer une preuve et Commenter</h2>';
+    
+    if (currentUser.role === 'admin') {
+        var activitesRealisees = [];
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].valide && calcTaux(data[i]) === 100) {
+                activitesRealisees.push(data[i]);
+            }
+        }
+        
+        html += '<div class="form-group"><label>Objectif (automatique)</label><div id="objectif-display" style="padding: 8px 16px; background-color: #f3f4f6; border-radius: 8px; color: #6b7280;">-</div></div>';
+        
+        html += '<div class="form-group"><label>Activité/Action *</label><select id="combined-activite" class="form-control" onchange="updateActiviteSelection()">';
+        if (activitesRealisees.length > 0) {
+            for (var i = 0; i < activitesRealisees.length; i++) {
+                html += '<option value="' + activitesRealisees[i].activite + '" data-objectif="' + activitesRealisees[i].categorie + '" data-service="' + activitesRealisees[i].service + '">' + activitesRealisees[i].activite + ' (' + activitesRealisees[i].service + ')</option>';
+            }
+        } else {
+            html += '<option>Aucune activité réalisée à 100%</option>';
+        }
+        html += '</select></div>';
+        
+        html += '<div class="form-group"><label>Service (automatique)</label><select id="combined-service" class="form-control" disabled style="background-color: #f3f4f6;">';
+        for (var i = 0; i < services.length; i++) {
+            html += '<option value="' + services[i] + '">' + services[i] + '</option>';
+        }
+        html += '</select></div>';
+    }
+    
+    if (currentUser.role === 'chef') {
+        var mesActivites = [];
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].service === currentUser.service && data[i].valide && calcTaux(data[i]) === 100) {
+                mesActivites.push(data[i]);
+            }
+        }
+        
+        html += '<div class="form-group"><label>Objectif (automatique)</label><div id="objectif-display" style="padding: 8px 16px; background-color: #f3f4f6; border-radius: 8px; color: #6b7280;">-</div></div>';
+        
+        html += '<div class="form-group"><label>Activité/Action *</label><select id="combined-activite" class="form-control" onchange="updateActiviteSelection()">';
+        if (mesActivites.length > 0) {
+            for (var i = 0; i < mesActivites.length; i++) {
+                html += '<option value="' + mesActivites[i].activite + '" data-objectif="' + mesActivites[i].categorie + '" data-service="' + mesActivites[i].service + '">' + mesActivites[i].activite + '</option>';
+            }
+        } else {
+            html += '<option>Aucune activité validée</option>';
+        }
+        html += '</select></div>';
+        
+        html += '<input type="hidden" id="combined-service" value="' + currentUser.service + '">';
+        html += '<input type="hidden" id="combined-service-hidden" value="' + currentUser.service + '">';
+    }
+    
+    html += '<input type="hidden" id="combined-service-hidden">';
+    
+    html += '<div class="form-group"><label>Commentaire</label><textarea id="combined-commentaire" class="form-control" rows="4" placeholder="Saisissez votre commentaire (optionnel)..."></textarea></div>';
+    
+    html += '<div class="form-group"><label>Documents scannés (plusieurs fichiers possibles)</label><input type="file" id="combined-fichiers" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple style="padding: 4px 8px;"><small style="color: #6b7280; font-size: 12px;">Formats: PDF, JPG, PNG, DOC, DOCX</small></div>';
+    
+    html += '<div class="alert alert-info" style="margin-top: 8px; font-size: 13px;">ℹ️ <strong>Note:</strong> Seuls les noms des fichiers seront enregistrés.</div>';
+    
+    html += '<div class="btn-group"><button class="btn btn-primary" onclick="submitCommentaireEtPreuve()">Enregistrer</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div></div></div>';
+    
+    modalContainer.innerHTML = html;
+    
+    setTimeout(updateActiviteSelection, 100);
+}
+
+async function submitCommentaireEtPreuve() {
+    var activiteSelect = document.getElementById('combined-activite');
+    var selectedOption = activiteSelect.options[activiteSelect.selectedIndex];
+    var objectif = selectedOption.getAttribute('data-objectif');
+    var activite = activiteSelect.value;
+    var serviceHidden = document.getElementById('combined-service-hidden');
+    var service = serviceHidden ? serviceHidden.value : document.getElementById('combined-service').value;
+    if (!service) {
+        service = selectedOption.getAttribute('data-service');
+    }
+    
+    var commentaire = document.getElementById('combined-commentaire').value.trim();
+    var fichiersInput = document.getElementById('combined-fichiers');
+    
+    if (!activite || activite === 'Aucune activité réalisée à 100%' || activite === 'Aucune activité validée') {
+        alert('Veuillez sélectionner une activité valide');
+        return;
+    }
+    
+    if (!commentaire && (!fichiersInput.files || fichiersInput.files.length === 0)) {
+        alert('Veuillez saisir un commentaire ou sélectionner au moins un fichier');
+        return;
+    }
+    
+    var maxId = 0;
+    for (var i = 0; i < commentairesEtPreuves.length; i++) {
+        if (commentairesEtPreuves[i].id > maxId) maxId = commentairesEtPreuves[i].id;
+    }
+    
+    if (commentaire) {
+        commentairesEtPreuves.push({
+            id: maxId + 1,
+            type: 'commentaire',
+            objectif: objectif,
+            activite: activite,
+            service: service,
+            commentaire: commentaire,
+            creePar: currentUser.nom,
+            dateCreation: new Date().toLocaleString('fr-FR')
+        });
+        maxId++;
+    }
+    
+    if (fichiersInput.files && fichiersInput.files.length > 0) {
+        for (var i = 0; i < fichiersInput.files.length; i++) {
+            var fichier = fichiersInput.files[i];
+            commentairesEtPreuves.push({
+                id: maxId + 1 + i,
+                type: 'preuve',
+                objectif: objectif,
+                activite: activite,
+                service: service,
+                nomFichier: fichier.name,
+                tailleFichier: Math.round(fichier.size / 1024) + ' Ko',
+                deposePar: currentUser.nom,
+                dateDepot: new Date().toLocaleString('fr-FR')
+            });
+        }
+    }
+    
+    await saveCommentairesEtPreuves();
+    closeModal();
+    render();
+}
+
+function showEditCommentaireModal(id) {
+    var item = null;
+    for (var i = 0; i < commentairesEtPreuves.length; i++) {
+        if (commentairesEtPreuves[i].id === id) {
+            item = commentairesEtPreuves[i];
+            break;
+        }
+    }
+    
+    if (!item || item.type !== 'commentaire') return;
+    
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content"><h2 style="margin-bottom: 24px;">✏️ Modifier le commentaire</h2>';
+    
+    html += '<div class="form-group"><label>Objectif</label><div style="padding: 8px 16px; background-color: #f3f4f6; border-radius: 8px;">' + item.objectif + '</div></div>';
+    html += '<div class="form-group"><label>Activité</label><div style="padding: 8px 16px; background-color: #f3f4f6; border-radius: 8px;">' + item.activite + '</div></div>';
+    html += '<div class="form-group"><label>Commentaire *</label><textarea id="edit-commentaire" class="form-control" rows="4">' + item.commentaire + '</textarea></div>';
+    
+    html += '<div class="btn-group"><button class="btn btn-primary" onclick="submitEditCommentaire(' + id + ')">Enregistrer</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div></div></div>';
+    
+    modalContainer.innerHTML = html;
+}
+
+async function submitEditCommentaire(id) {
+    var newCommentaire = document.getElementById('edit-commentaire').value.trim();
+    
+    if (!newCommentaire) {
+        alert('Le commentaire ne peut pas être vide');
+        return;
+    }
+    
+    for (var i = 0; i < commentairesEtPreuves.length; i++) {
+        if (commentairesEtPreuves[i].id === id) {
+            commentairesEtPreuves[i].commentaire = newCommentaire;
+            commentairesEtPreuves[i].modifiePar = currentUser.nom;
+            commentairesEtPreuves[i].dateModification = new Date().toLocaleString('fr-FR');
+            break;
+        }
+    }
+    
+    await saveCommentairesEtPreuves();
+    closeModal();
+    render();
+}
+
+function showManagePreuvesModal(activite, service) {
+    var modalContainer = document.getElementById('modal-container');
+    
+    var preuvesActivite = [];
+    for (var i = 0; i < commentairesEtPreuves.length; i++) {
+        var item = commentairesEtPreuves[i];
+        if (item.type === 'preuve' && item.activite === activite && item.service === service) {
+            preuvesActivite.push(item);
+        }
+    }
+    
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 900px;"><h2 style="margin-bottom: 16px;">📎 Gérer les preuves</h2>';
+    
+    html += '<div style="background-color: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 16px;"><strong>Activité:</strong> ' + activite + '<br/><strong>Service:</strong> ' + service + '</div>';
+    
+    html += '<h3 style="margin-bottom: 12px;">Documents déposés</h3>';
+    
+    if (preuvesActivite.length > 0) {
+        for (var i = 0; i < preuvesActivite.length; i++) {
+            var p = preuvesActivite[i];
+            html += '<div class="fichier-item"><div><strong>📄 ' + p.nomFichier + '</strong><br/><small style="color: #6b7280;">Déposé par ' + p.deposePar + ' le ' + p.dateDepot + '</small></div><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deletePreuve(' + p.id + ')">Supprimer</button></div>';
+        }
+    } else {
+        html += '<p style="text-align: center; padding: 16px; color: #6b7280;">Aucune preuve</p>';
+    }
+    
+    html += '<h3 style="margin-top: 24px; margin-bottom: 12px;">Ajouter nouvelles preuves</h3>';
+    html += '<div class="form-group"><input type="file" id="new-preuves-fichiers" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple style="padding: 4px 8px;"></div>';
+    
+    html += '<div class="btn-group"><button class="btn btn-success" onclick="ajouterNouvellesPreuves(\'' + activite.replace(/'/g, "\\'") + '\', \'' + service + '\')">Ajouter</button><button class="btn btn-secondary" onclick="closeModal()">Fermer</button></div></div></div>';
+    
+    modalContainer.innerHTML = html;
+}
+
+async function ajouterNouvellesPreuves(activite, service) {
+    var fichiersInput = document.getElementById('new-preuves-fichiers');
+    
+    if (!fichiersInput.files || fichiersInput.files.length === 0) {
+        alert('Veuillez sélectionner au moins un fichier');
+        return;
+    }
+    
+    var maxId = 0;
+    for (var i = 0; i < commentairesEtPreuves.length; i++) {
+        if (commentairesEtPreuves[i].id > maxId) maxId = commentairesEtPreuves[i].id;
+    }
+    
+    var activiteData = null;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].activite === activite && data[i].service === service) {
+            activiteData = data[i];
+            break;
+        }
+    }
+    
+    var objectif = activiteData ? activiteData.categorie : '';
+    
+    for (var i = 0; i < fichiersInput.files.length; i++) {
+        var fichier = fichiersInput.files[i];
+        commentairesEtPreuves.push({
+            id: maxId + 1 + i,
+            type: 'preuve',
+            objectif: objectif,
+            activite: activite,
+            service: service,
+            nomFichier: fichier.name,
+            tailleFichier: Math.round(fichier.size / 1024) + ' Ko',
+            deposePar: currentUser.nom,
+            dateDepot: new Date().toLocaleString('fr-FR')
+        });
+    }
+    
+    await saveCommentairesEtPreuves();
+    alert('Fichiers ajoutés');
+    showManagePreuvesModal(activite, service);
+}
+
+async function deletePreuve(id) {
+    if (!confirm('Supprimer cette preuve ?')) return;
+    
+    var newItems = [];
+    for (var i = 0; i < commentairesEtPreuves.length; i++) {
+        if (commentairesEtPreuves[i].id !== id) newItems.push(commentairesEtPreuves[i]);
+    }
+    commentairesEtPreuves = newItems;
+    await saveCommentairesEtPreuves();
+    closeModal();
+    render();
+}
+
+async function deleteCommentaireOuPreuve(id) {
+    if (confirm('Supprimer cet élément?')) {
+        var newItems = [];
+        for (var i = 0; i < commentairesEtPreuves.length; i++) {
+            if (commentairesEtPreuves[i].id !== id) newItems.push(commentairesEtPreuves[i]);
+        }
+        commentairesEtPreuves = newItems;
+        await saveCommentairesEtPreuves();
+        render();
+    }
+}
+function exporterRapportWord() {
+    var isGlobal = currentUser.role === 'chefdept' || (currentUser.role === 'admin' && selectedServiceFilter === 'TOUS');
+    var serviceRapport = currentUser.role === 'chef' ? currentUser.service : (isGlobal ? null : selectedServiceFilter);
+    
+    var statsObjectifs = calculerStatsObjectifs(serviceRapport);
+    var statsDecisions = calculerStatsDecisions(serviceRapport);
+    
+    var totalPlanifieesObj = 0, totalRealiseesObj = 0;
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        totalPlanifieesObj += statsObjectifs[i].planifiees;
+        totalRealiseesObj += statsObjectifs[i].realisees;
+    }
+    var tauxTotalObj = totalPlanifieesObj > 0 ? Math.round((totalRealiseesObj / totalPlanifieesObj) * 100) : 0;
+    
+    var totalPlanifieesDec = 0, totalRealiseesDec = 0;
+    for (var i = 0; i < statsDecisions.length; i++) {
+        totalPlanifieesDec += statsDecisions[i].planifiees;
+        totalRealiseesDec += statsDecisions[i].realisees;
+    }
+    var tauxTotalDec = totalPlanifieesDec > 0 ? Math.round((totalRealiseesDec / totalPlanifieesDec) * 100) : 0;
+    
+    var tauxGlobalTotal = (totalPlanifieesObj + totalPlanifieesDec) > 0 ? Math.round(((totalRealiseesObj + totalRealiseesDec) / (totalPlanifieesObj + totalPlanifieesDec)) * 100) : 0;
+    
+    // Récupérer les textes
+    var contexteKey = 'contexte_' + (serviceRapport || 'global');
+    var contexteValue = rapportTextes[contexteKey] || 'Non renseigné';
+    var rappelKey = 'rappel_' + (serviceRapport || 'global');
+    var rappelValue = rapportTextes[rappelKey] || 'Non renseigné';
+    var rappelDecKey = 'rappelDec_' + (serviceRapport || 'global');
+    var rappelDecValue = rapportTextes[rappelDecKey] || 'Non renseigné';
+    var diffKey = 'difficultes_' + (serviceRapport || 'global');
+    var diffValue = rapportTextes[diffKey] || 'Non renseigné';
+    var pistesKey = 'pistes_' + (serviceRapport || 'global');
+    var pistesValue = rapportTextes[pistesKey] || 'Non renseigné';
+    
+    var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/1999/xhtml">';
+    html += '<head><meta charset="utf-8"><title>Rapport de Performance</title>';
+html += '<style>';
+    html += 'body { font-family: "Century Gothic", Arial, sans-serif; font-size: 12pt; line-height: 1.6; margin: 1cm; }';
+    html += 'h1 { color: #2563eb; text-align: center; font-size: 20pt; font-weight: bold; margin-bottom: 20px; }';
+    html += 'h2 { color: #2563eb; font-size: 14pt; font-weight: bold; margin-top: 30px; margin-bottom: 15px; }';
+    html += 'h3 { color: #4b5563; font-size: 14pt; margin-top: 20px; margin-bottom: 12px; font-weight: bold; }';
+    html += 'p { font-family: "Century Gothic", Arial, sans-serif; font-size: 12pt; margin: 10px 0; text-align: justify; line-height: 1.6; }';
+    html += 'table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 12pt; }';
+    html += 'th, td { border: 1px solid #000; padding: 4px 8px; height: 18px; }';
+    html += 'th { background-color: #2563eb; color: white; font-weight: bold; text-align: center; }';
+    html += 'td { text-align: center; }';
+    html += 'td:first-child { text-align: left; font-weight: bold; }';
+    html += 'tr.total { background-color: #e5e7eb; font-weight: bold; }';
+html += '.graph-space { margin: 30px 0; padding: 60px 20px; text-align: center; }';
+    html += '.graph-title { font-family: "Century Gothic", Arial, sans-serif; font-size: 14pt; font-weight: bold; color: #4b5563; margin-bottom: 10px; }';
+    html += '.graph-instruction { font-family: "Century Gothic", Arial, sans-serif; font-size: 11pt; color: #6b7280; font-style: italic; }';
+    html += 'ul { margin: 15px 0; padding: 0; list-style-type: none !important; }';
+    html += 'li { margin-bottom: 12px; padding: 0; list-style-type: none !important; list-style: none !important; }';
+    html += 'li .activite-titre { font-family: "Century Gothic", Arial, sans-serif; font-size: 12pt; font-weight: bold; display: block; margin-bottom: 4px; }';
+    html += 'li .commentaire { font-family: "Century Gothic", Arial, sans-serif; font-size: 12pt; display: block; text-align: justify; font-style: italic; color: #000; margin-left: 0; line-height: 1.6; }';
+    html += '</style></head><body>';
+    
+    var titreRapport = isGlobal ? 'RAPPORT DE PERFORMANCE GLOBAL' : 'RAPPORT DE PERFORMANCE - ' + (serviceRapport || 'SERVICE');
+    html += '<h1>' + titreRapport + '</h1>';
+    html += '<p style="text-align: center; color: #6b7280; margin-bottom: 30px;">Année 2026 - Généré le ' + new Date().toLocaleString('fr-FR') + '</p>';
+    
+    // SECTION 1
+    html += '<h2>1. Éléments de contexte</h2>';
+    html += '<p>' + contexteValue.replace(/\n/g, '<br/>') + '</p>';
+    
+    // SECTION 2
+    html += '<h2>2. Bilan des réalisations des objectifs</h2>';
+    html += '<h3>Rappel des actions programmées</h3>';
+    html += '<p>' + rappelValue.replace(/\n/g, '<br/>') + '</p>';
+    
+    // TABLEAU 1 - COMPLET
+    html += '<h3>Tableau 1 : Taux par objectif</h3>';
+    html += '<table><thead><tr><th>Objectifs</th><th>Planifiées</th><th>Réalisées</th><th>Taux (%)</th></tr></thead><tbody>';
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        var stat = statsObjectifs[i];
+        html += '<tr><td>' + stat.objectif + '</td><td>' + stat.planifiees + '</td><td>' + stat.realisees + '</td><td><strong>' + stat.taux + '</strong></td></tr>';
+    }
+    html += '<tr class="total"><td>TOTAL</td><td>' + totalPlanifieesObj + '</td><td>' + totalRealiseesObj + '</td><td><strong>' + tauxTotalObj + '</strong></td></tr>';
+    html += '</tbody></table>';
+    
+    // ESPACE GRAPHIQUE 1
+    html += '<div class="graph-space">';
+    html += '<div class="graph-title">Graphique 1 : Taux par objectif</div>';
+    html += '<div class="graph-instruction">[Insérer ici le graphique]</div>';
+    html += '</div>';
+    
+    // LISTES DES ACTIVITÉS
+    var objectifsList = ['Objectifs Généraux', 'Objectifs de Réforme', 'Objectifs Spécifiques'];
+    for (var j = 0; j < objectifsList.length; j++) {
+        var objNom = objectifsList[j];
+        var activitesObj = getActivitesRealisees(serviceRapport, objNom);
+        html += '<h3>' + objNom + '</h3>';
+        if (activitesObj.length > 0) {
+            html += '<ul>';
+            for (var k = 0; k < activitesObj.length; k++) {
+                var act = activitesObj[k];
+html += '<li>';
+html += '<div class="activite-titre">' + act.activite + ' :</div>';
+var commentaire = getCommentaireForActivite(act.activite, act.service);
+if (commentaire) {
+    html += '<div class="commentaire">' + commentaire + '</div>';
+}
+html += '</li>';
+            }
+            html += '</ul>';
+        } else {
+            html += '<p style="color: #6b7280; font-style: italic;">Aucune activité réalisée à 100%.</p>';
+        }
+    }
+    
+    // SECTION 3
+    html += '<h2>3. Bilan d’exécution des Décisions du PR et des CM</h2>';
+    html += '<h3>Rappel des décisions</h3>';
+    html += '<p>' + rappelDecValue.replace(/\n/g, '<br/>') + '</p>';
+    
+    // TABLEAU 2 - COMPLET
+    html += '<h3>Tableau 2 : Taux par décision</h3>';
+    html += '<table><thead><tr><th>Décisions</th><th>Planifiées</th><th>Réalisées</th><th>Taux (%)</th></tr></thead><tbody>';
+    for (var i = 0; i < statsDecisions.length; i++) {
+        var stat = statsDecisions[i];
+        html += '<tr><td>' + stat.decision + '</td><td>' + stat.planifiees + '</td><td>' + stat.realisees + '</td><td><strong>' + stat.taux + '</strong></td></tr>';
+    }
+    html += '<tr class="total"><td>TOTAL</td><td>' + totalPlanifieesDec + '</td><td>' + totalRealiseesDec + '</td><td><strong>' + tauxTotalDec + '</strong></td></tr>';
+    html += '</tbody></table>';
+    
+    // ESPACE GRAPHIQUE 2
+    html += '<div class="graph-space">';
+    html += '<div class="graph-title">Graphique 2 : Taux par décision</div>';
+    html += '<div class="graph-instruction">[Insérer ici le graphique]</div>';
+    html += '</div>';
+    
+    // LISTES DES DÉCISIONS
+    var decisionsPR = getActivitesRealisees(serviceRapport, 'Décisions du PR');
+    var decisionsCM = getActivitesRealisees(serviceRapport, 'Décisions du CM');
+    
+    html += '<h3>Décisions du PR</h3>';
+    if (decisionsPR.length > 0) {
+        html += '<ul>';
+        for (var k = 0; k < decisionsPR.length; k++) {
+            var act = decisionsPR[k];
+html += '<li>';
+html += '<div class="activite-titre">' + act.activite + ' :</div>';
+var commentaire = getCommentaireForActivite(act.activite, act.service);
+if (commentaire) {
+    html += '<div class="commentaire">' + commentaire + '</div>';
+}
+html += '</li>';
+        }
+        html += '</ul>';
+    } else {
+        html += '<p style="color: #6b7280; font-style: italic;">Aucune activité réalisée.</p>';
+    }
+    
+    html += '<h3>Décisions du CM</h3>';
+    if (decisionsCM.length > 0) {
+        html += '<ul>';
+        for (var k = 0; k < decisionsCM.length; k++) {
+            var act = decisionsCM[k];
+html += '<li>';
+html += '<div class="activite-titre">' + act.activite + ' :</div>';
+var commentaire = getCommentaireForActivite(act.activite, act.service);
+if (commentaire) {
+    html += '<div class="commentaire">' + commentaire + '</div>';
+}
+html += '</li>';	
+        }
+        html += '</ul>';
+    } else {
+        html += '<p style="color: #6b7280; font-style: italic;">Aucune activité réalisée.</p>';
+    }
+    
+    // TABLEAU 3 - COMPLET
+    html += '<h3>Tableau 3 : Vue globale</h3>';
+    html += '<table><thead><tr><th>Catégories</th><th>Planifiées</th><th>Réalisées</th><th>Taux (%)</th></tr></thead><tbody>';
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        var stat = statsObjectifs[i];
+        html += '<tr><td>' + stat.objectif + '</td><td>' + stat.planifiees + '</td><td>' + stat.realisees + '</td><td><strong>' + stat.taux + '</strong></td></tr>';
+    }
+    html += '<tr><td>Décisions du PR</td><td>' + statsDecisions[0].planifiees + '</td><td>' + statsDecisions[0].realisees + '</td><td><strong>' + statsDecisions[0].taux + '</strong></td></tr>';
+    html += '<tr><td>Décisions du CM</td><td>' + statsDecisions[1].planifiees + '</td><td>' + statsDecisions[1].realisees + '</td><td><strong>' + statsDecisions[1].taux + '</strong></td></tr>';
+    html += '<tr class="total"><td>TOTAL GLOBAL</td><td>' + (totalPlanifieesObj + totalPlanifieesDec) + '</td><td>' + (totalRealiseesObj + totalRealiseesDec) + '</td><td><strong>' + tauxGlobalTotal + '</strong></td></tr>';
+    html += '</tbody></table>';
+    
+    // ESPACE GRAPHIQUE 3
+    html += '<div class="graph-space">';
+    html += '<div class="graph-title">Graphique 3 : Vue globale</div>';
+    html += '<div class="graph-instruction">[Insérer ici le graphique]</div>';
+    html += '</div>';
+    
+    // SECTION 4
+    html += '<h2>4. Difficultés et Solutions</h2>';
+    html += '<h3>4.1 Difficultés</h3>';
+    html += '<p>' + diffValue.replace(/\n/g, '<br/>') + '</p>';
+    html += '<h3>4.2 Pistes de Solutions</h3>';
+    html += '<p>' + pistesValue.replace(/\n/g, '<br/>') + '</p>';
+    
+    html += '</body></html>';
+    
+    var blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'Rapport_Performance_2026_' + new Date().getTime() + '.doc';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+function exporterDonneesExcel() {
+    var isGlobal = currentUser.role === 'chefdept' || (currentUser.role === 'admin' && selectedServiceFilter === 'TOUS');
+    var serviceRapport = currentUser.role === 'chef' ? currentUser.service : (isGlobal ? null : selectedServiceFilter);
+    
+    var statsObjectifs = calculerStatsObjectifs(serviceRapport);
+    var statsDecisions = calculerStatsDecisions(serviceRapport);
+    
+    // Calculer totaux
+    var totalPlanifieesObj = 0, totalRealiseesObj = 0;
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        totalPlanifieesObj += statsObjectifs[i].planifiees;
+        totalRealiseesObj += statsObjectifs[i].realisees;
+    }
+    var tauxTotalObj = totalPlanifieesObj > 0 ? Math.round((totalRealiseesObj / totalPlanifieesObj) * 100) : 0;
+    
+    var totalPlanifieesDec = 0, totalRealiseesDec = 0;
+    for (var i = 0; i < statsDecisions.length; i++) {
+        totalPlanifieesDec += statsDecisions[i].planifiees;
+        totalRealiseesDec += statsDecisions[i].realisees;
+    }
+    var tauxTotalDec = totalPlanifieesDec > 0 ? Math.round((totalRealiseesDec / totalPlanifieesDec) * 100) : 0;
+    
+    var tauxGlobalTotal = (totalPlanifieesObj + totalPlanifieesDec) > 0 ? Math.round(((totalRealiseesObj + totalRealiseesDec) / (totalPlanifieesObj + totalPlanifieesDec)) * 100) : 0;
+    
+    // Créer le contenu HTML pour Excel
+    var html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
+    html += '<head><meta charset="utf-8"><style>';
+    html += 'table { border-collapse: collapse; width: 100%; margin-bottom: 40px; }';
+    html += 'th, td { border: 1px solid #000; padding: 8px; text-align: left; }';
+    html += 'th { background-color: #2563eb; color: white; font-weight: bold; }';
+    html += 'tr.total { background-color: #e5e7eb; font-weight: bold; }';
+    html += 'h2 { color: #2563eb; margin-top: 30px; }';
+    html += '</style></head><body>';
+    
+    var titreRapport = isGlobal ? 'DONNÉES RAPPORT GLOBAL' : 'DONNÉES RAPPORT - ' + (serviceRapport || 'SERVICE');
+    html += '<h1>' + titreRapport + '</h1>';
+    html += '<p>Année 2026 - Généré le ' + new Date().toLocaleString('fr-FR') + '</p>';
+    
+    // TABLEAU 1 : Objectifs
+    html += '<h2>Tableau 1 : Taux par objectif</h2>';
+    html += '<table><thead><tr><th>Objectifs</th><th>Taux (%)</th></tr></thead><tbody>';
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        var stat = statsObjectifs[i];
+        html += '<tr><td>' + stat.objectif + '</td><td>' + stat.taux + '</td></tr>';
+    }
+    html += '<tr class="total"><td>TOTAL</td><td>' + tauxTotalObj + '</td></tr>';
+    html += '</tbody></table>';
+    
+    html += '<p style="font-style: italic; color: #666; margin-bottom: 40px;">→ Sélectionnez ce tableau et créez un graphique en barres horizontales</p>';
+    
+    // TABLEAU 2 : Décisions
+    html += '<h2>Tableau 2 : Taux par décision</h2>';
+    html += '<table><thead><tr><th>Décisions</th><th>Taux (%)</th></tr></thead><tbody>';
+    for (var i = 0; i < statsDecisions.length; i++) {
+        var stat = statsDecisions[i];
+        html += '<tr><td>' + stat.decision + '</td><td>' + stat.taux + '</td></tr>';
+    }
+    html += '<tr class="total"><td>TOTAL</td><td>' + tauxTotalDec + '</td></tr>';
+    html += '</tbody></table>';
+    
+    html += '<p style="font-style: italic; color: #666; margin-bottom: 40px;">→ Sélectionnez ce tableau et créez un graphique en barres horizontales</p>';
+    
+    // TABLEAU 3 : Vue globale
+    html += '<h2>Tableau 3 : Vue globale</h2>';
+    html += '<table><thead><tr><th>Catégories</th><th>Taux (%)</th></tr></thead><tbody>';
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        var stat = statsObjectifs[i];
+        html += '<tr><td>' + stat.objectif + '</td><td>' + stat.taux + '</td></tr>';
+    }
+    html += '<tr><td>Décisions du PR</td><td>' + statsDecisions[0].taux + '</td></tr>';
+    html += '<tr><td>Décisions du CM</td><td>' + statsDecisions[1].taux + '</td></tr>';
+    html += '<tr class="total"><td>TOTAL GLOBAL</td><td>' + tauxGlobalTotal + '</td></tr>';
+    html += '</tbody></table>';
+    
+    html += '<p style="font-style: italic; color: #666;">→ Sélectionnez ce tableau et créez un histogramme vertical</p>';
+    
+    // Instructions
+    html += '<div style="margin-top: 50px; padding: 20px; background-color: #f0f9ff; border-left: 4px solid #2563eb;">';
+    html += '<h3 style="color: #2563eb;">📊 Instructions pour créer les graphiques</h3>';
+    html += '<ol style="line-height: 2;">';
+    html += '<li>Ouvrez ce fichier dans <strong>Excel</strong></li>';
+    html += '<li>Sélectionnez un tableau (cliquez sur une cellule du tableau)</li>';
+    html += '<li>Allez dans <strong>Insertion → Graphiques recommandés</strong></li>';
+    html += '<li>Choisissez <strong>Barres horizontales</strong> (Tableaux 1 & 2) ou <strong>Histogramme</strong> (Tableau 3)</li>';
+    html += '<li>Copiez le graphique créé</li>';
+    html += '<li>Collez-le dans votre document <strong>Word</strong></li>';
+    html += '<li>Le graphique reste modifiable : clic droit → <strong>Modifier les données</strong></li>';
+    html += '</ol></div>';
+    
+    html += '</body></html>';
+    
+    // Créer le blob et télécharger
+    var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'Donnees_Rapport_2026_' + new Date().getTime() + '.xls';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+function sauvegarderTexteRapport(key, value) {
+    rapportTextes[key] = value;
+    saveRapportTextes();
+}
+
+function getActivitesRealisees(service, objectif) {
+    var activites = [];
+    for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+        if (d.valide && calcTaux(d) === 100) {
+            if (service && d.service !== service) continue;
+            if (objectif && d.categorie !== objectif) continue;
+            activites.push(d);
+        }
+    }
+    return activites;
+}
+
+function getCommentaireForActivite(activite, service) {
+    for (var i = 0; i < commentairesEtPreuves.length; i++) {
+        var item = commentairesEtPreuves[i];
+        if (item.type === 'commentaire' && item.activite === activite && item.service === service) {
+            return item.commentaire;
+        }
+    }
+    return '';
+}
+
+function calculerStatsObjectifs(service) {
+    var objectifs = ['Objectifs Généraux', 'Objectifs de Réforme', 'Objectifs Spécifiques'];
+    var stats = [];
+    
+    for (var j = 0; j < objectifs.length; j++) {
+        var obj = objectifs[j];
+        var planifiees = 0;
+        var realisees = 0;
+        
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            if (!d.valide) continue;
+            if (service && d.service !== service) continue;
+            if (d.categorie === obj) {
+                planifiees++;
+                if (calcTaux(d) === 100) realisees++;
+            }
+        }
+        
+        var taux = planifiees > 0 ? Math.round((realisees / planifiees) * 100) : 0;
+        stats.push({
+            objectif: obj,
+            planifiees: planifiees,
+            realisees: realisees,
+            taux: taux
+        });
+    }
+    
+    return stats;
+}
+
+function calculerStatsDecisions(service) {
+    var decisions = ['Décisions du PR', 'Décisions du CM'];
+    var stats = [];
+    
+    for (var j = 0; j < decisions.length; j++) {
+        var dec = decisions[j];
+        var planifiees = 0;
+        var realisees = 0;
+        
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            if (!d.valide) continue;
+            if (service && d.service !== service) continue;
+            if (d.categorie === dec) {
+                planifiees++;
+                if (calcTaux(d) === 100) realisees++;
+            }
+        }
+        
+        var taux = planifiees > 0 ? Math.round((realisees / planifiees) * 100) : 0;
+        stats.push({
+            decision: dec,
+            planifiees: planifiees,
+            realisees: realisees,
+            taux: taux
+        });
+    }
+    
+    return stats;
+}
+function showUserList() {
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 1000px;"><h2 style="margin-bottom: 24px;">Gestion des Comptes</h2>';
+    
+    html += '<div style="margin-bottom: 16px;"><button class="btn btn-success" onclick="showCreateUserForm()">+ Créer un compte</button></div>';
+    
+    html += '<div class="table-container"><table><thead class="blue"><tr><th>Utilisateur</th><th>Nom</th><th>Service</th><th>Rôle</th><th>Statut</th><th style="text-align: center;">Actions</th></tr></thead><tbody>';
+    
+    for (var i = 0; i < users.length; i++) {
+        var u = users[i];
+        if (typeof u.actif === 'undefined') u.actif = true;
+        
+        html += '<tr><td>' + u.user + '</td><td>' + u.nom + '</td><td>' + u.service + '</td><td>';
+        
+        if (u.role === 'admin') html += '<span class="badge" style="background-color: #dc2626; color: white;">Admin</span>';
+        else if (u.role === 'chef') html += '<span class="badge" style="background-color: #059669; color: white;">Chef</span>';
+        else html += '<span class="badge" style="background-color: #d97706; color: white;">Chef Dép.</span>';
+        
+        html += '</td><td>';
+        
+        if (u.actif) {
+            html += '<span class="badge badge-green" style="color: #065f46;">Actif</span>';
+        } else {
+            html += '<span class="badge" style="background-color: #fee2e2; color: #991b1b;">Désactivé</span>';
+        }
+        
+        html += '</td><td style="text-align: center;">';
+        
+        if (u.role !== 'admin') {
+            html += '<div style="display: flex; gap: 4px; justify-content: center;">';
+            html += '<button class="btn btn-primary" style="font-size: 11px; padding: 4px 8px;" onclick="showEditUserForm(' + u.id + ')">Modifier</button>';
+            
+            if (u.actif) {
+                html += '<button class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px;" onclick="toggleUserStatus(' + u.id + ')">Désactiver</button>';
+            } else {
+                html += '<button class="btn btn-success" style="font-size: 11px; padding: 4px 8px;" onclick="toggleUserStatus(' + u.id + ')">Activer</button>';
+            }
+            
+            html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="confirmDeleteUser(' + u.id + ')">Supprimer</button>';
+            html += '</div>';
+        } else {
+            html += '<span style="color: #6b7280; font-size: 12px;">Compte protégé</span>';
+        }
+        
+        html += '</td></tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    html += '<div style="margin-top: 16px; text-align: center;"><button class="btn btn-secondary" onclick="closeModal()">Fermer</button></div>';
+    html += '</div></div>';
+    modalContainer.innerHTML = html;
+}
+
+function showConnectedUsers() {
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content"><h2>Utilisateurs Connectés</h2>';
+    
+    if (connectedUsers.length > 0) {
+        html += '<div class="table-container" style="margin-top: 16px;"><table><thead class="blue"><tr><th>Nom</th><th>Service</th><th>Connecté à</th></tr></thead><tbody>';
+        for (var i = 0; i < connectedUsers.length; i++) {
+            var u = connectedUsers[i];
+            html += '<tr><td>' + u.nom + '</td><td>' + u.service + '</td><td>' + u.connectedAt + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+    } else {
+        html += '<p style="text-align: center; padding: 32px; color: #6b7280;">Aucun utilisateur connecté</p>';
+    }
+    
+    html += '<div style="margin-top: 16px; text-align: center;"><button class="btn btn-secondary" onclick="closeModal()">Fermer</button></div>';
+    html += '</div></div>';
+    modalContainer.innerHTML = html;
+}
+
+function showCreateUserForm() {
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content"><h2 style="margin-bottom: 24px;">Créer un compte</h2>';
+    
+    html += '<div class="form-group"><label>Nom d\'utilisateur *</label><input type="text" id="new-username" class="form-control" placeholder="ex: chef.nouveauservice"></div>';
+    html += '<div class="form-group"><label>Mot de passe *</label><input type="password" id="new-password" class="form-control"></div>';
+    html += '<div class="form-group"><label>Nom complet *</label><input type="text" id="new-fullname" class="form-control" placeholder="ex: Chef Nouveau Service"></div>';
+    html += '<div class="form-group"><label>Rôle *</label><select id="new-role" class="form-control"><option value="chef">Chef</option><option value="chefdept">Chef Département</option></select></div>';
+    html += '<div class="form-group"><label>Service *</label><select id="new-service" class="form-control">';
+    for (var i = 0; i < services.length; i++) {
+        html += '<option value="' + services[i] + '">' + services[i] + '</option>';
+    }
+    html += '<option value="TOUS">TOUS</option></select></div>';
+    
+    html += '<div class="btn-group"><button class="btn btn-success" onclick="createNewUser()">Créer</button><button class="btn btn-secondary" onclick="showUserList()">Annuler</button></div>';
+    html += '</div></div>';
+    modalContainer.innerHTML = html;
+}
+
+async function createNewUser() {
+    var username = document.getElementById('new-username').value.trim();
+    var password = document.getElementById('new-password').value;
+    var fullname = document.getElementById('new-fullname').value.trim();
+    var role = document.getElementById('new-role').value;
+    var service = document.getElementById('new-service').value;
+    
+    if (!username || !password || !fullname) {
+        alert('Veuillez remplir tous les champs');
+        return;
+    }
+    
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].user === username) {
+            alert('Ce nom d\'utilisateur existe déjà');
+            return;
+        }
+    }
+    
+    var maxId = 0;
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].id > maxId) maxId = users[i].id;
+    }
+    
+    users.push({
+        id: maxId + 1,
+        user: username,
+        pass: password,
+        role: role,
+        nom: fullname,
+        service: service,
+        actif: true
+    });
+    
+    saveUsers();
+    alert('Compte créé avec succès');
+    showUserList();
+}
+
+async function showEditUserForm(userId) {
+    var user = null;
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].id === userId) {
+            user = users[i];
+            break;
+        }
+    }
+    
+    if (!user) return;
+    
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content"><h2 style="margin-bottom: 24px;">Modifier: ' + user.user + '</h2>';
+    
+    html += '<div class="form-group"><label>Nom d\'utilisateur</label><input type="text" value="' + user.user + '" class="form-control" disabled></div>';
+    html += '<div class="form-group"><label>Nouveau mot de passe (laisser vide si inchangé)</label><input type="password" id="edit-password" class="form-control"></div>';
+    html += '<div class="form-group"><label>Nom complet *</label><input type="text" id="edit-fullname" class="form-control" value="' + user.nom + '"></div>';
+    
+    html += '<div class="form-group"><label>Service *</label><select id="edit-service" class="form-control">';
+    for (var i = 0; i < services.length; i++) {
+        html += '<option value="' + services[i] + '"' + (user.service === services[i] ? ' selected' : '') + '>' + services[i] + '</option>';
+    }
+    html += '<option value="TOUS"' + (user.service === 'TOUS' ? ' selected' : '') + '>TOUS</option></select></div>';
+    
+    html += '<div class="btn-group"><button class="btn btn-primary" onclick="updateUser(' + userId + ')">Enregistrer</button><button class="btn btn-secondary" onclick="showUserList()">Annuler</button></div>';
+    html += '</div></div>';
+    modalContainer.innerHTML = html;
+}
+
+async function updateUser(userId) {
+    var password = document.getElementById('edit-password').value;
+    var fullname = document.getElementById('edit-fullname').value.trim();
+    var service = document.getElementById('edit-service').value;
+    
+    if (!fullname) {
+        alert('Veuillez remplir le nom complet');
+        return;
+    }
+    
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].id === userId) {
+            if (password) users[i].pass = password;
+            users[i].nom = fullname;
+            users[i].service = service;
+            break;
+        }
+    }
+    
+    saveUsers();
+    alert('Compte modifié avec succès');
+    showUserList();
+}
+
+async function toggleUserStatus(userId) {
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].id === userId) {
+            if (typeof users[i].actif === 'undefined') users[i].actif = true;
+            users[i].actif = !users[i].actif;
+            saveUsers();
+            showUserList();
+            return;
+        }
+    }
+}
+
+async function confirmDeleteUser(userId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce compte ?')) return;
+    
+    var newUsers = [];
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].id !== userId) newUsers.push(users[i]);
+    }
+    users = newUsers;
+    saveUsers();
+    alert('Compte supprimé');
+    showUserList();
+}
+function showPermissions() {
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 900px;"><h2 style="margin-bottom: 24px;">🔒 Gestion des Permissions</h2>';
+    
+    html += '<div class="alert alert-info" style="margin-bottom: 24px;">ℹ️ <strong>Information:</strong> Les permissions sont définies par rôle. Chaque utilisateur hérite automatiquement des permissions de son rôle.</div>';
+    
+    // TABLEAU DES PERMISSIONS
+    html += '<div class="table-container"><table><thead class="blue"><tr><th style="width: 30%;">Fonctionnalité</th><th style="text-align: center;">Admin</th><th style="text-align: center;">Chef Département</th><th style="text-align: center;">Chef de Service</th></tr></thead><tbody>';
+    
+    var permissions = [
+        {nom: 'Voir Tableau de Bord', admin: true, chefdept: true, chef: true},
+        {nom: 'Ajouter des activités', admin: true, chefdept: false, chef: true},
+        {nom: 'Modifier les activités', admin: true, chefdept: false, chef: true},
+        {nom: 'Valider les activités', admin: true, chefdept: false, chef: false},
+        {nom: 'Supprimer les activités', admin: true, chefdept: false, chef: true},
+        {nom: 'Cocher les étapes d\'exécution', admin: true, chefdept: false, chef: true},
+        {nom: 'Déposer des commentaires', admin: true, chefdept: false, chef: true},
+        {nom: 'Déposer des preuves', admin: true, chefdept: false, chef: true},
+        {nom: 'Voir les commentaires/preuves', admin: true, chefdept: true, chef: true},
+        {nom: 'Modifier/Supprimer commentaires', admin: true, chefdept: false, chef: true},
+        {nom: 'Voir Performance', admin: true, chefdept: true, chef: true},
+        {nom: 'Générer Rapport', admin: true, chefdept: true, chef: true},
+        {nom: 'Filtrer tous les services', admin: true, chefdept: true, chef: false},
+        {nom: 'Gérer les utilisateurs', admin: true, chefdept: false, chef: false},
+        {nom: 'Voir utilisateurs connectés', admin: true, chefdept: false, chef: false}
+    ];
+    
+    for (var i = 0; i < permissions.length; i++) {
+        var p = permissions[i];
+        html += '<tr>';
+        html += '<td><strong>' + p.nom + '</strong></td>';
+        html += '<td style="text-align: center;">' + (p.admin ? '<span style="color: #059669; font-size: 20px;">✓</span>' : '<span style="color: #dc2626;">✗</span>') + '</td>';
+        html += '<td style="text-align: center;">' + (p.chefdept ? '<span style="color: #059669; font-size: 20px;">✓</span>' : '<span style="color: #dc2626;">✗</span>') + '</td>';
+        html += '<td style="text-align: center;">' + (p.chef ? '<span style="color: #059669; font-size: 20px;">✓</span>' : '<span style="color: #dc2626;">✗</span>') + '</td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // DESCRIPTION DES RÔLES
+    html += '<h3 style="margin-top: 32px; margin-bottom: 16px;">Description des Rôles</h3>';
+    
+    html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #dc2626; margin-bottom: 16px;">';
+    html += '<h4 style="color: #dc2626; margin-bottom: 8px;">👤 Administrateur</h4>';
+    html += '<p style="font-size: 14px; color: #991b1b;">Accès complet au système. Peut gérer tous les services, valider les activités, gérer les utilisateurs et accéder à toutes les fonctionnalités.</p>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #d97706; margin-bottom: 16px;">';
+    html += '<h4 style="color: #d97706; margin-bottom: 8px;">👤 Chef de Département</h4>';
+    html += '<p style="font-size: 14px; color: #92400e;">Vue globale en lecture seule. Peut consulter toutes les données, générer des rapports globaux, mais ne peut pas modifier les activités.</p>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #d1fae5; padding: 16px; border-radius: 8px; border-left: 4px solid #059669;">';
+    html += '<h4 style="color: #059669; margin-bottom: 8px;">👤 Chef de Service</h4>';
+    html += '<p style="font-size: 14px; color: #065f46;">Gestion complète de son service uniquement. Peut ajouter, modifier, supprimer des activités, déposer commentaires et preuves pour son service.</p>';
+    html += '</div>';
+    
+    html += '<div style="margin-top: 16px; text-align: center;"><button class="btn btn-secondary" onclick="closeModal()">Fermer</button></div>';
+    html += '</div></div>';
+    
+    modalContainer.innerHTML = html;
+}
+
+        function render() {
+            var app = document.getElementById('app');
+            
+            if (!currentUser) {
+                app.innerHTML = '<div class="modal"><div class="modal-content" style="max-width: 550px;"><h2 style="text-align: center; margin-bottom: 24px;">Connexion</h2><div class="alert alert-info">Système de gestion avec 36 services</div><div class="form-group"><input type="text" id="username" class="form-control" placeholder="Nom d\'utilisateur (ex: chef.sneaa)"></div><div class="form-group"><input type="password" id="password" class="form-control" placeholder="Mot de passe"></div><button class="btn btn-primary" style="width: 100%; margin-bottom: 16px;" onclick="attemptLogin()">Se connecter</button><div style="padding: 16px; background-color: #f9fafb; border-radius: 8px; font-size: 12px;"><p style="margin-bottom: 12px;"><strong>Comptes disponibles:</strong></p><p style="font-weight: bold; color: #2563eb;">👤 Admin: admin / admin123</p><p style="margin-top: 8px; font-weight: bold; color: #059669;">👥 Chefs (36): chef.sneaa, chef.drh, etc. / pass123</p><p style="margin-top: 8px; font-weight: bold; color: #d97706;">👤 Chef Dép: chefdept / pass123</p></div></div></div>';
+                
+                var passwordInput = document.getElementById('password');
+                if (passwordInput) {
+                    passwordInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') attemptLogin();
+                    });
+                }
+                return;
+            }
+
+            var html = '<div class="header"><h1>Gestion Départementale</h1><div class="header-right"><span>' + currentUser.nom;
+            if (currentUser.service !== 'TOUS') {
+                html += '<span class="service-badge">' + currentUser.service + '</span>';
+            }
+            html += '</span><button class="btn btn-secondary" onclick="logout()">Déconnexion</button></div></div>';
+
+            html += '<div class="nav">';
+            html += '<button class="' + (activeTab === 'dashboard' ? 'active' : '') + '" onclick="changeTab(\'dashboard\')">Tableau de Bord</button>';
+            html += '<button class="' + (activeTab === 'planning' ? 'active' : '') + '" onclick="changeTab(\'planning\')">Planification</button>';
+            html += '<button class="' + (activeTab === 'suivi' ? 'active' : '') + '" onclick="changeTab(\'suivi\')">Suivi-Évaluation</button>';
+            html += '<button class="' + (activeTab === 'commentaires' ? 'active' : '') + '" onclick="changeTab(\'commentaires\')">Commentaires et Preuves</button>';
+            html += '<button class="' + (activeTab === 'rapport' ? 'active' : '') + '" onclick="changeTab(\'rapport\')">Rapport de performance</button>';
+            if (currentUser.role === 'admin') {
+                html += '<button class="' + (activeTab === 'admin' ? 'active' : '') + '" onclick="changeTab(\'admin\')">Administration</button>';
+            }
+            html += '</div>';
+
+            if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+                html += '<div style="background-color: white; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 16px;"><label style="font-weight: bold; font-size: 14px;">Filtrer:</label><select onchange="changeServiceFilter(this.value)" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;"><option value="TOUS"' + (selectedServiceFilter === 'TOUS' ? ' selected' : '') + '>Tous les services</option>';
+                
+                for (var i = 0; i < services.length; i++) {
+                    html += '<option value="' + services[i] + '"' + (selectedServiceFilter === services[i] ? ' selected' : '') + '>' + services[i] + '</option>';
+                }
+                
+                html += '</select>';
+                if (selectedServiceFilter !== 'TOUS') {
+                    html += '<button onclick="changeServiceFilter(\'TOUS\')" style="padding: 6px 12px; background-color: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">Réinitialiser</button>';
+                }
+                html += '</div></div>';
+            }
+
+            html += '<div class="main">';
+
+            // ========== ONGLET 1 : TABLEAU DE BORD (À COMPLÉTER) ==========
+            if (activeTab === 'dashboard') {
+    html += '<h2 style="margin-bottom: 16px;">Tableau de Bord</h2>';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">';
+    
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 8px;">📊 Statut</label><select onchange="changeStatusFilter(this.value)" class="form-control"><option value="TOUS"' + (selectedStatusFilter === 'TOUS' ? ' selected' : '') + '>Tous les statuts</option><option value="Non commencée"' + (selectedStatusFilter === 'Non commencée' ? ' selected' : '') + '>Non commencée</option><option value="En cours"' + (selectedStatusFilter === 'En cours' ? ' selected' : '') + '>En cours</option><option value="Exécutée"' + (selectedStatusFilter === 'Exécutée' ? ' selected' : '') + '>Exécutée</option></select></div>';
+    
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 8px;">🎯 Objectif</label><select onchange="changeDashboardObjectifFilter(this.value)" class="form-control"><option value="TOUS"' + (selectedObjectifFilter === 'TOUS' ? ' selected' : '') + '>Tous les objectifs</option><option value="Objectifs Généraux"' + (selectedObjectifFilter === 'Objectifs Généraux' ? ' selected' : '') + '>Objectifs Généraux</option><option value="Objectifs de Réforme"' + (selectedObjectifFilter === 'Objectifs de Réforme' ? ' selected' : '') + '>Objectifs de Réforme</option><option value="Objectifs Spécifiques"' + (selectedObjectifFilter === 'Objectifs Spécifiques' ? ' selected' : '') + '>Objectifs Spécifiques</option><option value="Décisions du CM"' + (selectedObjectifFilter === 'Décisions du CM' ? ' selected' : '') + '>Décisions du CM</option><option value="Décisions du PR"' + (selectedObjectifFilter === 'Décisions du PR' ? ' selected' : '') + '>Décisions du PR</option></select></div>';
+    
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 8px;">📅 Trimestre (cumulé)</label><select onchange="changeDashboardTrimestreFilter(this.value)" class="form-control"><option value="TOUS"' + (selectedTrimestreFilter === 'TOUS' ? ' selected' : '') + '>Toute l\'année</option><option value="T1"' + (selectedTrimestreFilter === 'T1' ? ' selected' : '') + '>Jusqu\'à T1</option><option value="T2"' + (selectedTrimestreFilter === 'T2' ? ' selected' : '') + '>Jusqu\'à T2</option><option value="T3"' + (selectedTrimestreFilter === 'T3' ? ' selected' : '') + '>Jusqu\'à T3</option><option value="T4"' + (selectedTrimestreFilter === 'T4' ? ' selected' : '') + '>Jusqu\'à T4</option></select></div>';
+    
+    html += '</div></div>';
+    
+    var dashboardData = getFilteredDataForDashboard();
+    
+    var enCours = 0, terminees = 0, nonCommencees = 0;
+    for (var i = 0; i < dashboardData.length; i++) {
+        var taux = calcTaux(dashboardData[i]);
+        if (taux === 100) terminees++;
+        else if (taux > 0) enCours++;
+        else nonCommencees++;
+    }
+// Calculer le taux d'exécution global
+var tauxExecution = dashboardData.length > 0 ? Math.round((terminees / dashboardData.length) * 100) : 0;
+    html += '<div class="cards">';
+    html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Planifiées</div><div class="card-value">' + dashboardData.length + '</div></div>';
+    html += '<div class="card card-orange"><div class="card-title" style="color: #ea580c;">Non Commencées</div><div class="card-value">' + nonCommencees + '</div></div>';
+    html += '<div class="card card-yellow"><div class="card-title" style="color: #d97706;">En Cours</div><div class="card-value">' + enCours + '</div></div>';
+    html += '<div class="card card-green"><div class="card-title" style="color: #059669;">Exécutées</div><div class="card-value">' + terminees + '</div></div>';
+html += '<div class="card card-rose pastel"><div class="card-title" style="color: #7c3aed;">📈 Taux d\'Exécution</div><div class="card-value">' + tauxExecution + '%</div></div>';
+html += '</div>';
+    
+    html += '<div class="table-container"><table><thead class="blue"><tr><th>Objectif</th><th>Activité</th><th>Service</th><th style="text-align: center; background-color: #1e40af;">T1</th><th style="text-align: center; background-color: #1e40af;">T2</th><th style="text-align: center; background-color: #1e40af;">T3</th><th style="text-align: center; background-color: #1e40af;">T4</th><th style="text-align: center;">TDR</th><th style="text-align: center;">ENGAGÉ</th><th style="text-align: center;">MANDATÉ</th><th style="text-align: center;">ORDONNANCÉ</th><th style="text-align: center;">LIQUIDÉ</th><th style="text-align: center;">EXÉCUTÉ</th><th style="text-align: center;">TAUX</th></tr></thead><tbody>';
+    
+    if (dashboardData.length > 0) {
+        for (var i = 0; i < dashboardData.length; i++) {
+            var d = dashboardData[i];
+            var taux = calcTaux(d);
+            var tauxClass = taux === 100 ? 'badge-taux-green' : taux >= 50 ? 'badge-taux-yellow' : 'badge-taux-red';
+            
+            html += '<tr><td><span class="badge badge-blue">' + d.categorie + '</span></td><td>' + d.activite + '</td><td><span class="badge badge-purple">' + d.service + '</span></td>';
+            html += '<td style="text-align: center; background-color: #eff6ff;">' + (d.t1 ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center; background-color: #eff6ff;">' + (d.t2 ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center; background-color: #eff6ff;">' + (d.t3 ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center; background-color: #eff6ff;">' + (d.t4 ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center;">' + (d.tdr ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center;">' + (d.eng ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center;">' + (d.mand ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center;">' + (d.ordo ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center;">' + (d.liq ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center;">' + (d.exec ? '<span class="check-icon">✓</span>' : '') + '</td>';
+            html += '<td style="text-align: center;"><span class="badge-taux ' + tauxClass + '">' + taux + '%</span></td></tr>';
+        }
+    } else {
+        html += '<tr><td colspan="14" class="empty-state">Aucune activité validée</td></tr>';
+    }
+    html += '</tbody></table></div>';
+}
+
+            // ========== ONGLET 2 : PLANIFICATION (À COMPLÉTER) ==========
+            if (activeTab === 'planning') {
+    html += '<div class="flex-between"><h2>Planification 2026</h2>';
+    if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+        html += '<button class="btn btn-success" onclick="showAddModal()">+ Ajouter</button>';
+    }
+    html += '</div>';
+    
+    var planningData = getFilteredDataForPlanning();
+    
+    html += '<div class="table-container"><table><thead class="blue"><tr><th>Objectif</th><th>Activité</th><th>Service</th><th style="text-align: center;">T1</th><th style="text-align: center;">T2</th><th style="text-align: center;">T3</th><th style="text-align: center;">T4</th><th style="text-align: center;">Statut</th>';
+    if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+        html += '<th style="text-align: center;">Actions</th>';
+    }
+    html += '</tr></thead><tbody>';
+    
+    if (planningData.length > 0) {
+        for (var i = 0; i < planningData.length; i++) {
+            var d = planningData[i];
+            html += '<tr><td><span class="badge badge-blue">' + d.categorie + '</span></td><td>' + d.activite + '</td><td><span class="badge badge-purple">' + d.service + '</span></td>';
+            html += '<td style="text-align: center;"><input type="checkbox" ' + (d.t1 ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'t1\')"></td>';
+            html += '<td style="text-align: center;"><input type="checkbox" ' + (d.t2 ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'t2\')"></td>';
+            html += '<td style="text-align: center;"><input type="checkbox" ' + (d.t3 ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'t3\')"></td>';
+            html += '<td style="text-align: center;"><input type="checkbox" ' + (d.t4 ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'t4\')"></td>';
+            html += '<td style="text-align: center;">';
+            if (d.valide) html += '<span class="badge" style="background-color: #d1fae5; color: #065f46;">Validée</span>';
+            else html += '<span class="badge" style="background-color: #fef3c7; color: #92400e;">En attente</span>';
+            html += '</td>';
+            
+            if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+                html += '<td style="text-align: center;"><div style="display: flex; gap: 4px; justify-content: center;">';
+                if (canValidate() && !d.valide) {
+                    html += '<button class="btn btn-success" style="font-size: 11px; padding: 4px 8px;" onclick="validateActivity(' + d.id + ')">Valider</button>';
+                }
+                if (canDeleteInPlanning(d)) {
+                    html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteActivity(' + d.id + ')">Supprimer</button>';
+                }
+                html += '</div></td>';
+            }
+            html += '</tr>';
+        }
+    } else {
+        var colspan = (currentUser.role === 'admin' || currentUser.role === 'chef') ? '9' : '8';
+        html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune activité en planification</td></tr>';
+    }
+    html += '</tbody></table></div>';
+}
+
+            // ========== ONGLET 3 : SUIVI-ÉVALUATION (À COMPLÉTER) ==========
+            if (activeTab === 'suivi') {
+                html += '<!-- CONTENU SUIVI À INSÉRER ICI -->';
+                html += '<h2>📈 Suivi-Évaluation</h2>';
+                html += '<h2 style="margin-bottom: 16px;">Suivi-Évaluation 2026</h2>';
+html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">';
+
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 8px;">🎯 Objectif</label><select onchange="changeSuiviObjectifFilter(this.value)" class="form-control"><option value="TOUS"' + (suiviObjectifFilter === 'TOUS' ? ' selected' : '') + '>Tous les objectifs</option><option value="Objectifs Généraux"' + (suiviObjectifFilter === 'Objectifs Généraux' ? ' selected' : '') + '>Objectifs Généraux</option><option value="Objectifs de Réforme"' + (suiviObjectifFilter === 'Objectifs de Réforme' ? ' selected' : '') + '>Objectifs de Réforme</option><option value="Objectifs Spécifiques"' + (suiviObjectifFilter === 'Objectifs Spécifiques' ? ' selected' : '') + '>Objectifs Spécifiques</option><option value="Décisions du CM"' + (suiviObjectifFilter === 'Décisions du CM' ? ' selected' : '') + '>Décisions du CM</option><option value="Décisions du PR"' + (suiviObjectifFilter === 'Décisions du PR' ? ' selected' : '') + '>Décisions du PR</option></select></div>';
+
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 8px;">📅 Trimestre (cumulé)</label><select onchange="changeSuiviTrimestreFilter(this.value)" class="form-control"><option value="TOUS"' + (suiviTrimestreFilter === 'TOUS' ? ' selected' : '') + '>Toute l\'année</option><option value="T1"' + (suiviTrimestreFilter === 'T1' ? ' selected' : '') + '>Jusqu\'à T1</option><option value="T2"' + (suiviTrimestreFilter === 'T2' ? ' selected' : '') + '>Jusqu\'à T2</option><option value="T3"' + (suiviTrimestreFilter === 'T3' ? ' selected' : '') + '>Jusqu\'à T3</option><option value="T4"' + (suiviTrimestreFilter === 'T4' ? ' selected' : '') + '>Jusqu\'à T4</option></select></div>';
+
+html += '</div></div>';
+
+var suiviData = getFilteredDataForSuivi();
+
+html += '<div class="table-container"><table><thead class="blue"><tr><th>Objectif</th><th>Activité</th><th>Service</th><th style="text-align: center; background-color: #1e40af;">T1</th><th style="text-align: center; background-color: #1e40af;">T2</th><th style="text-align: center; background-color: #1e40af;">T3</th><th style="text-align: center; background-color: #1e40af;">T4</th><th style="text-align: center;">TDR</th><th style="text-align: center;">ENGAGÉ</th><th style="text-align: center;">MANDATÉ</th><th style="text-align: center;">ORDONNANCÉ</th><th style="text-align: center;">LIQUIDÉ</th><th style="text-align: center;">EXÉCUTÉ</th><th style="text-align: center;">TAUX</th></tr></thead><tbody>';
+
+if (suiviData.length > 0) {
+    for (var i = 0; i < suiviData.length; i++) {
+        var d = suiviData[i];
+        var taux = calcTaux(d);
+        var tauxClass = taux === 100 ? 'badge-taux-green' : taux >= 50 ? 'badge-taux-yellow' : 'badge-taux-red';
+        
+        html += '<tr><td><span class="badge badge-blue">' + d.categorie + '</span></td><td>' + d.activite + '</td><td><span class="badge badge-purple">' + d.service + '</span></td>';
+        html += '<td style="text-align: center; background-color: #eff6ff;">' + (d.t1 ? '<span class="check-icon">✓</span>' : '') + '</td>';
+        html += '<td style="text-align: center; background-color: #eff6ff;">' + (d.t2 ? '<span class="check-icon">✓</span>' : '') + '</td>';
+        html += '<td style="text-align: center; background-color: #eff6ff;">' + (d.t3 ? '<span class="check-icon">✓</span>' : '') + '</td>';
+        html += '<td style="text-align: center; background-color: #eff6ff;">' + (d.t4 ? '<span class="check-icon">✓</span>' : '') + '</td>';
+        html += '<td style="text-align: center;"><input type="checkbox" ' + (d.tdr ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'tdr\')"></td>';
+        html += '<td style="text-align: center;"><input type="checkbox" ' + (d.eng ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'eng\')"></td>';
+        html += '<td style="text-align: center;"><input type="checkbox" ' + (d.mand ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'mand\')"></td>';
+        html += '<td style="text-align: center;"><input type="checkbox" ' + (d.ordo ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'ordo\')"></td>';
+        html += '<td style="text-align: center;"><input type="checkbox" ' + (d.liq ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'liq\')"></td>';
+        html += '<td style="text-align: center;"><input type="checkbox" ' + (d.exec ? 'checked' : '') + ' ' + (!canModify(d) ? 'disabled' : '') + ' onchange="toggle(' + d.id + ', \'exec\')"></td>';
+        html += '<td style="text-align: center;"><span class="badge-taux ' + tauxClass + '">' + taux + '%</span></td></tr>';
+    }
+} else {
+    html += '<tr><td colspan="14" class="empty-state">Aucune activité validée</td></tr>';
+}
+html += '</tbody></table></div>';
+            }
+
+            // ========== ONGLET 4 : COMMENTAIRES ET PREUVES (À COMPLÉTER) ==========
+if (activeTab === 'commentaires') {
+    html += '<div class="flex-between"><h2>📋 Commentaires et Preuves 2026</h2>';
+    if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+        html += '<button class="btn btn-primary" onclick="showCommentaireEtPreuveModal()">📋 Déposer une preuve et Commenter</button>';
+    }
+    html += '</div>';
+    
+    if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+        html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;"><div><label style="font-weight: bold; display: block; margin-bottom: 8px;">🏢 Service</label><select onchange="changeCommentairesServiceFilter(this.value)" class="form-control"><option value="TOUS"' + (commentairesServiceFilter === 'TOUS' ? ' selected' : '') + '>Tous les services</option>';
+        
+        for (var i = 0; i < services.length; i++) {
+            html += '<option value="' + services[i] + '"' + (commentairesServiceFilter === services[i] ? ' selected' : '') + '>' + services[i] + '</option>';
+        }
+        
+        html += '</select></div><div><label style="font-weight: bold; display: block; margin-bottom: 8px;">🎯 Objectif</label><select onchange="changeCommentairesObjectifFilter(this.value)" class="form-control"><option value="TOUS"' + (commentairesObjectifFilter === 'TOUS' ? ' selected' : '') + '>Tous les objectifs</option><option value="Objectifs Généraux"' + (commentairesObjectifFilter === 'Objectifs Généraux' ? ' selected' : '') + '>Objectifs Généraux</option><option value="Objectifs de Réforme"' + (commentairesObjectifFilter === 'Objectifs de Réforme' ? ' selected' : '') + '>Objectifs de Réforme</option><option value="Objectifs Spécifiques"' + (commentairesObjectifFilter === 'Objectifs Spécifiques' ? ' selected' : '') + '>Objectifs Spécifiques</option><option value="Décisions du CM"' + (commentairesObjectifFilter === 'Décisions du CM' ? ' selected' : '') + '>Décisions du CM</option><option value="Décisions du PR"' + (commentairesObjectifFilter === 'Décisions du PR' ? ' selected' : '') + '>Décisions du PR</option></select></div></div></div>';
+    }
+    
+    html += '<div class="table-container"><table><thead class="blue"><tr><th style="width: 15%;">Objectif</th><th style="width: 30%;">Activité</th><th style="width: 10%;">Service</th><th style="width: 20%;">Commentaire</th><th style="width: 15%;">Document</th><th style="width: 10%;">Date</th>';
+    if (currentUser.role !== 'chefdept') {
+        html += '<th style="text-align: center; width: 4%;">Actions</th>';
+    }
+    html += '</tr></thead><tbody>';
+    
+    var commentairesData = [];
+    if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+        commentairesData = commentairesEtPreuves;
+    } else {
+        for (var i = 0; i < commentairesEtPreuves.length; i++) {
+            if (commentairesEtPreuves[i].service === currentUser.service) {
+                commentairesData.push(commentairesEtPreuves[i]);
+            }
+        }
+    }
+    
+    if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && commentairesServiceFilter !== 'TOUS') {
+        var filtered = [];
+        for (var i = 0; i < commentairesData.length; i++) {
+            if (commentairesData[i].service === commentairesServiceFilter) {
+                filtered.push(commentairesData[i]);
+            }
+        }
+        commentairesData = filtered;
+    }
+    
+    if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && commentairesObjectifFilter !== 'TOUS') {
+        var filtered = [];
+        for (var i = 0; i < commentairesData.length; i++) {
+            if (commentairesData[i].objectif === commentairesObjectifFilter) {
+                filtered.push(commentairesData[i]);
+            }
+        }
+        commentairesData = filtered;
+    }
+    
+    var activitesWithData = {};
+    for (var i = 0; i < commentairesData.length; i++) {
+        var key = commentairesData[i].activite + '|' + commentairesData[i].service;
+        if (!activitesWithData[key]) {
+            activitesWithData[key] = {
+                objectif: commentairesData[i].objectif,
+                activite: commentairesData[i].activite,
+                service: commentairesData[i].service,
+                commentaires: [],
+                preuves: []
+            };
+        }
+        
+        if (commentairesData[i].type === 'commentaire') {
+            activitesWithData[key].commentaires.push(commentairesData[i]);
+        } else {
+            activitesWithData[key].preuves.push(commentairesData[i]);
+        }
+    }
+    
+    var hasData = false;
+    for (var key in activitesWithData) {
+        hasData = true;
+        var item = activitesWithData[key];
+        
+        html += '<tr>';
+        html += '<td><span class="badge badge-blue">' + item.objectif + '</span></td>';
+        html += '<td>' + item.activite + '</td>';
+        html += '<td><span class="badge badge-purple">' + item.service + '</span></td>';
+        
+html += '<td>';
+if (item.commentaires.length > 0) {
+    for (var j = 0; j < item.commentaires.length; j++) {
+        var c = item.commentaires[j];
+        if (j > 0) html += '<hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">';
+        html += '<div style="text-align: left; text-align: justify;">' + c.commentaire + '</div>';
+    }
+} else {
+    html += '-';
+}
+html += '</td>';        
+        html += '<td>';
+        if (item.preuves.length > 0) {
+            for (var j = 0; j < item.preuves.length; j++) {
+                var p = item.preuves[j];
+                if (j > 0) html += '<br/>';
+                html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="alert(\'📄 ' + p.nomFichier + '\\n\\nDéposé par: ' + p.deposePar + '\\nDate: ' + p.dateDepot + '\\n\\nNote: Dans la version finale, ceci ouvrira le fichier.\')">📎 ' + p.nomFichier + '</span>';
+            }
+        } else {
+            html += '-';
+        }
+        html += '</td>';
+        
+        html += '<td style="font-size: 12px; color: #6b7280;">-</td>';
+        
+        if (currentUser.role !== 'chefdept') {
+            html += '<td style="text-align: center;">';
+            var canManage = currentUser.role === 'admin' || (currentUser.role === 'chef' && item.service === currentUser.service);
+            if (canManage) {
+                html += '<div style="display: flex; flex-direction: column; gap: 4px;">';
+                
+                if (item.commentaires.length > 0) {
+                    html += '<button class="btn btn-warning" style="font-size: 11px; padding: 4px 8px;" onclick="showEditCommentaireModal(' + item.commentaires[0].id + ')">✏️ Modifier</button>';
+                    html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteCommentaireOuPreuve(' + item.commentaires[0].id + ')">🗑️ Suppr. comm.</button>';
+                }
+                
+                if (item.preuves.length > 0) {
+                    html += '<button class="btn btn-primary" style="font-size: 11px; padding: 4px 8px;" onclick="showManagePreuvesModal(\'' + item.activite.replace(/'/g, "\\'") + '\', \'' + item.service + '\')">📎 Gérer (' + item.preuves.length + ')</button>';
+                }
+                
+                html += '</div>';
+            }
+            html += '</td>';
+        }
+        html += '</tr>';
+    }
+    
+    if (!hasData) {
+        var colspan = (currentUser.role !== 'chefdept') ? '7' : '6';
+        html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucun commentaire ou preuve</td></tr>';
+    }
+    html += '</tbody></table></div>';
+}
+
+            // ========== ONGLET 6 : RAPPORT (À COMPLÉTER) ==========
+if (activeTab === 'rapport') {
+    var isGlobal = currentUser.role === 'chefdept' || (currentUser.role === 'admin' && selectedServiceFilter === 'TOUS');
+    var serviceRapport = currentUser.role === 'chef' ? currentUser.service : (isGlobal ? null : selectedServiceFilter);
+    
+    html += '<div class="flex-between"><h2>📄 Rapport de Performance 2026</h2>';
+    html += '<div style="display: flex; gap: 8px;">';
+    
+    // BOUTON EXPORT WORD
+    html += '<button class="btn btn-primary" onclick="exporterRapportWord()">📥 Export Word</button>';
+html += '<button class="btn btn-success" onclick="exporterDonneesExcel()" style="margin-left: 8px;">📊 Export Excel (Données)</button>';
+    
+    if (currentUser.role === 'admin' && !isGlobal) {
+        html += '<button class="btn btn-secondary" onclick="selectedServiceFilter=\'TOUS\'; render();">📊 Rapport global</button>';
+    }
+    
+    html += '</div></div>';
+    
+    html += '<div id="rapport-content" style="background-color: white; padding: 32px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 16px;">';
+    
+    var titreRapport = isGlobal ? 'RAPPORT DE PERFORMANCE GLOBAL' : 'RAPPORT DE PERFORMANCE - ' + (serviceRapport || 'SERVICE');
+    html += '<h1 style="text-align: center; color: #2563eb; margin-bottom: 24px;">' + titreRapport + '</h1>';
+    html += '<p style="text-align: center; color: #6b7280; margin-bottom: 32px;">Année 2026</p>';
+    
+    // SECTION 1 : CONTEXTE
+    html += '<h2 style="color: #2563eb; margin-top: 32px;">1. Éléments de contexte</h2>';    
+    var contexteKey = 'contexte_' + (serviceRapport || 'global');
+    var contexteValue = rapportTextes[contexteKey] || '';
+    
+    html += '<textarea id="contexte-text" class="form-control" rows="4" style="margin-top: 16px;" placeholder="Saisissez les éléments de contexte..." onchange="sauvegarderTexteRapport(\'' + contexteKey + '\', this.value)">' + contexteValue + '</textarea>';
+    
+    // SECTION 2 : BILAN DES RÉALISATIONS DES OBJECTIFS 
+    html += '<h2 style="color: #2563eb; margin-top: 32px;">2. Bilan des réalisations des objectifs</h2>';
+    
+    var rappelKey = 'rappel_' + (serviceRapport || 'global');
+    var rappelValue = rapportTextes[rappelKey] || '';
+    
+    html += '<h3 style="margin-top: 16px; color: #4b5563;">Rappel des actions programmées</h3>';
+    html += '<textarea id="rappel-text" class="form-control" rows="3" style="margin-top: 8px;" placeholder="Rappel..." onchange="sauvegarderTexteRapport(\'' + rappelKey + '\', this.value)">' + rappelValue + '</textarea>';
+    
+    // TABLEAU 1
+    html += '<h3 style="margin-top: 24px; color: #4b5563;">Tableau 1 : Taux par objectif</h3>';
+    
+    var statsObjectifs = calculerStatsObjectifs(serviceRapport);
+    var totalPlanifieesObj = 0;
+    var totalRealiseesObj = 0;
+    
+    html += '<table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px;"><thead class="blue"><tr>';
+    html += '<th style="border: 1px solid #e5e7eb; padding: 12px;">Objectifs</th>';
+    html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Planifiées</th>';
+    html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Réalisées</th>';
+    html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Taux</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        var stat = statsObjectifs[i];
+        totalPlanifieesObj += stat.planifiees;
+        totalRealiseesObj += stat.realisees;
+        
+        html += '<tr>';
+        html += '<td style="border: 1px solid #e5e7eb; padding: 10px;">' + stat.objectif + '</td>';
+        html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + stat.planifiees + '</td>';
+        html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + stat.realisees + '</td>';
+        html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center; font-weight: bold;">' + stat.taux + '%</td>';
+        html += '</tr>';
+    }
+    
+    var tauxTotalObj = totalPlanifieesObj > 0 ? Math.round((totalRealiseesObj / totalPlanifieesObj) * 100) : 0;
+    html += '<tr style="background-color: #f3f4f6; font-weight: bold;">';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px;">Total</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + totalPlanifieesObj + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + totalRealiseesObj + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + tauxTotalObj + '%</td>';
+    html += '</tr>';
+    html += '</tbody></table>';
+    
+// GRAPHIQUE 1
+html += '<h3 style="margin-top: 24px; color: #4b5563;">Graphique 1 : Taux par objectif</h3>';
+html += '<div style="margin-top: 16px; padding: 20px; background-color: #f9fafb; border-radius: 8px;">';
+
+// Couleurs fixes pour chaque barre
+var couleursGraph1 = ['#87CEEB', '#C6F4D6', '#F7DC6F']; // Bleu ciel, Vert clair, Jaune doux
+
+for (var i = 0; i < statsObjectifs.length; i++) {
+    var stat = statsObjectifs[i];
+    var barColor = couleursGraph1[i];
+    html += '<div style="margin-bottom: 16px;">';
+    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 13px; font-weight: 600;">' + stat.objectif + '</span><span style="font-size: 13px; font-weight: bold; color: ' + barColor + ';">' + stat.taux + '%</span></div>';
+    html += '<div style="width: 100%; height: 24px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden;">';
+    html += '<div style="width: ' + stat.taux + '%; height: 100%; background-color: ' + barColor + ';"></div>';
+    html += '</div></div>';
+}
+
+// BARRE TOTAL (séparée visuellement)
+var barColorTotalGraph1 = '#f59e0b'; // Ambré
+html += '<div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #cbd5e1;">';
+html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 14px; font-weight: bold;">TOTAL</span><span style="font-size: 14px; font-weight: bold; color: ' + barColorTotalGraph1 + ';">' + tauxTotalObj + '%</span></div>';
+html += '<div style="width: 100%; height: 28px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden;">';
+html += '<div style="width: ' + tauxTotalObj + '%; height: 100%; background-color: ' + barColorTotalGraph1 + ';"></div>';
+html += '</div></div>';
+
+html += '</div>';
+    
+// LISTES DES ACTIVITÉS PAR OBJECTIF
+    var objectifsList = ['Objectifs Généraux', 'Objectifs de Réforme', 'Objectifs Spécifiques'];
+    
+    for (var j = 0; j < objectifsList.length; j++) {
+        var objNom = objectifsList[j];
+        var activitesObj = getActivitesRealisees(serviceRapport, objNom);
+        
+        html += '<h3 style="margin-top: 32px; color: #2563eb; font-size: 18px;">' + objNom + '</h3>';
+        
+        if (activitesObj.length > 0) {
+            html += '<ul style="list-style-type: disc; margin-left: 24px; margin-top: 12px;">';
+            
+            for (var k = 0; k < activitesObj.length; k++) {
+                var act = activitesObj[k];
+                html += '<li style="margin-bottom: 16px; line-height: 1.6;">';
+                html += '<strong>' + act.activite + '</strong>';
+                
+                var commentaire = getCommentaireForActivite(act.activite, act.service);
+                if (commentaire) {
+html += '<div style="margin-top: 8px; padding: 8px 12px; background-color: #f3f4f6; font-size: 13px; color: #4b5563; font-style: italic; text-align: justify;">';
+html += commentaire;
+html += '</div>';
+                }
+                
+                html += '</li>';
+            }
+            
+            html += '</ul>';
+        } else {
+            html += '<p style="margin-top: 12px; color: #6b7280; font-style: italic;">Aucune activité réalisée à 100%.</p>';
+        }
+    }
+    
+    // SECTION 3 : BILAN DES D’EXECUTION DES DÉCISIONS
+    html += '<h2 style="color: #2563eb; margin-top: 40px;">3. Bilan d’exécution des Décisions du PR et des CM</h2>';    
+    var rappelDecKey = 'rappelDec_' + (serviceRapport || 'global');
+    var rappelDecValue = rapportTextes[rappelDecKey] || '';
+    
+    html += '<h3 style="margin-top: 16px; color: #4b5563;">Rappel des décisions</h3>';
+    html += '<textarea id="rappelDec-text" class="form-control" rows="3" style="margin-top: 8px;" placeholder="Rappel des décisions..." onchange="sauvegarderTexteRapport(\'' + rappelDecKey + '\', this.value)">' + rappelDecValue + '</textarea>';
+    
+    // TABLEAU 2
+html += '<h3 style="margin-top: 24px; color: #4b5563;">Tableau 2 : Taux par décision</h3>';
+var statsDecisions = calculerStatsDecisions(serviceRapport);
+
+// Calculer le total des décisions
+var totalPlanifieesDec2 = 0;
+var totalRealiseesDec2 = 0;
+for (var i = 0; i < statsDecisions.length; i++) {
+    totalPlanifieesDec2 += statsDecisions[i].planifiees;
+    totalRealiseesDec2 += statsDecisions[i].realisees;
+}
+var tauxTotalDec2 = totalPlanifieesDec2 > 0 ? Math.round((totalRealiseesDec2 / totalPlanifieesDec2) * 100) : 0;
+
+html += '<table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px;"><thead class="blue"><tr>';
+html += '<th style="border: 1px solid #e5e7eb; padding: 12px;">Décisions</th>';
+html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Planifiées</th>';
+html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Réalisées</th>';
+html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Taux</th>';
+html += '</tr></thead><tbody>';
+
+for (var i = 0; i < statsDecisions.length; i++) {
+    var stat = statsDecisions[i];
+    html += '<tr>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px;">' + stat.decision + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + stat.planifiees + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + stat.realisees + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center; font-weight: bold;">' + stat.taux + '%</td>';
+    html += '</tr>';
+}
+
+// LIGNE TOTAL
+html += '<tr style="background-color: #f3f4f6; font-weight: bold;">';
+html += '<td style="border: 1px solid #e5e7eb; padding: 10px;">Total</td>';
+html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + totalPlanifieesDec2 + '</td>';
+html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + totalRealiseesDec2 + '</td>';
+html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + tauxTotalDec2 + '%</td>';
+html += '</tr>';
+
+html += '</tbody></table>';
+    
+// GRAPHIQUE 2
+html += '<h3 style="margin-top: 24px; color: #4b5563;">Graphique 2 : Taux par décision</h3>';
+html += '<div style="margin-top: 16px; padding: 20px; background-color: #f9fafb; border-radius: 8px;">';
+
+// Couleurs fixes
+var couleursGraph2 = ['#87CEEB', '#C6F4D6']; // Bleu ciel, Vert clair
+
+for (var i = 0; i < statsDecisions.length; i++) {
+    var stat = statsDecisions[i];
+    var barColor = couleursGraph2[i];
+    html += '<div style="margin-bottom: 16px;">';
+    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 13px; font-weight: 600;">' + stat.decision + '</span><span style="font-size: 13px; font-weight: bold; color: ' + barColor + ';">' + stat.taux + '%</span></div>';
+    html += '<div style="width: 100%; height: 24px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden;">';
+    html += '<div style="width: ' + stat.taux + '%; height: 100%; background-color: ' + barColor + ';"></div>';
+    html += '</div></div>';
+}
+
+// BARRE TOTAL (séparée visuellement)
+var barColorTotal = '#f59e0b'; // Ambré (identique au graphique 3)
+html += '<div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #cbd5e1;">';
+html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 14px; font-weight: bold;">TOTAL</span><span style="font-size: 14px; font-weight: bold; color: ' + barColorTotal + ';">' + tauxTotalDec2 + '%</span></div>';
+html += '<div style="width: 100%; height: 28px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden;">';
+html += '<div style="width: ' + tauxTotalDec2 + '%; height: 100%; background-color: ' + barColorTotal + ';"></div>';
+html += '</div></div>';
+
+html += '</div>';
+    
+    // LISTES DES DÉCISIONS
+    var decisionsPR = getActivitesRealisees(serviceRapport, 'Décisions du PR');
+    var decisionsCM = getActivitesRealisees(serviceRapport, 'Décisions du CM');
+    
+    html += '<h3 style="margin-top: 24px; color: #2563eb; font-size: 18px;">Décisions du PR</h3>';
+    if (decisionsPR.length > 0) {
+        html += '<ul style="list-style-type: disc; margin-left: 24px; margin-top: 12px;">';
+        for (var k = 0; k < decisionsPR.length; k++) {
+            var act = decisionsPR[k];
+            html += '<li style="margin-bottom: 16px; line-height: 1.6;"><strong>' + act.activite + '</strong>';
+            var commentaire = getCommentaireForActivite(act.activite, act.service);
+            if (commentaire) {
+html += '<div style="margin-top: 8px; padding: 8px 12px; background-color: #f3f4f6; font-size: 13px; color: #4b5563; font-style: italic; text-align: justify;">' + commentaire + '</div>';
+            }
+            html += '</li>';
+        }
+        html += '</ul>';
+    } else {
+        html += '<p style="margin-top: 12px; color: #6b7280; font-style: italic;">Aucune activité réalisée.</p>';
+    }
+    
+    html += '<h3 style="margin-top: 24px; color: #2563eb; font-size: 18px;">Décisions du CM</h3>';
+    if (decisionsCM.length > 0) {
+        html += '<ul style="list-style-type: disc; margin-left: 24px; margin-top: 12px;">';
+        for (var k = 0; k < decisionsCM.length; k++) {
+            var act = decisionsCM[k];
+            html += '<li style="margin-bottom: 16px; line-height: 1.6;"><strong>' + act.activite + '</strong>';
+            var commentaire = getCommentaireForActivite(act.activite, act.service);
+            if (commentaire) {
+html += '<div style="margin-top: 8px; padding: 8px 12px; background-color: #f3f4f6; font-size: 13px; color: #4b5563; font-style: italic; text-align: justify;">' + commentaire + '</div>';
+
+            }
+            html += '</li>';
+        }
+        html += '</ul>';
+    } else {
+        html += '<p style="margin-top: 12px; color: #6b7280; font-style: italic;">Aucune activité réalisée.</p>';
+    }
+    
+    // SECTION 4 : DIFFICULTÉS ET SOLUTIONS
+// TABLEAU 3 : VUE GLOBALE
+    html += '<h3 style="margin-top: 32px; color: #4b5563;">Tableau 3 : Vue globale</h3>';
+    
+    var totalPlanifieesDec = 0;
+    var totalRealiseesDec = 0;
+    
+    for (var i = 0; i < statsDecisions.length; i++) {
+        totalPlanifieesDec += statsDecisions[i].planifiees;
+        totalRealiseesDec += statsDecisions[i].realisees;
+    }
+    
+    html += '<table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px;"><thead class="blue"><tr>';
+    html += '<th style="border: 1px solid #e5e7eb; padding: 12px;">Catégories</th>';
+    html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Planifiées</th>';
+    html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Réalisées</th>';
+    html += '<th style="border: 1px solid #e5e7eb; padding: 12px; text-align: center;">Taux</th>';
+    html += '</tr></thead><tbody>';
+    
+    // LIGNES DES OBJECTIFS
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        var stat = statsObjectifs[i];
+        html += '<tr>';
+        html += '<td style="border: 1px solid #e5e7eb; padding: 10px;">' + stat.objectif + '</td>';
+        html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + stat.planifiees + '</td>';
+        html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + stat.realisees + '</td>';
+        html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center; font-weight: bold;">' + stat.taux + '%</td>';
+        html += '</tr>';
+    }
+    
+    // LIGNES DES DÉCISIONS
+    html += '<tr>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px;">Décisions du PR</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + statsDecisions[0].planifiees + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + statsDecisions[0].realisees + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center; font-weight: bold;">' + statsDecisions[0].taux + '%</td>';
+    html += '</tr>';
+    
+    html += '<tr>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px;">Décisions du CM</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + statsDecisions[1].planifiees + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + statsDecisions[1].realisees + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center; font-weight: bold;">' + statsDecisions[1].taux + '%</td>';
+    html += '</tr>';
+    
+    // LIGNE TOTALE
+    html += '<tr style="background-color: #f3f4f6; font-weight: bold;">';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px;">Total</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + (totalPlanifieesObj + totalPlanifieesDec) + '</td>';
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + (totalRealiseesObj + totalRealiseesDec) + '</td>';
+    var tauxGlobalTotal = (totalPlanifieesObj + totalPlanifieesDec) > 0 ? Math.round(((totalRealiseesObj + totalRealiseesDec) / (totalPlanifieesObj + totalPlanifieesDec)) * 100) : 0;
+    html += '<td style="border: 1px solid #e5e7eb; padding: 10px; text-align: center;">' + tauxGlobalTotal + '%</td>';
+    html += '</tr>';
+    html += '</tbody></table>';
+    
+    // GRAPHIQUE 3 : BARRES VERTICALES
+    html += '<h3 style="margin-top: 24px; color: #4b5563;">Graphique 3 : Taux de réalisation par catégorie</h3>';
+    
+    html += '<div style="margin-top: 16px; padding: 20px; background-color: #f9fafb; border-radius: 8px;">';
+    
+    html += '<div style="display: flex; align-items: flex-end; justify-content: space-around; height: 300px; border-bottom: 2px solid #cbd5e1; padding: 0 20px;">';
+    
+// Barres pour les 3 objectifs
+var couleursGraph3Obj = ['#87CEEB', '#C6F4D6', '#F7DC6F']; // Bleu ciel, Vert clair, Jaune doux
+
+for (var i = 0; i < statsObjectifs.length; i++) {
+    var stat = statsObjectifs[i];
+    var barColor = couleursGraph3Obj[i];
+    var hauteur = stat.taux * 2.5;
+        
+        html += '<div style="display: flex; flex-direction: column; align-items: center; width: 80px;">';
+        html += '<div style="font-weight: bold; font-size: 16px; color: ' + barColor + '; margin-bottom: 8px;">' + stat.taux + '%</div>';
+        html += '<div style="width: 60px; height: ' + hauteur + 'px; background-color: ' + barColor + '; border-radius: 4px 4px 0 0;"></div>';
+        html += '</div>';
+    }
+    
+    // Barres pour les 2 décisions
+var couleursGraph3Dec = ['#FFC5C5', '#AFEEEE']; // Rose pastel, Turquoise clair
+
+for (var i = 0; i < statsDecisions.length; i++) {
+    var stat = statsDecisions[i];
+    var barColor = couleursGraph3Dec[i];
+    var hauteur = stat.taux * 2.5;
+        
+        html += '<div style="display: flex; flex-direction: column; align-items: center; width: 80px;">';
+        html += '<div style="font-weight: bold; font-size: 16px; color: ' + barColor + '; margin-bottom: 8px;">' + stat.taux + '%</div>';
+        html += '<div style="width: 60px; height: ' + hauteur + 'px; background-color: ' + barColor + '; border-radius: 4px 4px 0 0;"></div>';
+        html += '</div>';
+    }
+    
+    // Barre TOTAL (plus large et dorée)
+    var barColorGlobal = '#f59e0b';
+    var hauteurGlobal = tauxGlobalTotal * 2.5;
+    html += '<div style="display: flex; flex-direction: column; align-items: center; width: 100px; margin-left: 20px; padding-left: 20px; border-left: 2px solid #cbd5e1;">';
+    html += '<div style="font-weight: bold; font-size: 18px; color: ' + barColorGlobal + '; margin-bottom: 8px;">' + tauxGlobalTotal + '%</div>';
+    html += '<div style="width: 80px; height: ' + hauteurGlobal + 'px; background-color: ' + barColorGlobal + '; border-radius: 4px 4px 0 0;"></div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // LÉGENDES SOUS LES BARRES
+    html += '<div style="display: flex; align-items: center; justify-content: space-around; margin-top: 16px; padding: 0 20px;">';
+    
+    for (var i = 0; i < statsObjectifs.length; i++) {
+        var stat = statsObjectifs[i];
+        var nomCourt = stat.objectif.replace('Objectifs ', 'Obj. ');
+        html += '<div style="width: 80px; text-align: center; font-size: 11px; font-weight: 600; color: #4b5563;">' + nomCourt + '</div>';
+    }
+    
+    for (var i = 0; i < statsDecisions.length; i++) {
+        var stat = statsDecisions[i];
+        var nomCourt = stat.decision.replace('Décisions ', 'Déc. ');
+        html += '<div style="width: 80px; text-align: center; font-size: 11px; font-weight: 600; color: #4b5563;">' + nomCourt + '</div>';
+    }
+    
+    html += '<div style="width: 100px; text-align: center; font-size: 12px; font-weight: bold; color: #1e293b; margin-left: 20px; padding-left: 20px; border-left: 2px solid #cbd5e1;">TOTAL GLOBAL</div>';
+    
+    html += '</div>';
+    
+    // RÉSUMÉ
+    html += '<div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #cbd5e1; display: flex; justify-content: center; gap: 40px; font-size: 13px; color: #6b7280;">';
+    html += '<span><strong>Total Planifiées:</strong> ' + (totalPlanifieesObj + totalPlanifieesDec) + '</span>';
+    html += '<span><strong>Total Réalisées:</strong> ' + (totalRealiseesObj + totalRealiseesDec) + '</span>';
+    html += '<span style="color: ' + barColorGlobal + '; font-weight: bold;">Taux Global: ' + tauxGlobalTotal + '%</span>';
+    html += '</div>';
+    
+    html += '</div>';
+
+html += '<h2 style="color: #2563eb; margin-top: 40px;">4. Difficultés et Solutions</h2>';    
+    var diffKey = 'difficultes_' + (serviceRapport || 'global');
+    var diffValue = rapportTextes[diffKey] || '';
+    
+    html += '<h3 style="margin-top: 16px; color: #4b5563;">4.1 Difficultés</h3>';
+    html += '<textarea id="difficultes-text" class="form-control" rows="5" style="margin-top: 8px;" placeholder="Décrivez les difficultés..." onchange="sauvegarderTexteRapport(\'' + diffKey + '\', this.value)">' + diffValue + '</textarea>';
+    
+    var pistesKey = 'pistes_' + (serviceRapport || 'global');
+    var pistesValue = rapportTextes[pistesKey] || '';
+    
+    html += '<h3 style="margin-top: 24px; color: #4b5563;">4.2 Pistes de Solutions</h3>';
+    html += '<textarea id="pistes-text" class="form-control" rows="5" style="margin-top: 8px;" placeholder="Proposez des solutions..." onchange="sauvegarderTexteRapport(\'' + pistesKey + '\', this.value)">' + pistesValue + '</textarea>';
+    
+    html += '</div>'; // Fermeture rapport-content
+}
+
+            // ========== ONGLET 7 : ADMINISTRATION (À COMPLÉTER) ==========
+if (activeTab === 'admin') {
+    html += '<h2 style="margin-bottom: 16px;">⚙️ Administration</h2>';
+    
+    html += '<div class="cards" style="margin-top: 24px;">';
+    
+    html += '<div class="card card-blue" style="cursor: pointer;" onclick="showUserList()"><div class="card-title" style="color: #2563eb;">👥 Gestion des Comptes</div><div style="font-size: 14px; margin-top: 8px;">Créer, modifier, supprimer</div></div>';
+    
+    html += '<div class="card card-green" style="cursor: pointer;" onclick="showConnectedUsers()"><div class="card-title" style="color: #059669;">🟢 Utilisateurs Connectés</div><div class="card-value" style="font-size: 24px; margin-top: 8px;">' + connectedUsers.length + '</div></div>';
+    
+    html += '<div class="card card-orange" style="cursor: pointer;"><div class="card-title" style="color: #ea580c;">📊 Statistiques</div><div style="font-size: 14px; margin-top: 8px;">Total: ' + users.length + ' comptes</div></div>';
+    
+html += '<div class="card" style="cursor: pointer; background-color: #f3e8ff; border-color: #7c3aed;" onclick="showPermissions()"><div class="card-title" style="color: #7c3aed;">🔒 Sécurité</div><div style="font-size: 14px; margin-top: 8px;">Gestion des accès</div></div>';
+    
+    html += '</div>';
+    
+    // TABLEAU DES UTILISATEURS
+    html += '<h3 style="margin-top: 32px; margin-bottom: 16px;">Liste des Utilisateurs</h3>';
+    html += '<div class="table-container"><table><thead class="blue"><tr><th>Utilisateur</th><th>Nom</th><th>Service</th><th>Rôle</th><th>Statut</th><th>Dernière connexion</th></tr></thead><tbody>';
+    
+    var usersByRole = {admin: [], chefdept: [], chef: []};
+    for (var i = 0; i < users.length; i++) {
+        usersByRole[users[i].role].push(users[i]);
+    }
+    
+    // Admin en premier
+    for (var i = 0; i < usersByRole.admin.length; i++) {
+        var u = usersByRole.admin[i];
+        html += '<tr>';
+        html += '<td><strong>' + u.user + '</strong></td>';
+        html += '<td>' + u.nom + '</td>';
+        html += '<td><span class="badge badge-purple">' + u.service + '</span></td>';
+        html += '<td><span class="badge" style="background-color: #dc2626; color: white;">Admin</span></td>';
+        html += '<td><span class="badge badge-green" style="color: #065f46;">Actif</span></td>';
+        html += '<td style="font-size: 12px; color: #6b7280;">-</td>';
+        html += '</tr>';
+    }
+    
+    // Chef département
+    for (var i = 0; i < usersByRole.chefdept.length; i++) {
+        var u = usersByRole.chefdept[i];
+        html += '<tr>';
+        html += '<td>' + u.user + '</td>';
+        html += '<td>' + u.nom + '</td>';
+        html += '<td><span class="badge badge-purple">' + u.service + '</span></td>';
+        html += '<td><span class="badge" style="background-color: #d97706; color: white;">Chef Dép.</span></td>';
+        html += '<td>';
+        if (u.actif) html += '<span class="badge badge-green" style="color: #065f46;">Actif</span>';
+        else html += '<span class="badge" style="background-color: #fee2e2; color: #991b1b;">Désactivé</span>';
+        html += '</td>';
+        
+        var connected = false;
+        for (var j = 0; j < connectedUsers.length; j++) {
+            if (connectedUsers[j].user === u.user) {
+                html += '<td style="font-size: 12px; color: #059669;">' + connectedUsers[j].connectedAt + '</td>';
+                connected = true;
+                break;
+            }
+        }
+        if (!connected) html += '<td style="font-size: 12px; color: #6b7280;">-</td>';
+        html += '</tr>';
+    }
+    
+    // Chefs de service
+    for (var i = 0; i < usersByRole.chef.length; i++) {
+        var u = usersByRole.chef[i];
+        html += '<tr>';
+        html += '<td>' + u.user + '</td>';
+        html += '<td>' + u.nom + '</td>';
+        html += '<td><span class="badge badge-purple">' + u.service + '</span></td>';
+        html += '<td><span class="badge" style="background-color: #059669; color: white;">Chef</span></td>';
+        html += '<td>';
+        if (u.actif) html += '<span class="badge badge-green" style="color: #065f46;">Actif</span>';
+        else html += '<span class="badge" style="background-color: #fee2e2; color: #991b1b;">Désactivé</span>';
+        html += '</td>';
+        
+        var connected = false;
+        for (var j = 0; j < connectedUsers.length; j++) {
+            if (connectedUsers[j].user === u.user) {
+                html += '<td style="font-size: 12px; color: #059669;">' + connectedUsers[j].connectedAt + '</td>';
+                connected = true;
+                break;
+            }
+        }
+        if (!connected) html += '<td style="font-size: 12px; color: #6b7280;">-</td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // STATISTIQUES
+    html += '<h3 style="margin-top: 32px; margin-bottom: 16px;">Statistiques d\'Utilisation</h3>';
+    html += '<div class="cards" style="grid-template-columns: repeat(3, 1fr);">';
+    
+    var activeCount = 0;
+    var inactiveCount = 0;
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].actif) activeCount++;
+        else inactiveCount++;
+    }
+    
+    html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Total Comptes</div><div class="card-value">' + users.length + '</div></div>';
+    html += '<div class="card card-green"><div class="card-title" style="color: #059669;">Comptes Actifs</div><div class="card-value">' + activeCount + '</div></div>';
+    html += '<div class="card card-orange"><div class="card-title" style="color: #ea580c;">Comptes Désactivés</div><div class="card-value">' + inactiveCount + '</div></div>';
+    
+    html += '</div>';
+}
+
+            html += '</div><div id="modal-container"></div>';
+            app.innerHTML = html;
+        }
+
+        // ========== INITIALISATION ==========
+async function init() {
+    await loadData();
+    
+    var saved = localStorage.getItem('currentUser');
+    if (saved) {
+        currentUser = JSON.parse(saved);
+        await loadRapportTextes();
+        
+        var alreadyConnected = false;
+        for (var i = 0; i < connectedUsers.length; i++) {
+            if (connectedUsers[i].user === currentUser.user) {
+                alreadyConnected = true;
+                break;
+            }
+        }
+        if (!alreadyConnected) {
+            connectedUsers.push({
+                user: currentUser.user,
+                nom: currentUser.nom,
+                service: currentUser.service,
+                connectedAt: new Date().toLocaleString('fr-FR')
+            });
+            localStorage.setItem('connectedUsers', JSON.stringify(connectedUsers));
+        }
+    }
+    
+    render();
+}
+
+// Lancer l'initialisation
+init();
+    </script>
+</body>
+</html>
