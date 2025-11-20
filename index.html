@@ -580,7 +580,6 @@ async function submitSignupWithInvitation() {
                 service: invitationData.username.split('.')[0],
                 actif: true,
                 email: email,
-                password_changed: true
             });
         
         if (insertError) throw insertError;
@@ -2784,6 +2783,7 @@ async function init() {
     </script>
 </body>
 </html>
+
 
 
 
