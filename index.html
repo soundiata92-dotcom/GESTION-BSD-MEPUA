@@ -821,13 +821,8 @@ async function submitSignupWithInvitation() {
                 return;
             }
 
-            var maxId = 0;
-            for (var i = 0; i < data.length; i++) {
-                if (data[i].id > maxId) maxId = data[i].id;
-            }
-
-            var newActivity = {
-                id: maxId + 1,
+            // NE PAS spécifier l'ID - laisser Supabase le générer automatiquement
+var newActivity = {
                 categorie: document.getElementById('new-categorie').value,
                 activite: activite,
                 service: document.getElementById('new-service').value,
@@ -2784,6 +2779,7 @@ async function init() {
 </body>
 </html>
     
+
 
 
 
