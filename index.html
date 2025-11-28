@@ -193,41 +193,11 @@ var users = [];
         }
 
         async function saveData() {
-            try {
-                // Supprimer toutes les activités existantes
-                await supabase.from('activites').delete().neq('id', 0);
-                
-                // Insérer les nouvelles données
-                const activitesToSave = data.map(d => ({
-                    id: d.id,
-                    categorie: d.categorie,
-                    activite: d.activite,
-                    service: d.service,
-                    t1: d.t1 || false,
-                    t2: d.t2 || false,
-                    t3: d.t3 || false,
-                    t4: d.t4 || false,
-                    tdr: d.tdr || false,
-                    eng: d.eng || false,
-                    mand: d.mand || false,
-                    ordo: d.ordo || false,
-                    liq: d.liq || false,
-                    exec: d.exec || false,
-                    valide: d.valide || false,
-                    valide_par: d.validePar || null,
-                    date_validation: d.dateValidation || null,
-                    derniere_maj: d.derniereMaj || null,
-                    maj_par: d.majPar || null
-                }));
-                
-                if (activitesToSave.length > 0) {
-                    const { error } = await supabase.from('activites').insert(activitesToSave);
-                    if (error) throw error;
-                }
-            } catch (error) {
-                console.error('Erreur saveData:', error);
-            }
-        }
+    // CETTE FONCTION NE DEVRAIT PLUS ÊTRE UTILISÉE
+    // Les mises à jour se font directement dans toggle(), validateActivity(), etc.
+    console.warn('⚠️ saveData() appelée - cette fonction est obsolète');
+}
+
 
         async function saveCommentairesEtPreuves() {
             try {
@@ -747,49 +717,80 @@ async function submitSignupWithInvitation() {
 }
 
 
-        async function validateActivity(activityId) {
-            if (!canValidate()) {
-                alert('Seul l\'administrateur peut valider');
-                return;
-            }
-            if (confirm('Valider cette activité?')) {
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].id === activityId) {
-                        data[i].valide = true;
-                        data[i].validePar = currentUser.nom;
-                        data[i].dateValidation = new Date().toLocaleString('fr-FR');
-                        break;
-                    }
-                }
-                await saveData();
-                render();
-            }
-        }
-
-        async function deleteActivity(activityId) {
-            var activity = null;
+       async function validateActivity(activityId) {
+    if (!canValidate()) {
+        alert('Seul l\'administrateur peut valider');
+        return;
+    }
+    if (confirm('Valider cette activité?')) {
+        try {
+            const { error } = await supabase
+                .from('activites')
+                .update({
+                    valide: true,
+                    valide_par: currentUser.nom,
+                    date_validation: new Date().toISOString()
+                })
+                .eq('id', activityId);
+            
+            if (error) throw error;
+            
+            // Mettre à jour localement
             for (var i = 0; i < data.length; i++) {
                 if (data[i].id === activityId) {
-                    activity = data[i];
+                    data[i].valide = true;
+                    data[i].valide_par = currentUser.nom;
+                    data[i].date_validation = new Date().toISOString();
                     break;
                 }
             }
             
-            if (!canDeleteInPlanning(activity)) {
-                alert('Vous ne pouvez pas supprimer cette activité');
-                return;
-            }
-
-            if (confirm('Supprimer cette activité?')) {
-                var newData = [];
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].id !== activityId) newData.push(data[i]);
-                }
-                data = newData;
-                await saveData();
-                render();
-            }
+            render();
+        } catch (error) {
+            console.error('Erreur validation:', error);
+            alert('❌ Erreur lors de la validation');
         }
+    }
+}
+
+        async function deleteActivity(activityId) {
+    var activity = null;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === activityId) {
+            activity = data[i];
+            break;
+        }
+    }
+    
+    if (!canDeleteInPlanning(activity)) {
+        alert('Vous ne pouvez pas supprimer cette activité');
+        return;
+    }
+
+    if (confirm('Supprimer cette activité?')) {
+        try {
+            const { error } = await supabase
+                .from('activites')
+                .delete()
+                .eq('id', activityId);
+            
+            if (error) throw error;
+            
+            // Mettre à jour localement
+            var newData = [];
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].id !== activityId) newData.push(data[i]);
+            }
+            data = newData;
+            
+            render();
+        } catch (error) {
+            console.error('Erreur suppression:', error);
+            alert('❌ Erreur lors de la suppression');
+        }
+    }
+}
+
 
         function showAddModal() {
             var modalContainer = document.getElementById('modal-container');
@@ -2798,6 +2799,7 @@ async function init() {
 </body>
 </html>
     
+
 
 
 
