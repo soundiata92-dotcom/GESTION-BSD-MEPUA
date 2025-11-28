@@ -702,31 +702,50 @@ async function submitSignupWithInvitation() {
         }
 
         async function toggle(activityId, field) {
-            var activity = null;
-            for (var i = 0; i < data.length; i++) {
-                if (data[i].id === activityId) {
-                    activity = data[i];
-                    break;
-                }
-            }
-            
-            if (!activity || !canModify(activity)) {
-                alert('Vous ne pouvez pas modifier');
-                return;
-            }
-
-            for (var i = 0; i < data.length; i++) {
-                if (data[i].id === activityId) {
-                    data[i][field] = !data[i][field];
-                    data[i].derniereMaj = new Date().toLocaleString('fr-FR');
-                    data[i].majPar = currentUser.nom;
-                    break;
-                }
-            }
-            
-            await saveData();
-            render();
+    var activity = null;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === activityId) {
+            activity = data[i];
+            break;
         }
+    }
+    
+    if (!activity || !canModify(activity)) {
+        alert('Vous ne pouvez pas modifier');
+        return;
+    }
+
+    // Mettre à jour localement
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === activityId) {
+            data[i][field] = !data[i][field];
+            data[i].derniere_maj = new Date().toISOString();
+            data[i].maj_par = currentUser.nom;
+            break;
+        }
+    }
+    
+    // Mettre à jour DIRECTEMENT dans Supabase (sans saveData())
+    try {
+        var updateObj = {};
+        updateObj[field] = activity[field] ? false : true; // Inverser
+        updateObj.derniere_maj = new Date().toISOString();
+        updateObj.maj_par = currentUser.nom;
+        
+        const { error } = await supabase
+            .from('activites')
+            .update(updateObj)
+            .eq('id', activityId);
+        
+        if (error) throw error;
+        
+        render();
+    } catch (error) {
+        console.error('Erreur toggle:', error);
+        alert('❌ Erreur lors de la mise à jour');
+    }
+}
+
 
         async function validateActivity(activityId) {
             if (!canValidate()) {
@@ -803,37 +822,48 @@ async function submitSignupWithInvitation() {
         }
 
         async function submitNewActivity() {
-            var activite = document.getElementById('new-activite').value.trim();
-            
-            if (!activite) {
-                alert('Veuillez remplir l\'activité');
-                return;
-            }
+    var activite = document.getElementById('new-activite').value.trim();
+    
+    if (!activite) {
+        alert('Veuillez remplir l\'activité');
+        return;
+    }
 
-            // NE PAS spécifier l'ID - laisser Supabase le générer automatiquement
-var newActivity = {
-                categorie: document.getElementById('new-categorie').value,
-                activite: activite,
-                service: document.getElementById('new-service').value,
-                t1: false, t2: false, t3: false, t4: false,
-                tdr: false, eng: false, mand: false, ordo: false, liq: false, exec: false,
-                valide: false
-            };
-            
-            data.push(newActivity);
-            await saveData();    
-            closeModal();
-            render();
+    var newActivity = {
+        categorie: document.getElementById('new-categorie').value,
+        activite: activite,
+        service: document.getElementById('new-service').value,
+        t1: false, t2: false, t3: false, t4: false,
+        tdr: false, eng: false, mand: false, ordo: false, liq: false, exec: false,
+        valide: false,
+        valide_par: null,
+        date_validation: null,
+        derniere_maj: new Date().toISOString(),
+        maj_par: currentUser.nom
+    };
+    
+    // Insérer DIRECTEMENT dans Supabase (ne pas passer par data.push())
+    try {
+        const { data: insertedData, error } = await supabase
+            .from('activites')
+            .insert([newActivity])
+            .select();
+        
+        if (error) throw error;
+        
+        // Ajouter l'activité avec son ID généré au tableau local
+        if (insertedData && insertedData.length > 0) {
+            data.push(insertedData[0]);
         }
-function changeSuiviObjectifFilter(objectif) {
-            suiviObjectifFilter = objectif;
-            render();
-        }
-
-        function changeSuiviTrimestreFilter(trimestre) {
-            suiviTrimestreFilter = trimestre;
-            render();
-        }
+        
+        alert('✅ Activité ajoutée avec succès !');
+        closeModal();
+        render();
+    } catch (error) {
+        console.error('Erreur ajout activité:', error);
+        alert('❌ Erreur lors de l\'ajout de l\'activité');
+    }
+}
 
         function getFilteredDataForSuivi() {
             if (!currentUser) return [];
@@ -2768,6 +2798,7 @@ async function init() {
 </body>
 </html>
     
+
 
 
 
