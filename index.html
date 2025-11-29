@@ -2794,6 +2794,84 @@ if (!currentUser) {
                 
                 html += '</div>';
             }
+// ========== ONGLET 7 : STATISTIQUES ==========
+            if (activeTab === 'statistiques') {
+                html += '<h2 style="margin-bottom: 16px;">📊 Statistiques Éducatives</h2>';
+                
+                // Bouton d'ajout (seulement pour DG du BSD et Admin)
+                if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+                    html += '<div style="margin-bottom: 16px;"><button class="btn btn-success" onclick="showStatistiquesModal()">+ Saisir des statistiques</button></div>';
+                }
+                
+                // Filtres
+                html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+                html += '<h3 style="margin-bottom: 12px;">Filtres</h3>';
+                html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
+                
+                // Filtre Région
+                html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">Région</label><select class="form-control"><option>Toutes</option>';
+                for (var i = 0; i < regionsData.length; i++) {
+                    html += '<option>' + regionsData[i].nom + '</option>';
+                }
+                html += '</select></div>';
+                
+                // Filtre Niveau
+                html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">Niveau</label><select class="form-control"><option>Tous</option><option>Préscolaire</option><option>Primaire</option><option>Secondaire</option></select></div>';
+                
+                // Filtre Genre
+                html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">Genre</label><select class="form-control"><option>Total</option><option>Filles</option><option>Garçons</option></select></div>';
+                
+                html += '</div></div>';
+                
+                // Cartes d'indicateurs
+                html += '<div class="cards" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">';
+                
+                var moyenneAbandon = calculerMoyenne(statistiquesData, 'taux_abandon');
+                var moyenneReussite = calculerMoyenne(statistiquesData, 'taux_reussite_examens');
+                var moyenneScolarisation = calculerMoyenne(statistiquesData, 'taux_scolarisation');
+                var moyenneAlphabetisation = calculerMoyenne(statistiquesData, 'taux_alphabetisation');
+                
+                html += '<div class="card card-orange"><div class="card-title" style="color: #ea580c;">Taux d\'abandon</div><div class="card-value">' + moyenneAbandon + '%</div></div>';
+                html += '<div class="card card-green"><div class="card-title" style="color: #059669;">Taux de réussite</div><div class="card-value">' + moyenneReussite + '%</div></div>';
+                html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
+                html += '<div class="card card-yellow"><div class="card-title" style="color: #d97706;">Taux d\'alphabétisation</div><div class="card-value">' + moyenneAlphabetisation + '%</div></div>';
+                
+                html += '</div>';
+                
+                // Tableau des données
+                html += '<div class="table-container"><table><thead class="blue"><tr><th>Région</th><th>Préfecture</th><th>Niveau</th><th>Genre</th><th>Taux abandon (%)</th><th>Taux réussite (%)</th><th>Taux scolarisation (%)</th>';
+                
+                if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+                    html += '<th style="text-align: center;">Actions</th>';
+                }
+                
+                html += '</tr></thead><tbody>';
+                
+                if (statistiquesData.length > 0) {
+                    for (var i = 0; i < statistiquesData.length; i++) {
+                        var stat = statistiquesData[i];
+                        html += '<tr>';
+                        html += '<td>' + stat.region + '</td>';
+                        html += '<td>' + stat.prefecture + '</td>';
+                        html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
+                        html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
+                        html += '<td>' + (stat.taux_abandon || '-') + '</td>';
+                        html += '<td>' + (stat.taux_reussite_examens || '-') + '</td>';
+                        html += '<td>' + (stat.taux_scolarisation || '-') + '</td>';
+                        
+                        if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+                            html += '<td style="text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + stat.id + ')">Supprimer</button></td>';
+                        }
+                        
+                        html += '</tr>';
+                    }
+                } else {
+                    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '8' : '7';
+                    html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
+                }
+                
+                html += '</tbody></table></div>';
+            }
 
             html += '</div><div id="modal-container"></div>';
             app.innerHTML = html;
@@ -2835,6 +2913,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
