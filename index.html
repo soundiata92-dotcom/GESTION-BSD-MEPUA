@@ -123,6 +123,9 @@ var users = [];
         var connectedUsers = [];
         var rapportTextes = {};
         var initialData = [];
+        var statistiquesData = [];
+        var regionsData = [];
+        var prefecturesData = [];
 
         // ========== FONCTIONS DE STOCKAGE SUPABASE ==========
         async function loadData() {
@@ -185,7 +188,33 @@ var users = [];
                         dateModification: c.date_modification
                     }));
                 }
+             // Charger les régions
+                const { data: regionsDataRaw, error: regionsError } = await supabase
+                    .from('regions')
+                    .select('*')
+                    .order('nom');
                 
+                if (regionsError) throw regionsError;
+                if (regionsDataRaw) regionsData = regionsDataRaw;
+                
+                // Charger les préfectures
+                const { data: prefecturesDataRaw, error: prefecturesError } = await supabase
+                    .from('prefectures')
+                    .select('*, regions(nom)')
+                    .order('nom');
+                
+                if (prefecturesError) throw prefecturesError;
+                if (prefecturesDataRaw) prefecturesData = prefecturesDataRaw;
+                
+                // Charger les statistiques
+                const { data: statistiquesDataRaw, error: statistiquesError } = await supabase
+                    .from('statistiques_educatives')
+                    .select('*')
+                    .order('date_saisie', { ascending: false });
+                
+                if (statistiquesError) throw statistiquesError;
+                if (statistiquesDataRaw) statistiquesData = statistiquesDataRaw;
+   
             } catch (error) {
                 console.error('Erreur lors du chargement:', error);
                 alert('Erreur de connexion à la base de données');
@@ -2799,6 +2828,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
