@@ -1972,46 +1972,62 @@ function calculerMoyenne(data, field) {
 
 function showStatistiquesModal() {
     var modalContainer = document.getElementById('modal-container');
-    var html = '<div class="modal"><div class="modal-content" style="max-width: 900px;"><h2 style="margin-bottom: 24px;">📊 Saisir des statistiques</h2>';
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;"><h2 style="margin-bottom: 24px;">📊 Saisir des statistiques par lot</h2>';
     
+    html += '<div class="alert alert-info">💡 <strong>Mode rapide :</strong> Remplissez une fois pour créer automatiquement toutes les combinaisons souhaitées.</div>';
+    
+    html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
     html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="stat-annee" class="form-control" placeholder="Ex: 2025-2026" value="2025-2026"></div>';
-    
     html += '<div class="form-group"><label>Période *</label><select id="stat-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+    html += '</div>';
     
-    html += '<h3 style="margin-top: 24px; margin-bottom: 12px;">Localisation</h3>';
+    html += '<h3 style="margin-bottom: 12px; color: #2563eb;">🎯 Sélectionner les combinaisons</h3>';
+    html += '<p style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">Sélectionnez "Toutes/Tous" pour créer automatiquement toutes les combinaisons.</p>';
     
-    html += '<div class="form-group"><label>Région *</label><select id="stat-region" class="form-control" onchange="updatePrefecturesDropdown()"><option value="">Sélectionnez...</option>';
+    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">';
+    
+    // Région
+    html += '<div><label style="font-weight: bold;">Région *</label><select id="stat-region" class="form-control" onchange="updatePrefecturesDropdown()"><option value="">Toutes</option>';
     for (var i = 0; i < regionsData.length; i++) {
         html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
     }
     html += '</select></div>';
     
-    html += '<div class="form-group"><label>Préfecture *</label><select id="stat-prefecture" class="form-control"><option value="">Sélectionnez d\'abord une région</option></select></div>';
+    // Préfecture
+    html += '<div><label style="font-weight: bold;">Préfecture *</label><select id="stat-prefecture" class="form-control"><option value="">Toutes</option></select></div>';
+    
+    // Niveau
+    html += '<div><label style="font-weight: bold;">Niveau *</label><select id="stat-niveau" class="form-control"><option value="">Tous</option><option>Préscolaire</option><option>Primaire</option><option>Secondaire</option></select></div>';
+    
+    // Genre
+    html += '<div><label style="font-weight: bold;">Genre *</label><select id="stat-genre" class="form-control"><option value="">Tous</option><option>Filles</option><option>Garçons</option><option>Total</option></select></div>';
+    
+    html += '</div>';
+    
+    html += '<h3 style="margin-top: 24px; margin-bottom: 12px; color: #2563eb;">📊 Données statistiques</h3>';
+    html += '<p style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">Ces valeurs seront appliquées à toutes les combinaisons sélectionnées.</p>';
+    
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
     
     html += '<div class="form-group"><label>Zone *</label><select id="stat-zone" class="form-control"><option>Urbaine</option><option>Rurale</option></select></div>';
     
-    html += '<h3 style="margin-top: 24px; margin-bottom: 12px;">Catégorie</h3>';
+    html += '<div class="form-group"><label>Taux d\'abandon (%)</label><input type="number" step="0.01" id="stat-abandon" class="form-control" min="0" max="100" placeholder="Ex: 12.5"></div>';
+    html += '<div class="form-group"><label>Taux de réussite (%)</label><input type="number" step="0.01" id="stat-reussite" class="form-control" min="0" max="100" placeholder="Ex: 85.3"></div>';
+    html += '<div class="form-group"><label>Taux de scolarisation (%)</label><input type="number" step="0.01" id="stat-scolarisation" class="form-control" min="0" max="100" placeholder="Ex: 78.9"></div>';
+    html += '<div class="form-group"><label>Taux d\'alphabétisation (%)</label><input type="number" step="0.01" id="stat-alphabetisation" class="form-control" min="0" max="100" placeholder="Ex: 65.4"></div>';
+    html += '<div class="form-group"><label>Ratio élèves/enseignant</label><input type="number" step="0.01" id="stat-ratio-enseignant" class="form-control" min="0" placeholder="Ex: 45"></div>';
+    html += '<div class="form-group"><label>Ratio élèves/classe</label><input type="number" step="0.01" id="stat-ratio-classe" class="form-control" min="0" placeholder="Ex: 52"></div>';
+    html += '<div class="form-group"><label>Distance école-domicile (km)</label><input type="number" step="0.01" id="stat-distance" class="form-control" min="0" placeholder="Ex: 3.5"></div>';
     
-    html += '<div class="form-group"><label>Niveau *</label><select id="stat-niveau" class="form-control"><option>Préscolaire</option><option>Primaire</option><option>Secondaire</option></select></div>';
-    
-    html += '<div class="form-group"><label>Genre *</label><select id="stat-genre" class="form-control"><option>Filles</option><option>Garçons</option><option>Total</option></select></div>';
-    
-    html += '<h3 style="margin-top: 24px; margin-bottom: 12px;">Indicateurs (%)</h3>';
-    
-    html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">';
-    html += '<div class="form-group"><label>Taux d\'abandon (%)</label><input type="number" step="0.01" id="stat-abandon" class="form-control" min="0" max="100"></div>';
-    html += '<div class="form-group"><label>Taux de réussite aux examens (%)</label><input type="number" step="0.01" id="stat-reussite" class="form-control" min="0" max="100"></div>';
-    html += '<div class="form-group"><label>Taux de scolarisation (%)</label><input type="number" step="0.01" id="stat-scolarisation" class="form-control" min="0" max="100"></div>';
-    html += '<div class="form-group"><label>Taux d\'alphabétisation (%)</label><input type="number" step="0.01" id="stat-alphabetisation" class="form-control" min="0" max="100"></div>';
-    html += '<div class="form-group"><label>Ratio élèves/enseignant</label><input type="number" step="0.01" id="stat-ratio-enseignant" class="form-control" min="0"></div>';
-    html += '<div class="form-group"><label>Ratio élèves/classe</label><input type="number" step="0.01" id="stat-ratio-classe" class="form-control" min="0"></div>';
-    html += '<div class="form-group"><label>Distance école-domicile (km)</label><input type="number" step="0.01" id="stat-distance" class="form-control" min="0"></div>';
     html += '</div>';
     
-    html += '<div class="btn-group"><button class="btn btn-primary" onclick="submitStatistique()">Enregistrer</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div>';
+    html += '<div class="alert alert-warning" style="margin-top: 16px;">⚠️ <strong>Exemple :</strong> Si vous sélectionnez "Toutes les régions + Tous les niveaux + Tous les genres", vous créerez 8 × 45 × 3 × 3 = <strong>3 240 enregistrements</strong> !</div>';
+    
+    html += '<div class="btn-group" style="margin-top: 24px;"><button class="btn btn-primary" onclick="submitStatistiqueBatch()">📊 Créer les statistiques</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div>';
     html += '</div></div>';
     
     modalContainer.innerHTML = html;
+    updatePrefecturesDropdown();
 }
 
 function updatePrefecturesDropdown() {
@@ -2032,57 +2048,135 @@ function updatePrefecturesDropdown() {
     }
 }
 
-async function submitStatistique() {
+async function submitStatistiqueBatch() {
+    var annee = document.getElementById('stat-annee').value.trim();
+    var periode = document.getElementById('stat-periode').value;
     var regionId = document.getElementById('stat-region').value;
-    var regionNom = '';
-    for (var i = 0; i < regionsData.length; i++) {
-        if (regionsData[i].id == regionId) {
-            regionNom = regionsData[i].nom;
-            break;
+    var prefectureNom = document.getElementById('stat-prefecture').value;
+    var niveau = document.getElementById('stat-niveau').value;
+    var genre = document.getElementById('stat-genre').value;
+    var zone = document.getElementById('stat-zone').value;
+    
+    if (!annee || !periode) {
+        alert('⚠️ Année et période sont obligatoires');
+        return;
+    }
+    
+    // Préparer les listes de combinaisons
+    var regions = [];
+    if (regionId) {
+        // Une seule région sélectionnée
+        for (var i = 0; i < regionsData.length; i++) {
+            if (regionsData[i].id == regionId) {
+                regions.push(regionsData[i]);
+                break;
+            }
+        }
+    } else {
+        // Toutes les régions
+        regions = regionsData;
+    }
+    
+    var prefectures = [];
+    if (prefectureNom) {
+        // Une seule préfecture sélectionnée
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].nom === prefectureNom) {
+                prefectures.push(prefecturesData[i]);
+                break;
+            }
+        }
+    } else {
+        // Toutes les préfectures (sera filtré par région)
+        prefectures = null;
+    }
+    
+    var niveaux = niveau ? [niveau] : ['Préscolaire', 'Primaire', 'Secondaire'];
+    var genres = genre ? [genre] : ['Filles', 'Garçons', 'Total'];
+    
+    var dataToInsert = [];
+    
+    // Générer toutes les combinaisons
+    for (var r = 0; r < regions.length; r++) {
+        var regionData = regions[r];
+        
+        // Déterminer les préfectures pour cette région
+        var prefecturesRegion = [];
+        if (prefectures) {
+            // Une préfecture spécifique sélectionnée
+            prefecturesRegion = prefectures;
+        } else {
+            // Toutes les préfectures de cette région
+            for (var p = 0; p < prefecturesData.length; p++) {
+                if (prefecturesData[p].region_id == regionData.id) {
+                    prefecturesRegion.push(prefecturesData[p]);
+                }
+            }
+        }
+        
+        for (var p = 0; p < prefecturesRegion.length; p++) {
+            for (var n = 0; n < niveaux.length; n++) {
+                for (var g = 0; g < genres.length; g++) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: periode,
+                        region: regionData.nom,
+                        prefecture: prefecturesRegion[p].nom,
+                        zone: zone,
+                        niveau: niveaux[n],
+                        genre: genres[g],
+                        taux_abandon: parseFloat(document.getElementById('stat-abandon').value) || null,
+                        taux_reussite_examens: parseFloat(document.getElementById('stat-reussite').value) || null,
+                        taux_scolarisation: parseFloat(document.getElementById('stat-scolarisation').value) || null,
+                        taux_alphabetisation: parseFloat(document.getElementById('stat-alphabetisation').value) || null,
+                        ratio_eleves_enseignant: parseFloat(document.getElementById('stat-ratio-enseignant').value) || null,
+                        ratio_eleves_classe: parseFloat(document.getElementById('stat-ratio-classe').value) || null,
+                        distance_moyenne_ecole_domicile: parseFloat(document.getElementById('stat-distance').value) || null,
+                        saisi_par: currentUser.nom
+                    });
+                }
+            }
         }
     }
     
-    var newStat = {
-        annee_scolaire: document.getElementById('stat-annee').value.trim(),
-        periode: document.getElementById('stat-periode').value,
-        region: regionNom,
-        prefecture: document.getElementById('stat-prefecture').value,
-        zone: document.getElementById('stat-zone').value,
-        niveau: document.getElementById('stat-niveau').value,
-        genre: document.getElementById('stat-genre').value,
-        taux_abandon: parseFloat(document.getElementById('stat-abandon').value) || null,
-        taux_reussite_examens: parseFloat(document.getElementById('stat-reussite').value) || null,
-        taux_scolarisation: parseFloat(document.getElementById('stat-scolarisation').value) || null,
-        taux_alphabetisation: parseFloat(document.getElementById('stat-alphabetisation').value) || null,
-        ratio_eleves_enseignant: parseFloat(document.getElementById('stat-ratio-enseignant').value) || null,
-        ratio_eleves_classe: parseFloat(document.getElementById('stat-ratio-classe').value) || null,
-        distance_moyenne_ecole_domicile: parseFloat(document.getElementById('stat-distance').value) || null,
-        saisi_par: currentUser.nom
-    };
+    if (dataToInsert.length === 0) {
+        alert('⚠️ Aucune donnée à enregistrer');
+        return;
+    }
     
-    if (!newStat.annee_scolaire || !newStat.region || !newStat.prefecture) {
-        alert('Veuillez remplir tous les champs obligatoires');
+    if (!confirm('📊 Vous allez créer ' + dataToInsert.length + ' enregistrements.\n\nContinuer ?')) {
         return;
     }
     
     try {
-        const { data: insertedData, error } = await supabase
-            .from('statistiques_educatives')
-            .insert([newStat])
-            .select();
+        // Insérer par lots de 100 pour éviter les timeouts
+        var batchSize = 100;
+        var totalInserted = 0;
         
-        if (error) throw error;
-        
-        if (insertedData && insertedData.length > 0) {
-            statistiquesData.unshift(insertedData[0]);
+        for (var i = 0; i < dataToInsert.length; i += batchSize) {
+            var batch = dataToInsert.slice(i, i + batchSize);
+            
+            const { data: insertedData, error } = await supabase
+                .from('statistiques_educatives')
+                .insert(batch)
+                .select();
+            
+            if (error) throw error;
+            
+            if (insertedData) {
+                for (var j = 0; j < insertedData.length; j++) {
+                    statistiquesData.unshift(insertedData[j]);
+                }
+                totalInserted += insertedData.length;
+            }
         }
         
-        alert('✅ Statistique enregistrée !');
+        alert('✅ ' + totalInserted + ' statistiques enregistrées avec succès !');
         closeModal();
         render();
     } catch (error) {
         console.error('Erreur:', error);
-        alert('❌ Erreur lors de l\'enregistrement');
+        alert('❌ Erreur: ' + error.message);
     }
 }
 
@@ -3071,6 +3165,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
