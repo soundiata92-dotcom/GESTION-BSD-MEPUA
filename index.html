@@ -1956,6 +1956,154 @@ async function checkInvitationToken() {
         }
     }
 }
+// ========== FONCTIONS STATISTIQUES ==========
+function calculerMoyenne(data, field) {
+    if (data.length === 0) return 0;
+    var total = 0;
+    var count = 0;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i][field] !== null && data[i][field] !== undefined) {
+            total += parseFloat(data[i][field]);
+            count++;
+        }
+    }
+    return count > 0 ? Math.round(total / count * 10) / 10 : 0;
+}
+
+function showStatistiquesModal() {
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 900px;"><h2 style="margin-bottom: 24px;">📊 Saisir des statistiques</h2>';
+    
+    html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="stat-annee" class="form-control" placeholder="Ex: 2025-2026" value="2025-2026"></div>';
+    
+    html += '<div class="form-group"><label>Période *</label><select id="stat-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+    
+    html += '<h3 style="margin-top: 24px; margin-bottom: 12px;">Localisation</h3>';
+    
+    html += '<div class="form-group"><label>Région *</label><select id="stat-region" class="form-control" onchange="updatePrefecturesDropdown()"><option value="">Sélectionnez...</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
+    
+    html += '<div class="form-group"><label>Préfecture *</label><select id="stat-prefecture" class="form-control"><option value="">Sélectionnez d\'abord une région</option></select></div>';
+    
+    html += '<div class="form-group"><label>Zone *</label><select id="stat-zone" class="form-control"><option>Urbaine</option><option>Rurale</option></select></div>';
+    
+    html += '<h3 style="margin-top: 24px; margin-bottom: 12px;">Catégorie</h3>';
+    
+    html += '<div class="form-group"><label>Niveau *</label><select id="stat-niveau" class="form-control"><option>Préscolaire</option><option>Primaire</option><option>Secondaire</option></select></div>';
+    
+    html += '<div class="form-group"><label>Genre *</label><select id="stat-genre" class="form-control"><option>Filles</option><option>Garçons</option><option>Total</option></select></div>';
+    
+    html += '<h3 style="margin-top: 24px; margin-bottom: 12px;">Indicateurs (%)</h3>';
+    
+    html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">';
+    html += '<div class="form-group"><label>Taux d\'abandon (%)</label><input type="number" step="0.01" id="stat-abandon" class="form-control" min="0" max="100"></div>';
+    html += '<div class="form-group"><label>Taux de réussite aux examens (%)</label><input type="number" step="0.01" id="stat-reussite" class="form-control" min="0" max="100"></div>';
+    html += '<div class="form-group"><label>Taux de scolarisation (%)</label><input type="number" step="0.01" id="stat-scolarisation" class="form-control" min="0" max="100"></div>';
+    html += '<div class="form-group"><label>Taux d\'alphabétisation (%)</label><input type="number" step="0.01" id="stat-alphabetisation" class="form-control" min="0" max="100"></div>';
+    html += '<div class="form-group"><label>Ratio élèves/enseignant</label><input type="number" step="0.01" id="stat-ratio-enseignant" class="form-control" min="0"></div>';
+    html += '<div class="form-group"><label>Ratio élèves/classe</label><input type="number" step="0.01" id="stat-ratio-classe" class="form-control" min="0"></div>';
+    html += '<div class="form-group"><label>Distance école-domicile (km)</label><input type="number" step="0.01" id="stat-distance" class="form-control" min="0"></div>';
+    html += '</div>';
+    
+    html += '<div class="btn-group"><button class="btn btn-primary" onclick="submitStatistique()">Enregistrer</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div>';
+    html += '</div></div>';
+    
+    modalContainer.innerHTML = html;
+}
+
+function updatePrefecturesDropdown() {
+    var regionId = document.getElementById('stat-region').value;
+    var prefectureSelect = document.getElementById('stat-prefecture');
+    
+    prefectureSelect.innerHTML = '<option value="">Sélectionnez...</option>';
+    
+    if (regionId) {
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+    }
+}
+
+async function submitStatistique() {
+    var regionId = document.getElementById('stat-region').value;
+    var regionNom = '';
+    for (var i = 0; i < regionsData.length; i++) {
+        if (regionsData[i].id == regionId) {
+            regionNom = regionsData[i].nom;
+            break;
+        }
+    }
+    
+    var newStat = {
+        annee_scolaire: document.getElementById('stat-annee').value.trim(),
+        periode: document.getElementById('stat-periode').value,
+        region: regionNom,
+        prefecture: document.getElementById('stat-prefecture').value,
+        zone: document.getElementById('stat-zone').value,
+        niveau: document.getElementById('stat-niveau').value,
+        genre: document.getElementById('stat-genre').value,
+        taux_abandon: parseFloat(document.getElementById('stat-abandon').value) || null,
+        taux_reussite_examens: parseFloat(document.getElementById('stat-reussite').value) || null,
+        taux_scolarisation: parseFloat(document.getElementById('stat-scolarisation').value) || null,
+        taux_alphabetisation: parseFloat(document.getElementById('stat-alphabetisation').value) || null,
+        ratio_eleves_enseignant: parseFloat(document.getElementById('stat-ratio-enseignant').value) || null,
+        ratio_eleves_classe: parseFloat(document.getElementById('stat-ratio-classe').value) || null,
+        distance_moyenne_ecole_domicile: parseFloat(document.getElementById('stat-distance').value) || null,
+        saisi_par: currentUser.nom
+    };
+    
+    if (!newStat.annee_scolaire || !newStat.region || !newStat.prefecture) {
+        alert('Veuillez remplir tous les champs obligatoires');
+        return;
+    }
+    
+    try {
+        const { data: insertedData, error } = await supabase
+            .from('statistiques_educatives')
+            .insert([newStat])
+            .select();
+        
+        if (error) throw error;
+        
+        if (insertedData && insertedData.length > 0) {
+            statistiquesData.unshift(insertedData[0]);
+        }
+        
+        alert('✅ Statistique enregistrée !');
+        closeModal();
+        render();
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors de l\'enregistrement');
+    }
+}
+
+async function deleteStatistique(id) {
+    if (!confirm('Supprimer cette statistique ?')) return;
+    
+    try {
+        const { error } = await supabase
+            .from('statistiques_educatives')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        statistiquesData = statistiquesData.filter(s => s.id !== id);
+        render();
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors de la suppression');
+    }
+}
 
         // ========== FONCTION RENDER PRINCIPALE 
 function render() {
@@ -2913,6 +3061,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
