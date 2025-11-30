@@ -2191,7 +2191,189 @@ html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</b
 html += '</div>';
 
     html += '</div></div>';
+  // ========== CHARGER LES DONNÉES EXISTANTES ==========
+setTimeout(async function() {
+    var annee = document.getElementById('global-annee').value.trim();
+    var periode = document.getElementById('global-periode').value;
     
+    if (!annee || !periode) return;
+    
+    try {
+        const { data: existingData, error } = await supabase
+            .from('statistiques_educatives')
+            .select('*')
+            .eq('annee_scolaire', annee)
+            .eq('periode', periode);
+        
+        if (error) throw error;
+        
+        if (existingData && existingData.length > 0) {
+            console.log('📥 Chargement de ' + existingData.length + ' données existantes...');
+            
+            var loaded = 0;
+            
+            // Pour chaque donnée existante
+            for (var i = 0; i < existingData.length; i++) {
+                var stat = existingData[i];
+                
+                // Trouver l'index de ligne correspondant
+                var rowIndex = 0;
+                var found = false;
+                
+                for (var r = 0; r < regionsData.length && !found; r++) {
+                    var region = regionsData[r];
+                    
+                    var prefecturesRegion = [];
+                    for (var p = 0; p < prefecturesData.length; p++) {
+                        if (prefecturesData[p].region_id == region.id) {
+                            prefecturesRegion.push(prefecturesData[p]);
+                        }
+                    }
+                    
+                    for (var p = 0; p < prefecturesRegion.length && !found; p++) {
+                        var prefecture = prefecturesRegion[p];
+                        
+                        if (prefecture.nom !== stat.prefecture) {
+                            rowIndex += 8; // 6 lignes par niveau (3 niveaux x 2 zones) + 2 lignes zone
+                            continue;
+                        }
+                        
+                        var zones = ['Urbaine', 'Rurale'];
+                        for (var z = 0; z < zones.length && !found; z++) {
+                            var zone = zones[z];
+                            
+                            if (zone !== stat.zone) {
+                                rowIndex += 4; // 3 lignes niveau + 1 ligne zone
+                                continue;
+                            }
+                            
+                            if (stat.niveau) {
+                                // Données par niveau
+                                var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
+                                for (var n = 0; n < niveaux.length; n++) {
+                                    if (niveaux[n] === stat.niveau) {
+                                        var suffix = stat.genre === 'Total' ? 'total' : 'filles';
+                                        
+                                        // Taux abandon
+                                        if (stat.taux_abandon !== null) {
+                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_' + suffix + '"][data-type="niveau"]');
+                                            if (input) {
+                                                input.value = stat.taux_abandon;
+                                                input.style.background = '#e8f5e9';
+                                                input.style.borderColor = '#4caf50';
+                                                input.disabled = true;
+                                                input.setAttribute('data-saved', 'true');
+                                                loaded++;
+                                            }
+                                        }
+                                        
+                                        // Taux réussite
+                                        if (stat.taux_reussite_examens !== null) {
+                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="reussite_' + suffix + '"][data-type="niveau"]');
+                                            if (input) {
+                                                input.value = stat.taux_reussite_examens;
+                                                input.style.background = '#e8f5e9';
+                                                input.style.borderColor = '#4caf50';
+                                                input.disabled = true;
+                                                input.setAttribute('data-saved', 'true');
+                                                loaded++;
+                                            }
+                                        }
+                                        
+                                        // Taux scolarisation
+                                        if (stat.taux_scolarisation !== null) {
+                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_' + suffix + '"][data-type="niveau"]');
+                                            if (input) {
+                                                input.value = stat.taux_scolarisation;
+                                                input.style.background = '#e8f5e9';
+                                                input.style.borderColor = '#4caf50';
+                                                input.disabled = true;
+                                                input.setAttribute('data-saved', 'true');
+                                                loaded++;
+                                            }
+                                        }
+                                        
+                                        // Ratio enseignant (seulement pour Total)
+                                        if (stat.genre === 'Total' && stat.ratio_eleves_enseignant !== null) {
+                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"][data-type="niveau"]');
+                                            if (input) {
+                                                input.value = stat.ratio_eleves_enseignant;
+                                                input.style.background = '#e8f5e9';
+                                                input.style.borderColor = '#4caf50';
+                                                input.disabled = true;
+                                                input.setAttribute('data-saved', 'true');
+                                                loaded++;
+                                            }
+                                        }
+                                        
+                                        // Ratio classe (seulement pour Total)
+                                        if (stat.genre === 'Total' && stat.ratio_eleves_classe !== null) {
+                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"][data-type="niveau"]');
+                                            if (input) {
+                                                input.value = stat.ratio_eleves_classe;
+                                                input.style.background = '#e8f5e9';
+                                                input.style.borderColor = '#4caf50';
+                                                input.disabled = true;
+                                                input.setAttribute('data-saved', 'true');
+                                                loaded++;
+                                            }
+                                        }
+                                        
+                                        // Distance (seulement pour Total)
+                                        if (stat.genre === 'Total' && stat.distance_moyenne_ecole_domicile !== null) {
+                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"][data-type="niveau"]');
+                                            if (input) {
+                                                input.value = stat.distance_moyenne_ecole_domicile;
+                                                input.style.background = '#e8f5e9';
+                                                input.style.borderColor = '#4caf50';
+                                                input.disabled = true;
+                                                input.setAttribute('data-saved', 'true');
+                                                loaded++;
+                                            }
+                                        }
+                                        
+                                        found = true;
+                                        break;
+                                    }
+                                    rowIndex++;
+                                }
+                            } else {
+                                // Données par zone (alphabétisation)
+                                rowIndex += 3; // Sauter les 3 niveaux
+                                
+                                var suffix = stat.genre === 'Total' ? 'total' : 'filles';
+                                if (stat.taux_alphabetisation !== null) {
+                                    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation_' + suffix + '"][data-type="zone"]');
+                                    if (input) {
+                                        input.value = stat.taux_alphabetisation;
+                                        input.style.background = '#e8f5e9';
+                                        input.style.borderColor = '#4caf50';
+                                        input.disabled = true;
+                                        input.setAttribute('data-saved', 'true');
+                                        loaded++;
+                                    }
+                                }
+                                
+                                found = true;
+                                rowIndex++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Mettre à jour la progression
+            updateProgression();
+            
+            if (loaded > 0) {
+                alert('📥 ' + loaded + ' champs déjà enregistrés ont été chargés (en vert).\n\nVous pouvez continuer la saisie des autres lignes.');
+            }
+        }
+    } catch (error) {
+        console.error('Erreur chargement:', error);
+    }
+}, 500);
+  
     modalContainer.innerHTML = html;
 }
 
@@ -3433,6 +3615,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
