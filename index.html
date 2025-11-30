@@ -1969,15 +1969,58 @@ function calculerMoyenne(data, field) {
     }
     return count > 0 ? Math.round(total / count * 10) / 10 : 0;
 }
+function updateFormFilters() {
+    var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
+    var prefectureSelect = document.getElementById('filter-prefecture');
+    
+    if (!prefectureSelect) return;
+    
+    // Remplir le filtre préfecture selon la région
+    prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
+    
+    if (regionId) {
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+    }
+    
+    // Filtrer les lignes du tableau
+    filterTableRows();
+}
+
+function filterTableRows() {
+    var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
+    var prefectureNom = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
+    
+    var rows = document.querySelectorAll('.stat-row');
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var rowRegion = row.getAttribute('data-region');
+        var rowPrefecture = row.getAttribute('data-prefecture');
+        
+        var showRow = true;
+        
+        if (regionId && rowRegion != regionId) {
+            showRow = false;
+        }
+        
+        if (prefectureNom && rowPrefecture != prefectureNom) {
+            showRow = false;
+        }
+        
+        row.style.display = showRow ? '' : 'none';
+    }
+}
 
 function showStatistiquesModal() {
     var modalContainer = document.getElementById('modal-container');
-    var html = '<div class="modal"><div class="modal-content" style="max-width: 95vw; max-height: 95vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">📊 Saisir les statistiques nationales</h2>';
-    
-    html += '<div style="background-color: #fef3c7; padding: 12px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 16px;">';
-    html += '<strong>Mode de saisie :</strong> Remplissez les indicateurs pour TOUTES les combinaisons du pays pour une période donnée.<br/>';
-    html += '<strong>Total de lignes :</strong> 8 régions × 45 préfectures × 2 zones × 3 niveaux = <strong>2 160 lignes</strong>';
-    html += '</div>';
+   var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;">
     
     // En-tête avec période et genre
    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
@@ -1992,12 +2035,10 @@ function showStatistiquesModal() {
     
     html += '<div class="form-group"><label>Filtre Préfecture</label><select id="filter-prefecture" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les préfectures</option></select></div>';
     html += '</div>';
-    
-    html += '<div class="alert alert-info" style="margin-bottom: 16px;">💡 <strong>Astuce :</strong> Utilisez les filtres Région/Préfecture pour afficher uniquement les lignes souhaitées et faciliter la saisie.</div>';
 
     
     // Tableau de saisie
-    html += '<div style="flex: 1; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
+   html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
     html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap;">Région</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap;">Préfecture</th>';
@@ -2084,10 +2125,6 @@ function showStatistiquesModal() {
     }
 
     html += '</tbody></table></div>';
-    
-    html += '<div style="margin-top: 16px; padding: 12px; background-color: #e0e7ff; border-radius: 8px; text-align: center;">';
-    html += '<strong>Total de lignes à remplir : ' + rowIndex + '</strong>';
-    html += '</div>';
     
     html += '<div class="btn-group" style="margin-top: 16px;"><button class="btn btn-primary" onclick="submitStatistiquesTableau()">💾 Enregistrer toutes les données</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div>';
     html += '</div></div>';
@@ -3218,6 +3255,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
