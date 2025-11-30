@@ -1980,28 +1980,48 @@ function showStatistiquesModal() {
     html += '</div>';
     
     // En-tête avec période et genre
-    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
+   html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
     html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="global-annee" class="form-control" value="2025-2026"></div>';
     html += '<div class="form-group"><label>Période *</label><select id="global-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
-    html += '<div class="form-group"><label>Genre *</label><select id="global-genre" class="form-control"><option>Filles</option><option>Garçons</option><option>Total</option></select></div>';
+    
+    html += '<div class="form-group"><label>Filtre Région</label><select id="filter-region" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les régions</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
+    
+    html += '<div class="form-group"><label>Filtre Préfecture</label><select id="filter-prefecture" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les préfectures</option></select></div>';
     html += '</div>';
+    
+    html += '<div class="alert alert-info" style="margin-bottom: 16px;">💡 <strong>Astuce :</strong> Utilisez les filtres Région/Préfecture pour afficher uniquement les lignes souhaitées et faciliter la saisie.</div>';
+
     
     // Tableau de saisie
     html += '<div style="flex: 1; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
-    html += '<table style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
+    html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap;">Région</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap;">Préfecture</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap;">Zone</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap;">Niveau</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 80px;">Abandon (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 80px;">Réussite (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 80px;">Scolarisation (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 80px;">Alphabétisation (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 80px;">Ratio E/Ens</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 80px;">Ratio E/Classe</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 80px;">Distance (km)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669;">Abandon T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777;">Abandon F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669;">Réussite T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777;">Réussite F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669;">Scolarisa. T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777;">Scolarisa. F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669;">Alphabét. T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777;">Alphabét. F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px;">Ratio E/Ens</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px;">Ratio E/Classe</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px;">Distance (km)</th>';
     html += '</tr></thead><tbody>';
+
     
+    var rowIndex = 0;
+    var zones = ['Urbaine', 'Rurale'];
+    var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
+    
+    // Générer toutes les lignes
     var rowIndex = 0;
     var zones = ['Urbaine', 'Rurale'];
     var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
@@ -2028,18 +2048,33 @@ function showStatistiquesModal() {
                     var niveau = niveaux[n];
                     var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
                     
-                    html += '<tr style="background-color: ' + bgColor + ';">';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + region.nom + '</td>';
+                    html += '<tr class="stat-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" style="background-color: ' + bgColor + ';">';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + niveau + '</td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="reussite" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="alphabetisation" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + niveau + '</td>';
+                    
+                    // Taux abandon (Total et Filles)
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    
+                    // Taux réussite (Total et Filles)
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="reussite_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="reussite_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    
+                    // Taux scolarisation (Total et Filles)
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    
+                    // Taux alphabétisation (Total et Filles)
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="alphabetisation_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="alphabetisation_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    
+                    // Ratios et distance (pas de genre)
                     html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
                     html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_classe" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
                     html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="distance" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    
                     html += '</tr>';
                     
                     rowIndex++;
@@ -2047,7 +2082,7 @@ function showStatistiquesModal() {
             }
         }
     }
-    
+
     html += '</tbody></table></div>';
     
     html += '<div style="margin-top: 16px; padding: 12px; background-color: #e0e7ff; border-radius: 8px; text-align: center;">';
@@ -3183,6 +3218,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
