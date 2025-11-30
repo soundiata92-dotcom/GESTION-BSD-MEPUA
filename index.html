@@ -2183,7 +2183,13 @@ function showStatistiquesModal() {
 
     html += '</tbody></table></div>';
     
-    html += '<div class="btn-group" style="margin-top: 16px;"><button class="btn btn-primary" onclick="submitStatistiquesTableau()">💾 Enregistrer toutes les données</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div>';
+    html += '<div class="btn-group" style="margin-top: 16px;"><button class="btn html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end; align-items: center;">';
+html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; margin-right: auto;"></span>';
+html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)" style="background: #2563eb;">💾 Enregistrer et continuer</button>';
+html += '<button class="btn btn-success" onclick="submitStatistiquesTableau(true)" style="background: #059669;">✅ Enregistrer et terminer</button>';
+html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+html += '</div>';
+
     html += '</div></div>';
     
     modalContainer.innerHTML = html;
@@ -2207,13 +2213,12 @@ function updatePrefecturesDropdown() {
     }
 }
 
-async function submitStatistiquesTableau() {
+async function submitStatistiquesTableau(fermerApres) {
     var annee = document.getElementById('global-annee').value.trim();
     var periode = document.getElementById('global-periode').value;
-    var genre = document.getElementById('global-genre').value;
     
-    if (!annee || !periode || !genre) {
-        alert('⚠️ Veuillez remplir année, période et genre');
+    if (!annee || !periode) {
+        alert('⚠️ Veuillez remplir année et période');
         return;
     }
     
@@ -2222,7 +2227,7 @@ async function submitStatistiquesTableau() {
     var dataToInsert = [];
     var rowIndex = 0;
     
-    // Parcourir toutes les lignes du tableau
+    // Parcourir toutes les lignes
     for (var r = 0; r < regionsData.length; r++) {
         var region = regionsData[r];
         var prefecturesRegion = [];
@@ -2239,28 +2244,33 @@ async function submitStatistiquesTableau() {
             for (var z = 0; z < zones.length; z++) {
                 var zone = zones[z];
                 
+                // ========== LIGNES PAR NIVEAU (3 lignes) ==========
                 for (var n = 0; n < niveaux.length; n++) {
                     var niveau = niveaux[n];
                     
-                    // Récupérer les valeurs des inputs
-                    var inputAbandon = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon"]');
-                    var inputReussite = document.querySelector('input[data-row="' + rowIndex + '"][data-field="reussite"]');
-                    var inputScolarisation = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation"]');
-                    var inputAlphabetisation = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation"]');
-                    var inputRatioEns = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"]');
-                    var inputRatioClasse = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"]');
-                    var inputDistance = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"]');
+                    // Récupérer les valeurs des inputs PAR NIVEAU
+                    var inputAbandonT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_total"][data-type="niveau"]');
+                    var inputAbandonF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_filles"][data-type="niveau"]');
+                    var inputReussiteT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="reussite_total"][data-type="niveau"]');
+                    var inputReussiteF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="reussite_filles"][data-type="niveau"]');
+                    var inputScolarisationT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_total"][data-type="niveau"]');
+                    var inputScolarisationF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_filles"][data-type="niveau"]');
+                    var inputRatioEns = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"][data-type="niveau"]');
+                    var inputRatioClasse = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"][data-type="niveau"]');
+                    var inputDistance = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"][data-type="niveau"]');
                     
-                    var abandon = inputAbandon ? parseFloat(inputAbandon.value) : null;
-                    var reussite = inputReussite ? parseFloat(inputReussite.value) : null;
-                    var scolarisation = inputScolarisation ? parseFloat(inputScolarisation.value) : null;
-                    var alphabetisation = inputAlphabetisation ? parseFloat(inputAlphabetisation.value) : null;
+                    var abandonT = inputAbandonT ? parseFloat(inputAbandonT.value) : null;
+                    var abandonF = inputAbandonF ? parseFloat(inputAbandonF.value) : null;
+                    var reussiteT = inputReussiteT ? parseFloat(inputReussiteT.value) : null;
+                    var reussiteF = inputReussiteF ? parseFloat(inputReussiteF.value) : null;
+                    var scolarisationT = inputScolarisationT ? parseFloat(inputScolarisationT.value) : null;
+                    var scolarisationF = inputScolarisationF ? parseFloat(inputScolarisationF.value) : null;
                     var ratioEns = inputRatioEns ? parseFloat(inputRatioEns.value) : null;
                     var ratioClasse = inputRatioClasse ? parseFloat(inputRatioClasse.value) : null;
                     var distance = inputDistance ? parseFloat(inputDistance.value) : null;
                     
-                    // N'insérer que si au moins un champ est rempli
-                    if (abandon || reussite || scolarisation || alphabetisation || ratioEns || ratioClasse || distance) {
+                    // Créer 2 enregistrements (Total et Filles) si au moins un champ est rempli
+                    if (abandonT || reussiteT || scolarisationT || ratioEns || ratioClasse || distance) {
                         dataToInsert.push({
                             annee_scolaire: annee,
                             periode: periode,
@@ -2268,30 +2278,121 @@ async function submitStatistiquesTableau() {
                             prefecture: prefecture.nom,
                             zone: zone,
                             niveau: niveau,
-                            genre: genre,
-                            taux_abandon: abandon,
-                            taux_reussite_examens: reussite,
-                            taux_scolarisation: scolarisation,
-                            taux_alphabetisation: alphabetisation,
+                            genre: 'Total',
+                            taux_abandon: abandonT,
+                            taux_reussite_examens: reussiteT,
+                            taux_scolarisation: scolarisationT,
+                            taux_alphabetisation: null,
                             ratio_eleves_enseignant: ratioEns,
                             ratio_eleves_classe: ratioClasse,
                             distance_moyenne_ecole_domicile: distance,
                             saisi_par: currentUser.nom
                         });
+                        
+                        // Marquer l'input comme enregistré
+                        if (inputAbandonT && inputAbandonT.value) inputAbandonT.setAttribute('data-saved', 'true');
+                        if (inputReussiteT && inputReussiteT.value) inputReussiteT.setAttribute('data-saved', 'true');
+                        if (inputScolarisationT && inputScolarisationT.value) inputScolarisationT.setAttribute('data-saved', 'true');
+                        if (inputRatioEns && inputRatioEns.value) inputRatioEns.setAttribute('data-saved', 'true');
+                        if (inputRatioClasse && inputRatioClasse.value) inputRatioClasse.setAttribute('data-saved', 'true');
+                        if (inputDistance && inputDistance.value) inputDistance.setAttribute('data-saved', 'true');
+                    }
+                    
+                    if (abandonF || reussiteF || scolarisationF) {
+                        dataToInsert.push({
+                            annee_scolaire: annee,
+                            periode: periode,
+                            region: region.nom,
+                            prefecture: prefecture.nom,
+                            zone: zone,
+                            niveau: niveau,
+                            genre: 'Filles',
+                            taux_abandon: abandonF,
+                            taux_reussite_examens: reussiteF,
+                            taux_scolarisation: scolarisationF,
+                            taux_alphabetisation: null,
+                            ratio_eleves_enseignant: ratioEns,
+                            ratio_eleves_classe: ratioClasse,
+                            distance_moyenne_ecole_domicile: distance,
+                            saisi_par: currentUser.nom
+                        });
+                        
+                        // Marquer l'input comme enregistré
+                        if (inputAbandonF && inputAbandonF.value) inputAbandonF.setAttribute('data-saved', 'true');
+                        if (inputReussiteF && inputReussiteF.value) inputReussiteF.setAttribute('data-saved', 'true');
+                        if (inputScolarisationF && inputScolarisationF.value) inputScolarisationF.setAttribute('data-saved', 'true');
                     }
                     
                     rowIndex++;
                 }
+                
+                // ========== LIGNE PAR ZONE (alphabétisation) ==========
+                var inputAlphabetisationT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation_total"][data-type="zone"]');
+                var inputAlphabetisationF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation_filles"][data-type="zone"]');
+                
+                var alphabetisationT = inputAlphabetisationT ? parseFloat(inputAlphabetisationT.value) : null;
+                var alphabetisationF = inputAlphabetisationF ? parseFloat(inputAlphabetisationF.value) : null;
+                
+                // Créer 2 enregistrements (Total et Filles) pour alphabétisation
+                if (alphabetisationT) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: periode,
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: null,
+                        genre: 'Total',
+                        taux_abandon: null,
+                        taux_reussite_examens: null,
+                        taux_scolarisation: null,
+                        taux_alphabetisation: alphabetisationT,
+                        ratio_eleves_enseignant: null,
+                        ratio_eleves_classe: null,
+                        distance_moyenne_ecole_domicile: null,
+                        saisi_par: currentUser.nom
+                    });
+                    
+                    if (inputAlphabetisationT) inputAlphabetisationT.setAttribute('data-saved', 'true');
+                }
+                
+                if (alphabetisationF) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: periode,
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: null,
+                        genre: 'Filles',
+                        taux_abandon: null,
+                        taux_reussite_examens: null,
+                        taux_scolarisation: null,
+                        taux_alphabetisation: alphabetisationF,
+                        ratio_eleves_enseignant: null,
+                        ratio_eleves_classe: null,
+                        distance_moyenne_ecole_domicile: null,
+                        saisi_par: currentUser.nom
+                    });
+                    
+                    if (inputAlphabetisationF) inputAlphabetisationF.setAttribute('data-saved', 'true');
+                }
+                
+                rowIndex++;
             }
         }
     }
     
     if (dataToInsert.length === 0) {
-        alert('⚠️ Aucune donnée saisie. Veuillez remplir au moins un indicateur.');
+        alert('⚠️ Aucune nouvelle donnée à enregistrer.');
         return;
     }
     
-    if (!confirm('📊 Vous allez enregistrer ' + dataToInsert.length + ' lignes.\n\nContinuer ?')) {
+    var message = fermerApres 
+        ? '✅ Vous allez enregistrer ' + dataToInsert.length + ' lignes et terminer.\n\nContinuer ?'
+        : '💾 Vous allez enregistrer ' + dataToInsert.length + ' lignes.\nLe formulaire restera ouvert.\n\nContinuer ?';
+    
+    if (!confirm(message)) {
         return;
     }
     
@@ -2318,12 +2419,40 @@ async function submitStatistiquesTableau() {
             }
         }
         
-        alert('✅ ' + totalInserted + ' statistiques enregistrées !');
-        closeModal();
-        render();
+        // Marquer visuellement les champs enregistrés
+        var savedInputs = document.querySelectorAll('input[data-saved="true"]');
+        for (var i = 0; i < savedInputs.length; i++) {
+            savedInputs[i].style.background = '#e8f5e9';
+            savedInputs[i].style.borderColor = '#4caf50';
+            savedInputs[i].disabled = true;
+        }
+        
+        // Mettre à jour la progression
+        updateProgression();
+        
+        if (fermerApres) {
+            alert('✅ ' + totalInserted + ' statistiques enregistrées avec succès !');
+            closeModal();
+            render();
+        } else {
+            alert('💾 ' + totalInserted + ' statistiques enregistrées !\n\nVous pouvez continuer la saisie.');
+        }
+        
     } catch (error) {
         console.error('Erreur:', error);
         alert('❌ Erreur : ' + error.message);
+    }
+}
+function updateProgression() {
+    var totalInputs = document.querySelectorAll('input[data-field]:not([disabled])').length;
+    var savedInputs = document.querySelectorAll('input[data-saved="true"]').length;
+    var pourcentage = totalInputs > 0 ? Math.round((savedInputs / totalInputs) * 100) : 0;
+    
+    var progressElement = document.getElementById('progression-saisie');
+    if (progressElement) {
+        progressElement.textContent = '📊 Progression : ' + savedInputs + '/' + totalInputs + ' champs (' + pourcentage + '%)';
+        progressElement.style.color = pourcentage === 100 ? '#059669' : '#d97706';
+        progressElement.style.fontWeight = '600';
     }
 }
 
@@ -3312,6 +3441,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
