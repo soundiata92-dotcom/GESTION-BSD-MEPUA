@@ -2183,11 +2183,12 @@ function showStatistiquesModal() {
 
     html += '</tbody></table></div>';
     
-   html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end; align-items: center;">';
-html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; margin-right: auto;"></span>';
-html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)">💾 Enregistrer et continuer</button>';
-html += '<button class="btn btn-success" onclick="submitStatistiquesTableau(true)">✅ Enregistrer et terminer</button>';
+  html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
+html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
+html += '<div style="display: flex; gap: 10px;">';
+html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau()">💾 Enregistrer</button>';
 html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+html += '</div>';
 html += '</div>';
 
     html += '</div></div>';
@@ -2248,7 +2249,7 @@ setTimeout(async function() {
                                 continue;
                             }
                             
-                            if (stat.niveau) {
+                            if (stat.niveau && stat.niveau !== 'Alphabétisation') {
                                 // Données par niveau
                                 var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
                                 for (var n = 0; n < niveaux.length; n++) {
@@ -2396,7 +2397,7 @@ function updatePrefecturesDropdown() {
     }
 }
 
-async function submitStatistiquesTableau(fermerApres) {
+async function submitStatistiquesTableau() {
     var annee = document.getElementById('global-annee').value.trim();
     var periode = document.getElementById('global-periode').value;
     
@@ -2442,18 +2443,22 @@ async function submitStatistiquesTableau(fermerApres) {
                     var inputRatioClasse = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"][data-type="niveau"]');
                     var inputDistance = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"][data-type="niveau"]');
                     
-                    var abandonT = inputAbandonT && inputAbandonT.value ? parseFloat(inputAbandonT.value) : null;
-                    var abandonF = inputAbandonF && inputAbandonF.value ? parseFloat(inputAbandonF.value) : null;
-                    var reussiteT = inputReussiteT && inputReussiteT.value ? parseFloat(inputReussiteT.value) : null;
-                    var reussiteF = inputReussiteF && inputReussiteF.value ? parseFloat(inputReussiteF.value) : null;
-                    var scolarisationT = inputScolarisationT && inputScolarisationT.value ? parseFloat(inputScolarisationT.value) : null;
-                    var scolarisationF = inputScolarisationF && inputScolarisationF.value ? parseFloat(inputScolarisationF.value) : null;
-                    var ratioEns = inputRatioEns && inputRatioEns.value ? parseFloat(inputRatioEns.value) : null;
-                    var ratioClasse = inputRatioClasse && inputRatioClasse.value ? parseFloat(inputRatioClasse.value) : null;
-                    var distance = inputDistance && inputDistance.value ? parseFloat(inputDistance.value) : null;
+                    // Vérifier si déjà enregistré (attribut data-saved)
+                    var alreadySavedT = inputAbandonT && inputAbandonT.getAttribute('data-saved') === 'true';
+                    var alreadySavedF = inputAbandonF && inputAbandonF.getAttribute('data-saved') === 'true';
                     
-                    // Créer 2 enregistrements (Total et Filles) si au moins un champ est rempli
-                    if (abandonT !== null || reussiteT !== null || scolarisationT !== null || ratioEns !== null || ratioClasse !== null || distance !== null) {
+                    var abandonT = inputAbandonT && inputAbandonT.value && !alreadySavedT ? parseFloat(inputAbandonT.value) : null;
+                    var abandonF = inputAbandonF && inputAbandonF.value && !alreadySavedF ? parseFloat(inputAbandonF.value) : null;
+                    var reussiteT = inputReussiteT && inputReussiteT.value && !alreadySavedT ? parseFloat(inputReussiteT.value) : null;
+                    var reussiteF = inputReussiteF && inputReussiteF.value && !alreadySavedF ? parseFloat(inputReussiteF.value) : null;
+                    var scolarisationT = inputScolarisationT && inputScolarisationT.value && !alreadySavedT ? parseFloat(inputScolarisationT.value) : null;
+                    var scolarisationF = inputScolarisationF && inputScolarisationF.value && !alreadySavedF ? parseFloat(inputScolarisationF.value) : null;
+                    var ratioEns = inputRatioEns && inputRatioEns.value && !alreadySavedT ? parseFloat(inputRatioEns.value) : null;
+                    var ratioClasse = inputRatioClasse && inputRatioClasse.value && !alreadySavedT ? parseFloat(inputRatioClasse.value) : null;
+                    var distance = inputDistance && inputDistance.value && !alreadySavedT ? parseFloat(inputDistance.value) : null;
+                    
+                    // Créer enregistrement Total si au moins un champ est rempli ET pas déjà enregistré
+                    if (!alreadySavedT && (abandonT !== null || reussiteT !== null || scolarisationT !== null || ratioEns !== null || ratioClasse !== null || distance !== null)) {
                         dataToInsert.push({
                             annee_scolaire: annee,
                             periode: periode,
@@ -2472,16 +2477,17 @@ async function submitStatistiquesTableau(fermerApres) {
                             saisi_par: currentUser.nom
                         });
                         
-                        // Marquer l'input comme enregistré
-                        if (inputAbandonT) { inputAbandonT.setAttribute('data-saved', 'true'); inputAbandonT.style.background = '#e8f5e9'; inputAbandonT.disabled = true; }
-                        if (inputReussiteT) { inputReussiteT.setAttribute('data-saved', 'true'); inputReussiteT.style.background = '#e8f5e9'; inputReussiteT.disabled = true; }
-                        if (inputScolarisationT) { inputScolarisationT.setAttribute('data-saved', 'true'); inputScolarisationT.style.background = '#e8f5e9'; inputScolarisationT.disabled = true; }
-                        if (inputRatioEns) { inputRatioEns.setAttribute('data-saved', 'true'); inputRatioEns.style.background = '#e8f5e9'; inputRatioEns.disabled = true; }
-                        if (inputRatioClasse) { inputRatioClasse.setAttribute('data-saved', 'true'); inputRatioClasse.style.background = '#e8f5e9'; inputRatioClasse.disabled = true; }
-                        if (inputDistance) { inputDistance.setAttribute('data-saved', 'true'); inputDistance.style.background = '#e8f5e9'; inputDistance.disabled = true; }
+                        // Marquer comme enregistré
+                        if (inputAbandonT) { inputAbandonT.setAttribute('data-saved', 'true'); }
+                        if (inputReussiteT) { inputReussiteT.setAttribute('data-saved', 'true'); }
+                        if (inputScolarisationT) { inputScolarisationT.setAttribute('data-saved', 'true'); }
+                        if (inputRatioEns) { inputRatioEns.setAttribute('data-saved', 'true'); }
+                        if (inputRatioClasse) { inputRatioClasse.setAttribute('data-saved', 'true'); }
+                        if (inputDistance) { inputDistance.setAttribute('data-saved', 'true'); }
                     }
                     
-                    if (abandonF !== null || reussiteF !== null || scolarisationF !== null) {
+                    // Créer enregistrement Filles si au moins un champ est rempli ET pas déjà enregistré
+                    if (!alreadySavedF && (abandonF !== null || reussiteF !== null || scolarisationF !== null)) {
                         dataToInsert.push({
                             annee_scolaire: annee,
                             periode: periode,
@@ -2500,10 +2506,10 @@ async function submitStatistiquesTableau(fermerApres) {
                             saisi_par: currentUser.nom
                         });
                         
-                        // Marquer l'input comme enregistré
-                        if (inputAbandonF) { inputAbandonF.setAttribute('data-saved', 'true'); inputAbandonF.style.background = '#e8f5e9'; inputAbandonF.disabled = true; }
-                        if (inputReussiteF) { inputReussiteF.setAttribute('data-saved', 'true'); inputReussiteF.style.background = '#e8f5e9'; inputReussiteF.disabled = true; }
-                        if (inputScolarisationF) { inputScolarisationF.setAttribute('data-saved', 'true'); inputScolarisationF.style.background = '#e8f5e9'; inputScolarisationF.disabled = true; }
+                        // Marquer comme enregistré
+                        if (inputAbandonF) { inputAbandonF.setAttribute('data-saved', 'true'); }
+                        if (inputReussiteF) { inputReussiteF.setAttribute('data-saved', 'true'); }
+                        if (inputScolarisationF) { inputScolarisationF.setAttribute('data-saved', 'true'); }
                     }
                     
                     rowIndex++;
@@ -2513,18 +2519,21 @@ async function submitStatistiquesTableau(fermerApres) {
                 var inputAlphabetisationT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation_total"][data-type="zone"]');
                 var inputAlphabetisationF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation_filles"][data-type="zone"]');
                 
-                var alphabetisationT = inputAlphabetisationT && inputAlphabetisationT.value ? parseFloat(inputAlphabetisationT.value) : null;
-                var alphabetisationF = inputAlphabetisationF && inputAlphabetisationF.value ? parseFloat(inputAlphabetisationF.value) : null;
+                var alreadySavedAlphaT = inputAlphabetisationT && inputAlphabetisationT.getAttribute('data-saved') === 'true';
+                var alreadySavedAlphaF = inputAlphabetisationF && inputAlphabetisationF.getAttribute('data-saved') === 'true';
                 
-                // Créer 2 enregistrements (Total et Filles) pour alphabétisation
-                if (alphabetisationT !== null) {
+                var alphabetisationT = inputAlphabetisationT && inputAlphabetisationT.value && !alreadySavedAlphaT ? parseFloat(inputAlphabetisationT.value) : null;
+                var alphabetisationF = inputAlphabetisationF && inputAlphabetisationF.value && !alreadySavedAlphaF ? parseFloat(inputAlphabetisationF.value) : null;
+                
+                // Créer enregistrement alphabétisation Total
+                if (!alreadySavedAlphaT && alphabetisationT !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
                         periode: periode,
                         region: region.nom,
                         prefecture: prefecture.nom,
                         zone: zone,
-                        niveau: null,
+                        niveau: 'Alphabétisation', // ⚠️ CHANGEMENT ICI : au lieu de null
                         genre: 'Total',
                         taux_abandon: null,
                         taux_reussite_examens: null,
@@ -2536,17 +2545,18 @@ async function submitStatistiquesTableau(fermerApres) {
                         saisi_par: currentUser.nom
                     });
                     
-                    if (inputAlphabetisationT) { inputAlphabetisationT.setAttribute('data-saved', 'true'); inputAlphabetisationT.style.background = '#e8f5e9'; inputAlphabetisationT.disabled = true; }
+                    if (inputAlphabetisationT) { inputAlphabetisationT.setAttribute('data-saved', 'true'); }
                 }
                 
-                if (alphabetisationF !== null) {
+                // Créer enregistrement alphabétisation Filles
+                if (!alreadySavedAlphaF && alphabetisationF !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
                         periode: periode,
                         region: region.nom,
                         prefecture: prefecture.nom,
                         zone: zone,
-                        niveau: null,
+                        niveau: 'Alphabétisation', // ⚠️ CHANGEMENT ICI : au lieu de null
                         genre: 'Filles',
                         taux_abandon: null,
                         taux_reussite_examens: null,
@@ -2558,7 +2568,7 @@ async function submitStatistiquesTableau(fermerApres) {
                         saisi_par: currentUser.nom
                     });
                     
-                    if (inputAlphabetisationF) { inputAlphabetisationF.setAttribute('data-saved', 'true'); inputAlphabetisationF.style.background = '#e8f5e9'; inputAlphabetisationF.disabled = true; }
+                    if (inputAlphabetisationF) { inputAlphabetisationF.setAttribute('data-saved', 'true'); }
                 }
                 
                 rowIndex++;
@@ -2567,15 +2577,11 @@ async function submitStatistiquesTableau(fermerApres) {
     }
     
     if (dataToInsert.length === 0) {
-        alert('⚠️ Aucune nouvelle donnée à enregistrer.');
+        alert('⚠️ Aucune nouvelle donnée à enregistrer.\n\nToutes les données sont déjà enregistrées.');
         return;
     }
     
-    var message = fermerApres 
-        ? '✅ Vous allez enregistrer ' + dataToInsert.length + ' lignes et terminer.\n\nContinuer ?'
-        : '💾 Vous allez enregistrer ' + dataToInsert.length + ' lignes.\nLe formulaire restera ouvert.\n\nContinuer ?';
-    
-    if (!confirm(message)) {
+    if (!confirm('💾 Vous allez enregistrer ' + dataToInsert.length + ' nouvelles lignes.\n\nContinuer ?')) {
         return;
     }
     
@@ -2602,22 +2608,16 @@ async function submitStatistiquesTableau(fermerApres) {
             }
         }
         
-        // Mettre à jour la progression
-        updateProgression();
-        
-        if (fermerApres) {
-            alert('✅ ' + totalInserted + ' statistiques enregistrées avec succès !');
-            closeModal();
-            render();
-        } else {
-            alert('💾 ' + totalInserted + ' statistiques enregistrées !\n\nVous pouvez continuer la saisie.');
-        }
+        alert('✅ ' + totalInserted + ' statistiques enregistrées avec succès !');
+        closeModal();
+        render();
         
     } catch (error) {
         console.error('Erreur:', error);
         alert('❌ Erreur : ' + error.message);
     }
 }
+
 function updateProgression() {
     var totalInputs = document.querySelectorAll('input[data-field]:not([disabled])').length;
     var savedInputs = document.querySelectorAll('input[data-saved="true"]').length;
@@ -3616,6 +3616,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
