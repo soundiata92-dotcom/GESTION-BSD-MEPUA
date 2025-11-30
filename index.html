@@ -1973,9 +1973,15 @@ function updateFormFilters() {
     var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var prefectureSelect = document.getElementById('filter-prefecture');
     
-    if (!prefectureSelect) return;
+    console.log('=== UPDATE FILTERS ===');
+    console.log('Région sélectionnée:', regionId);
     
-    // Remplir le filtre préfecture selon la région
+    if (!prefectureSelect) {
+        console.log('ERROR: prefectureSelect not found');
+        return;
+    }
+    
+    // Vider et reconstruire les options
     prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
     
     if (regionId) {
@@ -1987,9 +1993,16 @@ function updateFormFilters() {
                 prefectureSelect.appendChild(option);
             }
         }
+        console.log('Préfectures ajoutées pour région', regionId);
     }
     
-    // Filtrer les lignes du tableau
+    // IMPORTANT : Réattacher l'événement onchange
+    prefectureSelect.onchange = function() {
+        console.log('Prefecture changed!');
+        filterTableRows();
+    };
+    
+    // Appliquer le filtrage
     filterTableRows();
 }
 
@@ -3271,6 +3284,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
