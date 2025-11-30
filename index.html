@@ -1997,7 +1997,14 @@ function filterTableRows() {
     var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var prefectureNom = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
     
+    console.log('=== FILTRAGE ===');
+    console.log('Région ID sélectionnée:', regionId);
+    console.log('Préfecture sélectionnée:', prefectureNom);
+    
     var rows = document.querySelectorAll('.stat-row');
+    console.log('Nombre de lignes trouvées:', rows.length);
+    
+    var visibleCount = 0;
     
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
@@ -2006,16 +2013,25 @@ function filterTableRows() {
         
         var showRow = true;
         
-        if (regionId && rowRegion != regionId) {
+        // Filtre par région
+        if (regionId && regionId !== '' && rowRegion != regionId) {
             showRow = false;
         }
         
-        if (prefectureNom && rowPrefecture != prefectureNom) {
+        // Filtre par préfecture
+        if (prefectureNom && prefectureNom !== '' && rowPrefecture != prefectureNom) {
             showRow = false;
         }
         
         row.style.display = showRow ? '' : 'none';
+        
+        if (showRow) {
+            visibleCount++;
+        }
     }
+    
+    console.log('Lignes visibles:', visibleCount);
+    console.log('================');
 }
 
 function showStatistiquesModal() {
@@ -3255,6 +3271,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
