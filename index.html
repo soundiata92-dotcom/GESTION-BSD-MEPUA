@@ -2888,6 +2888,27 @@ async function deleteStatistique(id) {
         alert('❌ Erreur lors de la suppression');
     }
 }
+function updateStatsPrefectureDropdown() {
+    var regionId = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
+    var prefectureSelect = document.getElementById('filter-stats-prefecture');
+    
+    if (!prefectureSelect) return;
+    
+    // Vider et reconstruire les options
+    prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
+    
+    if (regionId) {
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+    }
+}
+       
 function filterStatsMainPage() {
     var periodeFilter = document.getElementById('filter-stats-periode') ? document.getElementById('filter-stats-periode').value : 'TOUS';
     
@@ -3991,6 +4012,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
