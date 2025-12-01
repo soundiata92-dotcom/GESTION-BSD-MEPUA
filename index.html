@@ -2054,7 +2054,9 @@ function showStatistiquesModal() {
     // En-tête avec période et genre
    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
     html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="global-annee" class="form-control" value="2025-2026"></div>';
-    html += '<div class="form-group"><label>Période *</label><select id="global-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+    html += '<div class="form-group"><label>📅 Période de saisie *</label><select id="global-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+
+html += '<div class="form-group"><label>🔍 Afficher jusqu\'à</label><select id="filter-periode-cumulative" class="form-control" onchange="filterStatistiquesByPeriode()"><option value="TOUS">Toutes les périodes</option><option value="T1">Jusqu\'à T1</option><option value="T2">Jusqu\'à T2</option><option value="T3">Jusqu\'à T3</option><option value="T4">Jusqu\'à T4</option><option value="Annuel">Annuel</option></select></div>';
     
     html += '<div class="form-group"><label>Filtre Région</label><select id="filter-region" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les régions</option>';
     for (var i = 0; i < regionsData.length; i++) {
@@ -2118,7 +2120,7 @@ function showStatistiquesModal() {
                 var niveau = niveaux[n];
                 var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
                 
-                html += '<tr class="stat-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" style="background-color: ' + bgColor + ';">';
+                html += '<tr class="stat-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
                 html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
                 html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
                 html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
@@ -2152,7 +2154,7 @@ function showStatistiquesModal() {
             // ========== LIGNE PAR ZONE (alphabétisation uniquement) ==========
             var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
             
-            html += '<tr class="stat-row stat-row-zone" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" style="background-color: #fff3cd; border-left: 4px solid #ffc107;">';
+            html += '<tr class="stat-row stat-row-zone" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="zone-entiere" style="background-color: #fff3cd; border-left: 4px solid #ffc107;">';
             html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
             html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
             html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + zone + '</td>';
@@ -2266,6 +2268,14 @@ setTimeout(async function() {
                                                 input.style.borderColor = '#4caf50';
                                                 input.disabled = true;
                                                 input.setAttribute('data-saved', 'true');
+                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
                                                 loaded++;
                                             }
                                         }
@@ -2279,6 +2289,14 @@ setTimeout(async function() {
                                                 input.style.borderColor = '#4caf50';
                                                 input.disabled = true;
                                                 input.setAttribute('data-saved', 'true');
+                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
                                                 loaded++;
                                             }
                                         }
@@ -2292,6 +2310,14 @@ setTimeout(async function() {
                                                 input.style.borderColor = '#4caf50';
                                                 input.disabled = true;
                                                 input.setAttribute('data-saved', 'true');
+                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
                                                 loaded++;
                                             }
                                         }
@@ -2305,6 +2331,14 @@ setTimeout(async function() {
                                                 input.style.borderColor = '#4caf50';
                                                 input.disabled = true;
                                                 input.setAttribute('data-saved', 'true');
+                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
                                                 loaded++;
                                             }
                                         }
@@ -2318,6 +2352,14 @@ setTimeout(async function() {
                                                 input.style.borderColor = '#4caf50';
                                                 input.disabled = true;
                                                 input.setAttribute('data-saved', 'true');
+                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
                                                 loaded++;
                                             }
                                         }
@@ -2331,6 +2373,14 @@ setTimeout(async function() {
                                                 input.style.borderColor = '#4caf50';
                                                 input.disabled = true;
                                                 input.setAttribute('data-saved', 'true');
+                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
                                                 loaded++;
                                             }
                                         }
@@ -2353,6 +2403,14 @@ setTimeout(async function() {
                                         input.style.borderColor = '#4caf50';
                                         input.disabled = true;
                                         input.setAttribute('data-saved', 'true');
+                                        input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
                                         loaded++;
                                     }
                                 }
@@ -2378,7 +2436,12 @@ setTimeout(async function() {
 }, 500);
   
     modalContainer.innerHTML = html;
-    
+  // Initialiser les cartes avec toutes les données
+    setTimeout(function() {
+        updateCartesIndicateurs(['T1', 'T2', 'T3', 'T4', 'Annuel']);
+    }, 100);
+}
+  
     // ========== DÉTECTER LES MODIFICATIONS POUR RÉACTIVER L'ENREGISTREMENT ==========
     setTimeout(function() {
         var allInputs = document.querySelectorAll('input[data-field]:not([disabled])');
@@ -2676,6 +2739,106 @@ function updateProgression() {
         progressElement.style.color = pourcentage === 100 ? '#4caf50' : '#ff9800';
         progressElement.style.fontWeight = 'bold';
     }
+}
+function filterStatistiquesByPeriode() {
+    var periodeFilter = document.getElementById('filter-periode-cumulative') ? document.getElementById('filter-periode-cumulative').value : 'TOUS';
+    
+    console.log('=== FILTRAGE PÉRIODE CUMULATIF ===');
+    console.log('Période sélectionnée:', periodeFilter);
+    
+    // Définir les périodes incluses
+    var periodesIncluses = [];
+    if (periodeFilter === 'TOUS') {
+        periodesIncluses = ['T1', 'T2', 'T3', 'T4', 'Annuel'];
+    } else if (periodeFilter === 'T1') {
+        periodesIncluses = ['T1'];
+    } else if (periodeFilter === 'T2') {
+        periodesIncluses = ['T1', 'T2'];
+    } else if (periodeFilter === 'T3') {
+        periodesIncluses = ['T1', 'T2', 'T3'];
+    } else if (periodeFilter === 'T4') {
+        periodesIncluses = ['T1', 'T2', 'T3', 'T4'];
+    } else if (periodeFilter === 'Annuel') {
+        periodesIncluses = ['T1', 'T2', 'T3', 'T4', 'Annuel'];
+    }
+    
+    console.log('Périodes incluses:', periodesIncluses);
+    
+    // Filtrer les inputs par période
+    var allInputs = document.querySelectorAll('input[data-field][data-periode]');
+    var inputsAffichesCount = 0;
+    
+    for (var i = 0; i < allInputs.length; i++) {
+        var input = allInputs[i];
+        var inputPeriode = input.getAttribute('data-periode');
+        
+        if (periodesIncluses.indexOf(inputPeriode) !== -1) {
+            input.style.display = '';
+            inputsAffichesCount++;
+        } else {
+            input.style.display = 'none';
+        }
+    }
+    
+    // Filtrer aussi les lignes
+    var rows = document.querySelectorAll('.stat-row');
+    var rowsVisibles = 0;
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var rowPeriode = row.getAttribute('data-periode');
+        
+        if (rowPeriode && periodesIncluses.indexOf(rowPeriode) !== -1) {
+            row.style.display = '';
+            rowsVisibles++;
+        } else if (!rowPeriode) {
+            // Si pas de période définie, afficher la ligne (données non encore saisies)
+            row.style.display = '';
+            rowsVisibles++;
+        }
+    }
+    
+    console.log('Inputs affichés:', inputsAffichesCount);
+    console.log('Lignes visibles:', rowsVisibles);
+    
+    // Mettre à jour les cartes d'indicateurs
+    updateCartesIndicateurs(periodesIncluses);
+}
+function updateCartesIndicateurs(periodesIncluses) {
+    console.log('=== MISE À JOUR DES CARTES ===');
+    
+    // Filtrer statistiquesData selon les périodes incluses
+    var dataFiltree = [];
+    for (var i = 0; i < statistiquesData.length; i++) {
+        if (periodesIncluses.indexOf(statistiquesData[i].periode) !== -1) {
+            dataFiltree.push(statistiquesData[i]);
+        }
+    }
+    
+    console.log('Données filtrées:', dataFiltree.length, 'sur', statistiquesData.length);
+    
+    // Recalculer les moyennes
+    var moyenneAbandon = calculerMoyenne(dataFiltree, 'taux_abandon');
+    var moyenneReussite = calculerMoyenne(dataFiltree, 'taux_reussite_examens');
+    var moyenneScolarisation = calculerMoyenne(dataFiltree, 'taux_scolarisation');
+    var moyenneAlphabetisation = calculerMoyenne(dataFiltree, 'taux_alphabetisation');
+    var moyenneRatioEnseignant = calculerMoyenne(dataFiltree, 'ratio_eleves_enseignant');
+    var moyenneRatioClasse = calculerMoyenne(dataFiltree, 'ratio_eleves_classe');
+    var moyenneDistance = calculerMoyenne(dataFiltree, 'distance_moyenne_ecole_domicile');
+    
+    // Mettre à jour les valeurs affichées dans les cartes
+    var cartes = document.querySelectorAll('.card-value');
+    if (cartes.length >= 7) {
+        cartes[0].textContent = moyenneAbandon + '%';
+        cartes[1].textContent = moyenneReussite + '%';
+        cartes[2].textContent = moyenneScolarisation + '%';
+        cartes[3].textContent = moyenneAlphabetisation + '%';
+        cartes[4].textContent = moyenneRatioEnseignant;
+        cartes[5].textContent = moyenneRatioClasse;
+        cartes[6].textContent = moyenneDistance;
+    }
+    
+    console.log('Cartes mises à jour');
 }
 
 async function deleteStatistique(id) {
@@ -3663,6 +3826,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
