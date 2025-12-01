@@ -2377,7 +2377,25 @@ setTimeout(async function() {
 }, 500);
   
     modalContainer.innerHTML = html;
+    
+    // ========== DÉTECTER LES MODIFICATIONS POUR RÉACTIVER L'ENREGISTREMENT ==========
+    setTimeout(function() {
+        var allInputs = document.querySelectorAll('input[data-field]:not([disabled])');
+        for (var i = 0; i < allInputs.length; i++) {
+            allInputs[i].addEventListener('input', function() {
+                // Retirer le statut "sauvegardé" quand l'utilisateur modifie
+                if (this.getAttribute('data-saved') === 'true') {
+                    this.removeAttribute('data-saved');
+                    this.style.background = '';
+                    this.style.borderColor = '';
+                    this.disabled = false;
+                    console.log('✏️ Champ réactivé pour modification');
+                }
+            });
+        }
+    }, 600);
 }
+
 
 function updatePrefecturesDropdown() {
     var regionId = document.getElementById('stat-region').value;
@@ -3616,6 +3634,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
