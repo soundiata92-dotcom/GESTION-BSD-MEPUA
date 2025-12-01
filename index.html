@@ -3834,31 +3834,65 @@ if (!currentUser) {
     }
     
     // Filtres
-    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3 style="margin-bottom: 12px;">Filtres</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
-    
-    // 🔥 NOUVEAU FILTRE PÉRIODE CUMULATIF
-    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Afficher jusqu\'à</label><select id="filter-stats-periode" class="form-control" onchange="filterStatsMainPage()"><option value="TOUS">Toutes les périodes</option><option value="T1">Jusqu\'à T1</option><option value="T2">Jusqu\'à T2</option><option value="T3">Jusqu\'à T3</option><option value="T4">Jusqu\'à T4</option><option value="Annuel">Année complète</option></select></div>';
+    // Filtres
+html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+html += '<h3 style="margin-bottom: 12px;">Filtres</h3>';
+html += '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;">';
 
-                
-               // Filtre Région
-                html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">Région</label><select class="form-control"><option>Toutes</option>';
-                for (var i = 0; i < regionsData.length; i++) {
-                    html += '<option>' + regionsData[i].nom + '</option>';
-                }
-                html += '</select></div>';
-                
-                // Filtre Niveau
-                html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">Niveau</label><select class="form-control"><option>Tous</option><option>Préscolaire</option><option>Primaire</option><option>Secondaire</option></select></div>';
-                
-                // Filtre Genre
-                html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">Genre</label><select class="form-control"><option>Total</option><option>Filles</option><option>Garçons</option></select></div>';
-                
-                // Filtre Zone (NOUVEAU)
-                html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">Zone</label><select class="form-control"><option>Toutes</option><option>Urbaine</option><option>Rurale</option></select></div>';
-                
-                html += '</div></div>';
+// 1️⃣ AFFICHER JUSQU'À (Période)
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Afficher jusqu\'à</label>';
+html += '<select id="filter-stats-periode" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="TOUS">Toutes les périodes</option>';
+html += '<option value="T1">Jusqu\'à T1</option>';
+html += '<option value="T2">Jusqu\'à T2</option>';
+html += '<option value="T3">Jusqu\'à T3</option>';
+html += '<option value="T4">Jusqu\'à T4</option>';
+html += '<option value="Annuel">Année complète</option>';
+html += '</select></div>';
+
+// 2️⃣ RÉGION
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
+html += '<select id="filter-stats-region" class="form-control" onchange="appliquerFiltresStatistiques(); updateStatsPrefectureDropdown();">';
+html += '<option value="">Toutes</option>';
+for (var i = 0; i < regionsData.length; i++) {
+    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+}
+html += '</select></div>';
+
+// 3️⃣ PRÉFECTURE
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏛️ Préfecture</label>';
+html += '<select id="filter-stats-prefecture" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="">Toutes</option>';
+html += '</select></div>';
+
+// 4️⃣ ZONE
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏘️ Zone</label>';
+html += '<select id="filter-stats-zone" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="">Toutes</option>';
+html += '<option value="Urbaine">Urbaine</option>';
+html += '<option value="Rurale">Rurale</option>';
+html += '</select></div>';
+
+// 5️⃣ NIVEAU
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
+html += '<select id="filter-stats-niveau" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="">Tous</option>';
+html += '<option value="Préscolaire">Préscolaire</option>';
+html += '<option value="Primaire">Primaire</option>';
+html += '<option value="Secondaire">Secondaire</option>';
+html += '<option value="Alphabétisation">Alphabétisation</option>';
+html += '</select></div>';
+
+// 6️⃣ GENRE
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">👤 Genre</label>';
+html += '<select id="filter-stats-genre" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="">Total et Filles</option>';
+html += '<option value="Total">Total uniquement</option>';
+html += '<option value="Filles">Filles uniquement</option>';
+html += '</select></div>';
+
+html += '</div></div>';
+
 
                 
                 // Cartes d'indicateurs
@@ -3957,6 +3991,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
