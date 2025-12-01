@@ -2909,11 +2909,18 @@ function updateStatsPrefectureDropdown() {
     }
 }
        
-function filterStatsMainPage() {
-    var periodeFilter = document.getElementById('filter-stats-periode') ? document.getElementById('filter-stats-periode').value : 'TOUS';
+function appliquerFiltresStatistiques() {
+    console.log('=== APPLICATION DES FILTRES STATISTIQUES ===');
     
-    console.log('=== FILTRAGE STATISTIQUES PAR PÉRIODE ===');
-    console.log('Filtre période:', periodeFilter);
+    // Récupérer tous les filtres
+    var periodeFilter = document.getElementById('filter-stats-periode') ? document.getElementById('filter-stats-periode').value : 'TOUS';
+    var regionId = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
+    var prefecture = document.getElementById('filter-stats-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
+    var zone = document.getElementById('filter-stats-zone') ? document.getElementById('filter-stats-zone').value : '';
+    var niveau = document.getElementById('filter-stats-niveau') ? document.getElementById('filter-stats-niveau').value : '';
+    var genre = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : '';
+    
+    console.log('Filtres:', {periodeFilter, regionId, prefecture, zone, niveau, genre});
     
     // Définir les périodes incluses (cumulatif)
     var periodesIncluses = [];
@@ -2931,81 +2938,117 @@ function filterStatsMainPage() {
         periodesIncluses = ['T1', 'T2', 'T3', 'T4', 'Annuel'];
     }
     
-    // Filtrer les données
-    var dataFiltree = [];
-    for (var i = 0; i < statistiquesData.length; i++) {
-        if (periodesIncluses.indexOf(statistiquesData[i].periode) !== -1) {
-            dataFiltree.push(statistiquesData[i]);
+    // Trouver le nom de la région si un ID est sélectionné
+    var regionNom = '';
+    if (regionId) {
+        for (var i = 0; i < regionsData.length; i++) {
+            if (regionsData[i].id == regionId) {
+                regionNom = regionsData[i].nom;
+                break;
+            }
         }
     }
     
-    console.log('Données filtrées:', dataFiltree.length, '/', statistiquesData.length);
+    // Filtrer les données POUR LES TAUX (Genre inclus)
+    var dataFiltreeTaux = [];
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        // Filtre période
+        if (periodesIncluses.indexOf(stat.periode) === -1) continue;
+        
+        // Filtre région
+        if (regionNom && stat.region !== regionNom) continue;
+        
+        // Filtre préfecture
+        if (prefecture && stat.prefecture !== prefecture) continue;
+        
+        // Filtre zone
+        if (zone && stat.zone !== zone) continue;
+        
+        // Filtre niveau
+        if (niveau && stat.niveau !== niveau) continue;
+        
+        // Filtre genre (pour les taux)
+        if (genre && stat.genre !== genre) continue;
+        
+        dataFiltreeTaux.push(stat);
+    }
     
-    // Recalculer et mettre à jour les cartes
-    var moyenneAbandon = calculerMoyenne(dataFiltree, 'taux_abandon');
-    var moyenneReussite = calculerMoyenne(dataFiltree, 'taux_reussite_examens');
-    var moyenneScolarisation = calculerMoyenne(dataFiltree, 'taux_scolarisation');
-    var moyenneAlphabetisation = calculerMoyenne(dataFiltree, 'taux_alphabetisation');
-    var moyenneRatioEnseignant = calculerMoyenne(dataFiltree, 'ratio_eleves_enseignant');
-    var moyenneRatioClasse = calculerMoyenne(dataFiltree, 'ratio_eleves_classe');
-    var moyenneDistance = calculerMoyenne(dataFiltree, 'distance_moyenne_ecole_domicile');
+    // Filtrer les données POUR LES RATIOS/DISTANCE (Genre ignoré, seulement Total)
+    var dataFiltreeRatios = [];
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        // Filtre période
+        if (periodesIncluses.indexOf(stat.periode) === -1) continue;
+        
+        // Filtre région
+        if (regionNom && stat.region !== regionNom) continue;
+        
+        // Filtre préfecture
+        if (prefecture && stat.prefecture !== prefecture) continue;
+        
+        // Filtre zone
+        if (zone && stat.zone !== zone) continue;
+        
+        // Filtre niveau
+        if (niveau && stat.niveau !== niveau) continue;
+        
+        // SEULEMENT Total pour les ratios
+        if (stat.genre !== 'Total') continue;
+        
+        dataFiltreeRatios.push(stat);
+    }
+    
+    console.log('Données filtrées - Taux:', dataFiltreeTaux.length);
+    console.log('Données filtrées - Ratios:', dataFiltreeRatios.length);
+    
+    // Calculer les moyennes POUR LES TAUX
+    var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
+    var moyenneReussite = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_examens');
+    var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation');
+    var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
+    
+    // Calculer les moyennes POUR LES RATIOS/DISTANCE
+    var moyenneRatioEnseignant = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_enseignant');
+    var moyenneRatioClasse = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_classe');
+    var moyenneDistance = calculerMoyenne(dataFiltreeRatios, 'distance_moyenne_ecole_domicile');
     
     // Mettre à jour l'affichage des cartes
     var cards = document.querySelectorAll('.card');
     if (cards.length >= 7) {
-        var values = cards[0].querySelector('.card-value');
-        if (values) values.textContent = moyenneAbandon + '%';
+        // Carte 1 : Taux abandon
+        var value = cards[0].querySelector('.card-value');
+        if (value) value.textContent = moyenneAbandon + '%';
         
-        values = cards[1].querySelector('.card-value');
-        if (values) values.textContent = moyenneReussite + '%';
+        // Carte 2 : Taux réussite
+        value = cards[1].querySelector('.card-value');
+        if (value) value.textContent = moyenneReussite + '%';
         
-        values = cards[2].querySelector('.card-value');
-        if (values) values.textContent = moyenneScolarisation + '%';
+        // Carte 3 : Taux scolarisation
+        value = cards[2].querySelector('.card-value');
+        if (value) value.textContent = moyenneScolarisation + '%';
         
-        values = cards[3].querySelector('.card-value');
-        if (values) values.textContent = moyenneAlphabetisation + '%';
+        // Carte 4 : Taux alphabétisation
+        value = cards[3].querySelector('.card-value');
+        if (value) value.textContent = moyenneAlphabetisation + '%';
         
-        values = cards[4].querySelector('.card-value');
-        if (values) values.textContent = moyenneRatioEnseignant;
+        // Carte 5 : Ratio enseignant (Genre ignoré)
+        value = cards[4].querySelector('.card-value');
+        if (value) value.textContent = moyenneRatioEnseignant;
         
-        values = cards[5].querySelector('.card-value');
-        if (values) values.textContent = moyenneRatioClasse;
+        // Carte 6 : Ratio classe (Genre ignoré)
+        value = cards[5].querySelector('.card-value');
+        if (value) value.textContent = moyenneRatioClasse;
         
-        values = cards[6].querySelector('.card-value');
-        if (values) values.textContent = moyenneDistance;
+        // Carte 7 : Distance (Genre ignoré)
+        value = cards[6].querySelector('.card-value');
+        if (value) value.textContent = moyenneDistance;
     }
     
-    // Filtrer aussi les lignes du tableau
-    var tbody = document.querySelector('.table-container tbody');
-    if (tbody) {
-        var rows = tbody.querySelectorAll('tr');
-        var visibleCount = 0;
-        
-        for (var i = 0; i < rows.length; i++) {
-            var row = rows[i];
-            var cells = row.querySelectorAll('td');
-            
-            if (cells.length === 0) continue; // Ignorer les lignes vides
-            
-            // Trouver la stat correspondante
-            var showRow = false;
-            for (var j = 0; j < dataFiltree.length; j++) {
-                var stat = dataFiltree[j];
-                
-                // Vérifier si cette ligne correspond à cette stat
-                if (cells[0] && cells[0].textContent.trim() === stat.region &&
-                    cells[1] && cells[1].textContent.trim() === stat.prefecture) {
-                    showRow = true;
-                    break;
-                }
-            }
-            
-            row.style.display = showRow ? '' : 'none';
-            if (showRow) visibleCount++;
-        }
-        
-        console.log('Lignes visibles dans le tableau:', visibleCount);
-    }
+    console.log('Cartes mises à jour');
+    console.log('========================================');
 }
 
         // ========== FONCTION RENDER PRINCIPALE 
@@ -4012,6 +4055,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
