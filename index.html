@@ -2594,10 +2594,27 @@ async function submitStatistiquesTableau() {
         }
     }
     
-    if (dataToInsert.length === 0) {
-        alert('⚠️ Aucune nouvelle donnée à enregistrer.\n\nToutes les données sont déjà enregistrées.');
-        return;
+    // Si aucune nouvelle donnée MAIS des champs ont été modifiés (data-saved retiré)
+var champsModifies = document.querySelectorAll('input[data-field]:not([data-saved]):not([disabled])');
+var hasModifications = false;
+for (var i = 0; i < champsModifies.length; i++) {
+    if (champsModifies[i].value && champsModifies[i].value.trim() !== '') {
+        hasModifications = true;
+        break;
     }
+}
+
+if (dataToInsert.length === 0 && !hasModifications) {
+    alert('⚠️ Aucune nouvelle donnée à enregistrer.\n\nToutes les données sont déjà enregistrées.');
+    return;
+}
+
+// Si des modifications existent mais dataToInsert est vide, forcer la collecte
+if (dataToInsert.length === 0 && hasModifications) {
+    alert('⚠️ Des modifications ont été détectées mais ne sont pas prises en compte.\n\nVeuillez actualiser la page (F5) et ressaisir vos modifications.');
+    return;
+}
+
     
     if (!confirm('💾 Vous allez enregistrer ' + dataToInsert.length + ' nouvelles lignes.\n\nContinuer ?')) {
         return;
@@ -3634,6 +3651,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
