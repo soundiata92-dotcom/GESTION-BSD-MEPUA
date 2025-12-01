@@ -2055,8 +2055,6 @@ function showStatistiquesModal() {
    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
 html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="global-annee" class="form-control" value="2025-2026" onchange="rechargerFormulaireStatistiques()"></div>';
 html += '<div class="form-group"><label>Période *</label><select id="global-periode" class="form-control" onchange="rechargerFormulaireStatistiques()"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
-
-html += '<div class="form-group"><label>🔍 Afficher jusqu\'à</label><select id="filter-periode-cumulative" class="form-control" onchange="filterStatistiquesByPeriode()"><option value="TOUS">Toutes les périodes</option><option value="T1">Jusqu\'à T1</option><option value="T2">Jusqu\'à T2</option><option value="T3">Jusqu\'à T3</option><option value="T4">Jusqu\'à T4</option><option value="Annuel">Annuel</option></select></div>';
     
     html += '<div class="form-group"><label>Filtre Région</label><select id="filter-region" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les régions</option>';
     for (var i = 0; i < regionsData.length; i++) {
@@ -3959,6 +3957,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
