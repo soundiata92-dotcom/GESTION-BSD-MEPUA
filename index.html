@@ -3950,14 +3950,12 @@ html += '</select></div>';
 // 6️⃣ GENRE
 html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">👤 Genre</label>';
 html += '<select id="filter-stats-genre" class="form-control" onchange="appliquerFiltresStatistiques()">';
-html += '<option value="">Total et Filles</option>';
-html += '<option value="Total">Total uniquement</option>';
-html += '<option value="Filles">Filles uniquement</option>';
+html += '<option value="">Tous</option>';
+html += '<option value="Total">Total</option>';
+html += '<option value="Filles">Filles</option>';
 html += '</select></div>';
 
 html += '</div></div>';
-
-
                 
                 // Cartes d'indicateurs
                 html += '<div class="cards" style="grid-template-columns: repeat(7, 1fr); margin-bottom: 24px;">';
@@ -4055,6 +4053,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
