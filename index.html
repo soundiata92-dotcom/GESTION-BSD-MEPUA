@@ -2186,7 +2186,8 @@ function showStatistiquesModal() {
   html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
 html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
 html += '<div style="display: flex; gap: 10px;">';
-html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau()">💾 Enregistrer</button>';
+html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)">💾 Enregistrer nouvelles</button>';
+html += '<button class="btn btn-warning" onclick="submitStatistiquesTableau(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
 html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
 html += '</div>';
 html += '</div>';
@@ -2389,13 +2390,11 @@ setTimeout(async function() {
                     this.style.background = '';
                     this.style.borderColor = '';
                     this.disabled = false;
-                    console.log('✏️ Champ réactivé pour modification');
                 }
             });
         }
     }, 600);
 }
-
 
 function updatePrefecturesDropdown() {
     var regionId = document.getElementById('stat-region').value;
@@ -2415,7 +2414,9 @@ function updatePrefecturesDropdown() {
     }
 }
 
-async function submitStatistiquesTableau() {
+async function submitStatistiquesTableau(forcerMiseAJour) {
+    forcerMiseAJour = forcerMiseAJour || false;
+    
     var annee = document.getElementById('global-annee').value.trim();
     var periode = document.getElementById('global-periode').value;
     
@@ -2461,22 +2462,23 @@ async function submitStatistiquesTableau() {
                     var inputRatioClasse = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"][data-type="niveau"]');
                     var inputDistance = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"][data-type="niveau"]');
                     
-                    // Vérifier si déjà enregistré (attribut data-saved)
+                    // Vérifier si déjà enregistré
                     var alreadySavedT = inputAbandonT && inputAbandonT.getAttribute('data-saved') === 'true';
                     var alreadySavedF = inputAbandonF && inputAbandonF.getAttribute('data-saved') === 'true';
                     
-                    var abandonT = inputAbandonT && inputAbandonT.value && !alreadySavedT ? parseFloat(inputAbandonT.value) : null;
-                    var abandonF = inputAbandonF && inputAbandonF.value && !alreadySavedF ? parseFloat(inputAbandonF.value) : null;
-                    var reussiteT = inputReussiteT && inputReussiteT.value && !alreadySavedT ? parseFloat(inputReussiteT.value) : null;
-                    var reussiteF = inputReussiteF && inputReussiteF.value && !alreadySavedF ? parseFloat(inputReussiteF.value) : null;
-                    var scolarisationT = inputScolarisationT && inputScolarisationT.value && !alreadySavedT ? parseFloat(inputScolarisationT.value) : null;
-                    var scolarisationF = inputScolarisationF && inputScolarisationF.value && !alreadySavedF ? parseFloat(inputScolarisationF.value) : null;
-                    var ratioEns = inputRatioEns && inputRatioEns.value && !alreadySavedT ? parseFloat(inputRatioEns.value) : null;
-                    var ratioClasse = inputRatioClasse && inputRatioClasse.value && !alreadySavedT ? parseFloat(inputRatioClasse.value) : null;
-                    var distance = inputDistance && inputDistance.value && !alreadySavedT ? parseFloat(inputDistance.value) : null;
+                    // Si forcerMiseAJour, on collecte même si déjà saved
+                    var abandonT = inputAbandonT && inputAbandonT.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputAbandonT.value) : null;
+                    var abandonF = inputAbandonF && inputAbandonF.value && (!alreadySavedF || forcerMiseAJour) ? parseFloat(inputAbandonF.value) : null;
+                    var reussiteT = inputReussiteT && inputReussiteT.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputReussiteT.value) : null;
+                    var reussiteF = inputReussiteF && inputReussiteF.value && (!alreadySavedF || forcerMiseAJour) ? parseFloat(inputReussiteF.value) : null;
+                    var scolarisationT = inputScolarisationT && inputScolarisationT.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputScolarisationT.value) : null;
+                    var scolarisationF = inputScolarisationF && inputScolarisationF.value && (!alreadySavedF || forcerMiseAJour) ? parseFloat(inputScolarisationF.value) : null;
+                    var ratioEns = inputRatioEns && inputRatioEns.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputRatioEns.value) : null;
+                    var ratioClasse = inputRatioClasse && inputRatioClasse.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputRatioClasse.value) : null;
+                    var distance = inputDistance && inputDistance.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputDistance.value) : null;
                     
-                    // Créer enregistrement Total si au moins un champ est rempli ET pas déjà enregistré
-                    if (!alreadySavedT && (abandonT !== null || reussiteT !== null || scolarisationT !== null || ratioEns !== null || ratioClasse !== null || distance !== null)) {
+                    // Créer enregistrement Total
+                    if ((!alreadySavedT || forcerMiseAJour) && (abandonT !== null || reussiteT !== null || scolarisationT !== null || ratioEns !== null || ratioClasse !== null || distance !== null)) {
                         dataToInsert.push({
                             annee_scolaire: annee,
                             periode: periode,
@@ -2504,8 +2506,8 @@ async function submitStatistiquesTableau() {
                         if (inputDistance) { inputDistance.setAttribute('data-saved', 'true'); }
                     }
                     
-                    // Créer enregistrement Filles si au moins un champ est rempli ET pas déjà enregistré
-                    if (!alreadySavedF && (abandonF !== null || reussiteF !== null || scolarisationF !== null)) {
+                    // Créer enregistrement Filles
+                    if ((!alreadySavedF || forcerMiseAJour) && (abandonF !== null || reussiteF !== null || scolarisationF !== null)) {
                         dataToInsert.push({
                             annee_scolaire: annee,
                             periode: periode,
@@ -2518,9 +2520,9 @@ async function submitStatistiquesTableau() {
                             taux_reussite_examens: reussiteF,
                             taux_scolarisation: scolarisationF,
                             taux_alphabetisation: null,
-                            ratio_eleves_enseignant: ratioEns,
-                            ratio_eleves_classe: ratioClasse,
-                            distance_moyenne_ecole_domicile: distance,
+                            ratio_eleves_enseignant: null,
+                            ratio_eleves_classe: null,
+                            distance_moyenne_ecole_domicile: null,
                             saisi_par: currentUser.nom
                         });
                         
@@ -2540,18 +2542,18 @@ async function submitStatistiquesTableau() {
                 var alreadySavedAlphaT = inputAlphabetisationT && inputAlphabetisationT.getAttribute('data-saved') === 'true';
                 var alreadySavedAlphaF = inputAlphabetisationF && inputAlphabetisationF.getAttribute('data-saved') === 'true';
                 
-                var alphabetisationT = inputAlphabetisationT && inputAlphabetisationT.value && !alreadySavedAlphaT ? parseFloat(inputAlphabetisationT.value) : null;
-                var alphabetisationF = inputAlphabetisationF && inputAlphabetisationF.value && !alreadySavedAlphaF ? parseFloat(inputAlphabetisationF.value) : null;
+                var alphabetisationT = inputAlphabetisationT && inputAlphabetisationT.value && (!alreadySavedAlphaT || forcerMiseAJour) ? parseFloat(inputAlphabetisationT.value) : null;
+                var alphabetisationF = inputAlphabetisationF && inputAlphabetisationF.value && (!alreadySavedAlphaF || forcerMiseAJour) ? parseFloat(inputAlphabetisationF.value) : null;
                 
                 // Créer enregistrement alphabétisation Total
-                if (!alreadySavedAlphaT && alphabetisationT !== null) {
+                if ((!alreadySavedAlphaT || forcerMiseAJour) && alphabetisationT !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
                         periode: periode,
                         region: region.nom,
                         prefecture: prefecture.nom,
                         zone: zone,
-                        niveau: 'Alphabétisation', // ⚠️ CHANGEMENT ICI : au lieu de null
+                        niveau: 'Alphabétisation',
                         genre: 'Total',
                         taux_abandon: null,
                         taux_reussite_examens: null,
@@ -2567,14 +2569,14 @@ async function submitStatistiquesTableau() {
                 }
                 
                 // Créer enregistrement alphabétisation Filles
-                if (!alreadySavedAlphaF && alphabetisationF !== null) {
+                if ((!alreadySavedAlphaF || forcerMiseAJour) && alphabetisationF !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
                         periode: periode,
                         region: region.nom,
                         prefecture: prefecture.nom,
                         zone: zone,
-                        niveau: 'Alphabétisation', // ⚠️ CHANGEMENT ICI : au lieu de null
+                        niveau: 'Alphabétisation',
                         genre: 'Filles',
                         taux_abandon: null,
                         taux_reussite_examens: null,
@@ -2594,56 +2596,66 @@ async function submitStatistiquesTableau() {
         }
     }
     
-    // Si aucune nouvelle donnée MAIS des champs ont été modifiés (data-saved retiré)
-var champsModifies = document.querySelectorAll('input[data-field]:not([data-saved]):not([disabled])');
-var hasModifications = false;
-for (var i = 0; i < champsModifies.length; i++) {
-    if (champsModifies[i].value && champsModifies[i].value.trim() !== '') {
-        hasModifications = true;
-        break;
+    if (dataToInsert.length === 0) {
+        if (forcerMiseAJour) {
+            alert('⚠️ Aucune donnée à mettre à jour.\n\nModifiez au moins un champ avant de mettre à jour.');
+        } else {
+            alert('⚠️ Aucune nouvelle donnée à enregistrer.\n\nUtilisez le bouton "Mettre à jour" pour modifier des données existantes.');
+        }
+        return;
     }
-}
-
-if (dataToInsert.length === 0 && !hasModifications) {
-    alert('⚠️ Aucune nouvelle donnée à enregistrer.\n\nToutes les données sont déjà enregistrées.');
-    return;
-}
-
-// Si des modifications existent mais dataToInsert est vide, forcer la collecte
-if (dataToInsert.length === 0 && hasModifications) {
-    alert('⚠️ Des modifications ont été détectées mais ne sont pas prises en compte.\n\nVeuillez actualiser la page (F5) et ressaisir vos modifications.');
-    return;
-}
-
     
-    if (!confirm('💾 Vous allez enregistrer ' + dataToInsert.length + ' nouvelles lignes.\n\nContinuer ?')) {
+    var message = forcerMiseAJour 
+        ? '🔄 Vous allez mettre à jour ' + dataToInsert.length + ' lignes.\n\nContinuer ?' 
+        : '💾 Vous allez enregistrer ' + dataToInsert.length + ' nouvelles lignes.\n\nContinuer ?';
+    
+    if (!confirm(message)) {
         return;
     }
     
     try {
-        // Insérer par lots de 50
+        // Insérer/Mettre à jour par lots de 50
         var batchSize = 50;
-        var totalInserted = 0;
+        var totalProcessed = 0;
         
         for (var i = 0; i < dataToInsert.length; i += batchSize) {
             var batch = dataToInsert.slice(i, i + batchSize);
             
-            const { data: insertedData, error } = await supabase
+            const { data: processedData, error } = await supabase
                 .from('statistiques_educatives')
-                .insert(batch)
+                .upsert(batch, { 
+                    onConflict: 'annee_scolaire,periode,region,prefecture,zone,niveau,genre',
+                    ignoreDuplicates: false 
+                })
                 .select();
             
             if (error) throw error;
             
-            if (insertedData) {
-                for (var j = 0; j < insertedData.length; j++) {
-                    statistiquesData.unshift(insertedData[j]);
+            if (processedData) {
+                totalProcessed += processedData.length;
+                
+                // Mettre à jour le tableau local
+                for (var j = 0; j < processedData.length; j++) {
+                    var found = false;
+                    for (var k = 0; k < statistiquesData.length; k++) {
+                        if (statistiquesData[k].id === processedData[j].id) {
+                            statistiquesData[k] = processedData[j];
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        statistiquesData.unshift(processedData[j]);
+                    }
                 }
-                totalInserted += insertedData.length;
             }
         }
         
-        alert('✅ ' + totalInserted + ' statistiques enregistrées avec succès !');
+        var successMessage = forcerMiseAJour 
+            ? '✅ ' + totalProcessed + ' statistiques mises à jour avec succès !'
+            : '✅ ' + totalProcessed + ' statistiques enregistrées avec succès !';
+        
+        alert(successMessage);
         closeModal();
         render();
         
@@ -3651,6 +3663,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
