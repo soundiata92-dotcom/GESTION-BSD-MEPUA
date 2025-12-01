@@ -2053,8 +2053,8 @@ function showStatistiquesModal() {
     
     // En-tête avec période et genre
    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
-    html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="global-annee" class="form-control" value="2025-2026"></div>';
-    html += '<div class="form-group"><label>📅 Période de saisie *</label><select id="global-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="global-annee" class="form-control" value="2025-2026" onchange="rechargerFormulaireStatistiques()"></div>';
+html += '<div class="form-group"><label>Période *</label><select id="global-periode" class="form-control" onchange="rechargerFormulaireStatistiques()"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
 
 html += '<div class="form-group"><label>🔍 Afficher jusqu\'à</label><select id="filter-periode-cumulative" class="form-control" onchange="filterStatistiquesByPeriode()"><option value="TOUS">Toutes les périodes</option><option value="T1">Jusqu\'à T1</option><option value="T2">Jusqu\'à T2</option><option value="T3">Jusqu\'à T3</option><option value="T4">Jusqu\'à T4</option><option value="Annuel">Annuel</option></select></div>';
     
@@ -2457,6 +2457,38 @@ setTimeout(async function() {
             });
         }
     }, 600);
+function rechargerFormulaireStatistiques() {
+    console.log('🔄 Rechargement du formulaire...');
+    
+    // Récupérer les valeurs actuelles
+    var annee = document.getElementById('global-annee') ? document.getElementById('global-annee').value : '2025-2026';
+    var periode = document.getElementById('global-periode') ? document.getElementById('global-periode').value : 'T1';
+    var filterRegion = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
+    var filterPrefecture = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
+    
+    console.log('Période sélectionnée:', periode);
+    
+    // Fermer et rouvrir le modal avec les mêmes paramètres
+    showStatistiquesModal();
+    
+    // Restaurer les valeurs après rechargement
+    setTimeout(function() {
+        if (document.getElementById('global-annee')) {
+            document.getElementById('global-annee').value = annee;
+        }
+        if (document.getElementById('global-periode')) {
+            document.getElementById('global-periode').value = periode;
+        }
+        if (document.getElementById('filter-region')) {
+            document.getElementById('filter-region').value = filterRegion;
+            updateFormFilters(); // Mettre à jour les préfectures
+        }
+        if (document.getElementById('filter-prefecture')) {
+            document.getElementById('filter-prefecture').value = filterPrefecture;
+            filterTableRows();
+        }
+    }, 100);
+}
 
 function updatePrefecturesDropdown() {
     var regionId = document.getElementById('stat-region').value;
@@ -2856,6 +2888,104 @@ async function deleteStatistique(id) {
     } catch (error) {
         console.error('Erreur:', error);
         alert('❌ Erreur lors de la suppression');
+    }
+}
+function filterStatsMainPage() {
+    var periodeFilter = document.getElementById('filter-stats-periode') ? document.getElementById('filter-stats-periode').value : 'TOUS';
+    
+    console.log('=== FILTRAGE STATISTIQUES PAR PÉRIODE ===');
+    console.log('Filtre période:', periodeFilter);
+    
+    // Définir les périodes incluses (cumulatif)
+    var periodesIncluses = [];
+    if (periodeFilter === 'TOUS') {
+        periodesIncluses = ['T1', 'T2', 'T3', 'T4', 'Annuel'];
+    } else if (periodeFilter === 'T1') {
+        periodesIncluses = ['T1'];
+    } else if (periodeFilter === 'T2') {
+        periodesIncluses = ['T1', 'T2'];
+    } else if (periodeFilter === 'T3') {
+        periodesIncluses = ['T1', 'T2', 'T3'];
+    } else if (periodeFilter === 'T4') {
+        periodesIncluses = ['T1', 'T2', 'T3', 'T4'];
+    } else if (periodeFilter === 'Annuel') {
+        periodesIncluses = ['T1', 'T2', 'T3', 'T4', 'Annuel'];
+    }
+    
+    // Filtrer les données
+    var dataFiltree = [];
+    for (var i = 0; i < statistiquesData.length; i++) {
+        if (periodesIncluses.indexOf(statistiquesData[i].periode) !== -1) {
+            dataFiltree.push(statistiquesData[i]);
+        }
+    }
+    
+    console.log('Données filtrées:', dataFiltree.length, '/', statistiquesData.length);
+    
+    // Recalculer et mettre à jour les cartes
+    var moyenneAbandon = calculerMoyenne(dataFiltree, 'taux_abandon');
+    var moyenneReussite = calculerMoyenne(dataFiltree, 'taux_reussite_examens');
+    var moyenneScolarisation = calculerMoyenne(dataFiltree, 'taux_scolarisation');
+    var moyenneAlphabetisation = calculerMoyenne(dataFiltree, 'taux_alphabetisation');
+    var moyenneRatioEnseignant = calculerMoyenne(dataFiltree, 'ratio_eleves_enseignant');
+    var moyenneRatioClasse = calculerMoyenne(dataFiltree, 'ratio_eleves_classe');
+    var moyenneDistance = calculerMoyenne(dataFiltree, 'distance_moyenne_ecole_domicile');
+    
+    // Mettre à jour l'affichage des cartes
+    var cards = document.querySelectorAll('.card');
+    if (cards.length >= 7) {
+        var values = cards[0].querySelector('.card-value');
+        if (values) values.textContent = moyenneAbandon + '%';
+        
+        values = cards[1].querySelector('.card-value');
+        if (values) values.textContent = moyenneReussite + '%';
+        
+        values = cards[2].querySelector('.card-value');
+        if (values) values.textContent = moyenneScolarisation + '%';
+        
+        values = cards[3].querySelector('.card-value');
+        if (values) values.textContent = moyenneAlphabetisation + '%';
+        
+        values = cards[4].querySelector('.card-value');
+        if (values) values.textContent = moyenneRatioEnseignant;
+        
+        values = cards[5].querySelector('.card-value');
+        if (values) values.textContent = moyenneRatioClasse;
+        
+        values = cards[6].querySelector('.card-value');
+        if (values) values.textContent = moyenneDistance;
+    }
+    
+    // Filtrer aussi les lignes du tableau
+    var tbody = document.querySelector('.table-container tbody');
+    if (tbody) {
+        var rows = tbody.querySelectorAll('tr');
+        var visibleCount = 0;
+        
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var cells = row.querySelectorAll('td');
+            
+            if (cells.length === 0) continue; // Ignorer les lignes vides
+            
+            // Trouver la stat correspondante
+            var showRow = false;
+            for (var j = 0; j < dataFiltree.length; j++) {
+                var stat = dataFiltree[j];
+                
+                // Vérifier si cette ligne correspond à cette stat
+                if (cells[0] && cells[0].textContent.trim() === stat.region &&
+                    cells[1] && cells[1].textContent.trim() === stat.prefecture) {
+                    showRow = true;
+                    break;
+                }
+            }
+            
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        }
+        
+        console.log('Lignes visibles dans le tableau:', visibleCount);
     }
 }
 
@@ -3697,18 +3827,22 @@ if (!currentUser) {
                 html += '</div>';
             }
 // ========== ONGLET 7 : STATISTIQUES ==========
-            if (activeTab === 'statistiques') {
-                html += '<h2 style="margin-bottom: 16px;">📊 Statistiques Éducatives</h2>';
-                
-                // Bouton d'ajout (seulement pour DG du BSD et Admin)
-                if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-                    html += '<div style="margin-bottom: 16px;"><button class="btn btn-success" onclick="showStatistiquesModal()">+ Saisir des statistiques</button></div>';
-                }
-                
-                // Filtres
-                html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-                html += '<h3 style="margin-bottom: 12px;">Filtres</h3>';
-                html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+           if (activeTab === 'statistiques') {
+    html += '<h2 style="margin-bottom: 16px;">📊 Statistiques Éducatives</h2>';
+    
+    // Bouton d'ajout
+    if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+        html += '<div style="margin-bottom: 16px;"><button class="btn btn-success" onclick="showStatistiquesModal()">+ Saisir des statistiques</button></div>';
+    }
+    
+    // Filtres
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+    html += '<h3 style="margin-bottom: 12px;">Filtres</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+    
+    // 🔥 NOUVEAU FILTRE PÉRIODE CUMULATIF
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Afficher jusqu\'à</label><select id="filter-stats-periode" class="form-control" onchange="filterStatsMainPage()"><option value="TOUS">Toutes les périodes</option><option value="T1">Jusqu\'à T1</option><option value="T2">Jusqu\'à T2</option><option value="T3">Jusqu\'à T3</option><option value="T4">Jusqu\'à T4</option><option value="Annuel">Année complète</option></select></div>';
+
                 
                // Filtre Région
                 html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">Région</label><select class="form-control"><option>Toutes</option>';
@@ -3825,6 +3959,7 @@ async function init() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
