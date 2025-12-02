@@ -980,140 +980,138 @@ async function submitSignupWithInvitation() {
         }
 
         function showCommentaireEtPreuveModal() {
-            var modalContainer = document.getElementById('modal-container');
-            
-            var html = '<div class="modal"><div class="modal-content"><h2 style="margin-bottom: 24px;">📋 Déposer une preuve et Commenter</h2>';
-            
-            if (currentUser.role === 'admin') {
-                var activitesRealisees = [];
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].valide && calcTaux(data[i]) === 100) {
-                        activitesRealisees.push(data[i]);
-                    }
-                }
-                
-                html += '<div class="form-group"><label>Objectif (automatique)</label><div id="objectif-display" style="padding: 8px 16px; background-color: #f3f4f6; border-radius: 8px; color: #6b7280;">-</div></div>';
-                
-                html += '<div class="form-group"><label>Activité/Action *</label><select id="combined-activite" class="form-control" onchange="updateActiviteSelection()">';
-                if (activitesRealisees.length > 0) {
-                    for (var i = 0; i < activitesRealisees.length; i++) {
-                        html += '<option value="' + activitesRealisees[i].activite + '" data-objectif="' + activitesRealisees[i].categorie + '" data-service="' + activitesRealisees[i].service + '">' + activitesRealisees[i].activite + ' (' + activitesRealisees[i].service + ')</option>';
-                    }
-                } else {
-                    html += '<option>Aucune activité réalisée à 100%</option>';
-                }
-                html += '</select></div>';
-                
-                html += '<div class="form-group"><label>Service (automatique)</label><select id="combined-service" class="form-control" disabled style="background-color: #f3f4f6;">';
-                for (var i = 0; i < services.length; i++) {
-                    html += '<option value="' + services[i] + '">' + services[i] + '</option>';
-                }
-                html += '</select></div>';
-            }
-            
-            if (currentUser.role === 'chef') {
-                var mesActivites = [];
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].service === currentUser.service && data[i].valide && calcTaux(data[i]) === 100) {
-                        mesActivites.push(data[i]);
-                    }
-                }
-                
-                html += '<div class="form-group"><label>Objectif (automatique)</label><div id="objectif-display" style="padding: 8px 16px; background-color: #f3f4f6; border-radius: 8px; color: #6b7280;">-</div></div>';
-                
-                html += '<div class="form-group"><label>Activité/Action *</label><select id="combined-activite" class="form-control" onchange="updateActiviteSelection()">';
-                if (mesActivites.length > 0) {
-                    for (var i = 0; i < mesActivites.length; i++) {
-                        html += '<option value="' + mesActivites[i].activite + '" data-objectif="' + mesActivites[i].categorie + '" data-service="' + mesActivites[i].service + '">' + mesActivites[i].activite + '</option>';
-                    }
-                } else {
-                    html += '<option>Aucune activité validée</option>';
-                }
-                html += '</select></div>';
-                
-                html += '<input type="hidden" id="combined-service" value="' + currentUser.service + '">';
-                html += '<input type="hidden" id="combined-service-hidden" value="' + currentUser.service + '">';
-            }
-            
-            html += '<input type="hidden" id="combined-service-hidden">';
-            
-            html += '<div class="form-group"><label>Commentaire</label><textarea id="combined-commentaire" class="form-control" rows="4" placeholder="Saisissez votre commentaire (optionnel)..."></textarea></div>';
-            
-            html += '<div class="form-group"><label>Documents scannés (plusieurs fichiers possibles)</label><input type="file" id="combined-fichiers" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple style="padding: 4px 8px;"><small style="color: #6b7280; font-size: 12px;">Formats: PDF, JPG, PNG, DOC, DOCX</small></div>';
-            
-            html += '<div class="alert alert-info" style="margin-top: 8px; font-size: 13px;">ℹ️ <strong>Note:</strong> Seuls les noms des fichiers seront enregistrés.</div>';
-            
-            html += '<div class="btn-group"><button class="btn btn-primary" onclick="submitCommentaireEtPreuve()">Enregistrer</button><button class="btn btn-secondary" onclick="closeModal()">Annuler</button></div></div></div>';
-            
-            modalContainer.innerHTML = html;
-            
-            setTimeout(updateActiviteSelection, 100);
-        }
+    var modalContainer = document.getElementById('modal-container');
+    
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 700px;">';
+    html += '<h2 style="margin-bottom: 24px;">📋 Déposer une preuve et/ou commenter</h2>';
+    
+    html += '<div class="form-group"><label>Objectif *</label><select id="preuve-objectif" class="form-control" onchange="updatePreuveActivites()"><option value="">Sélectionnez...</option>';
+    
+    var objectifs = ['Objectifs Généraux', 'Objectifs de Réforme', 'Objectifs Spécifiques', 'Décisions du CM', 'Décisions du PR'];
+    for (var i = 0; i < objectifs.length; i++) {
+        html += '<option>' + objectifs[i] + '</option>';
+    }
+    html += '</select></div>';
+    
+    html += '<div class="form-group"><label>Activité *</label><select id="preuve-activite" class="form-control"><option value="">Sélectionnez d\'abord un objectif</option></select></div>';
+    
+    html += '<div class="form-group"><label>Commentaire (optionnel)</label><textarea id="preuve-commentaire" class="form-control" rows="4" placeholder="Ajoutez un commentaire..."></textarea></div>';
+    
+    html += '<div class="form-group"><label>Document de preuve (optionnel)</label>';
+    html += '<input type="file" id="preuve-fichier" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.txt">';
+    html += '<small style="color: #6b7280; display: block; margin-top: 4px;">Formats acceptés : PDF, Word, Excel, PowerPoint, Images, Texte</small>';
+    html += '</div>';
+    
+    html += '<div style="display: flex; gap: 10px; margin-top: 24px;">';
+    html += '<button class="btn btn-primary" onclick="submitCommentaireEtPreuve()">💾 Enregistrer</button>';
+    html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+    html += '</div>';
+    
+    html += '</div></div>';
+    
+    modalContainer.innerHTML = html;
+}
 
         async function submitCommentaireEtPreuve() {
-            var activiteSelect = document.getElementById('combined-activite');
-            var selectedOption = activiteSelect.options[activiteSelect.selectedIndex];
-            var objectif = selectedOption.getAttribute('data-objectif');
-            var activite = activiteSelect.value;
-            var serviceHidden = document.getElementById('combined-service-hidden');
-            var service = serviceHidden ? serviceHidden.value : document.getElementById('combined-service').value;
-            if (!service) {
-                service = selectedOption.getAttribute('data-service');
-            }
+    var objectif = document.getElementById('preuve-objectif').value;
+    var activiteSelect = document.getElementById('preuve-activite');
+    var activite = activiteSelect.value;
+    var commentaire = document.getElementById('preuve-commentaire').value.trim();
+    var fichierInput = document.getElementById('preuve-fichier');
+    var fichier = fichierInput && fichierInput.files.length > 0 ? fichierInput.files[0] : null;
+    
+    if (!objectif || !activite) {
+        alert('⚠️ Veuillez sélectionner un objectif et une activité');
+        return;
+    }
+    
+    if (!commentaire && !fichier) {
+        alert('⚠️ Veuillez ajouter au moins un commentaire OU un document');
+        return;
+    }
+    
+    var selectedOption = activiteSelect.options[activiteSelect.selectedIndex];
+    var service = selectedOption.getAttribute('data-service') || currentUser.service;
+    
+    try {
+        var dataToInsert = [];
+        
+        if (commentaire) {
+            dataToInsert.push({
+                type: 'commentaire',
+                objectif: objectif,
+                activite: activite,
+                service: service,
+                commentaire: commentaire,
+                deposePar: currentUser.nom,
+                dateDepot: new Date().toISOString()
+            });
+        }
+        
+        if (fichier) {
+            console.log('📤 Upload du fichier:', fichier.name);
             
-            var commentaire = document.getElementById('combined-commentaire').value.trim();
-            var fichiersInput = document.getElementById('combined-fichiers');
+            var timestamp = Date.now();
+            var extension = fichier.name.split('.').pop();
+            var nomUnique = 'preuve_' + timestamp + '_' + service.replace(/\s+/g, '_') + '.' + extension;
             
-            if (!activite || activite === 'Aucune activité réalisée à 100%' || activite === 'Aucune activité validée') {
-                alert('Veuillez sélectionner une activité valide');
-                return;
-            }
-            
-            if (!commentaire && (!fichiersInput.files || fichiersInput.files.length === 0)) {
-                alert('Veuillez saisir un commentaire ou sélectionner au moins un fichier');
-                return;
-            }
-            
-            var maxId = 0;
-            for (var i = 0; i < commentairesEtPreuves.length; i++) {
-                if (commentairesEtPreuves[i].id > maxId) maxId = commentairesEtPreuves[i].id;
-            }
-            
-            if (commentaire) {
-                commentairesEtPreuves.push({
-                    id: maxId + 1,
-                    type: 'commentaire',
-                    objectif: objectif,
-                    activite: activite,
-                    service: service,
-                    commentaire: commentaire,
-                    creePar: currentUser.nom,
-                    dateCreation: new Date().toLocaleString('fr-FR')
+            const { data: uploadData, error: uploadError } = await supabase
+                .storage
+                .from('preuves_documents')
+                .upload(nomUnique, fichier, {
+                    cacheControl: '3600',
+                    upsert: false
                 });
-                maxId++;
-            }
             
-            if (fichiersInput.files && fichiersInput.files.length > 0) {
-                for (var i = 0; i < fichiersInput.files.length; i++) {
-                    var fichier = fichiersInput.files[i];
-                    commentairesEtPreuves.push({
-                        id: maxId + 1 + i,
-                        type: 'preuve',
-                        objectif: objectif,
-                        activite: activite,
-                        service: service,
-                        nomFichier: fichier.name,
-                        tailleFichier: Math.round(fichier.size / 1024) + ' Ko',
-                        deposePar: currentUser.nom,
-                        dateDepot: new Date().toLocaleString('fr-FR')
-                    });
+            if (uploadError) throw uploadError;
+            
+            const { data: urlData } = await supabase
+                .storage
+                .from('preuves_documents')
+                .getPublicUrl(nomUnique);
+            
+            var fileUrl = urlData ? urlData.publicUrl : null;
+            
+            if (!fileUrl) throw new Error('Impossible de générer l\'URL du fichier');
+            
+            dataToInsert.push({
+                type: 'preuve',
+                objectif: objectif,
+                activite: activite,
+                service: service,
+                nomFichier: fichier.name,
+                nomFichierStorage: nomUnique,
+                fileUrl: fileUrl,
+                deposePar: currentUser.nom,
+                dateDepot: new Date().toISOString()
+            });
+        }
+        
+        if (dataToInsert.length > 0) {
+            const { data: insertData, error: insertError } = await supabase
+                .from('commentaires_preuves')
+                .insert(dataToInsert)
+                .select();
+            
+            if (insertError) throw insertError;
+            
+            if (insertData) {
+                for (var i = 0; i < insertData.length; i++) {
+                    commentairesEtPreuves.push(insertData[i]);
                 }
             }
-            
-            await saveCommentairesEtPreuves();
-            closeModal();
-            render();
         }
+        
+        alert('✅ Enregistrement réussi !');
+        closeModal();
+        render();
+        
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        alert('❌ Erreur : ' + error.message);
+    }
+}
+
 
         function showEditCommentaireModal(id) {
             var item = null;
@@ -3360,7 +3358,7 @@ if (!currentUser) {
                         for (var j = 0; j < item.preuves.length; j++) {
                             var p = item.preuves[j];
                             if (j > 0) html += '<br/>';
-                            html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="alert(\'📄 ' + p.nomFichier + '\\n\\nDéposé par: ' + p.deposePar + '\\nDate: ' + p.dateDepot + '\\n\\nNote: Dans la version finale, ceci ouvrira le fichier.\')">📎 ' + p.nomFichier + '</span>';
+                           html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="ouvrirPreuve(\'' + (p.fileUrl || '').replace(/'/g, "\\'") + '\', \'' + p.nomFichier.replace(/'/g, "\\'") + '\')">📎 ' + p.nomFichier + '</span>';
                         }
                     } else {
                         html += '-';
@@ -4045,12 +4043,263 @@ async function init() {
     
     render();
 }
+        // ========== FONCTIONS DE VISUALISATION ET EXPORT ==========
+
+function ouvrirPreuve(fileUrl, nomFichier) {
+    console.log('📂 Ouverture du fichier:', nomFichier);
+    
+    if (!fileUrl || fileUrl === 'undefined' || fileUrl === '') {
+        alert('❌ Ce fichier n\'a pas d\'URL valide.');
+        return;
+    }
+    
+    var extension = nomFichier.split('.').pop().toLowerCase();
+    showDocumentViewer(fileUrl, nomFichier, extension);
+}
+
+function showDocumentViewer(fileUrl, nomFichier, extension) {
+    var modalContainer = document.getElementById('modal-container');
+    
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 95vw; max-height: 95vh; display: flex; flex-direction: column;">';
+    
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 2px solid #e5e7eb;">';
+    html += '<h2 style="margin: 0;">📄 ' + nomFichier + '</h2>';
+    html += '<div style="display: flex; gap: 8px;">';
+    html += '<button class="btn btn-primary" onclick="telechargerFichier(\'' + fileUrl.replace(/'/g, "\\'") + '\', \'' + nomFichier.replace(/'/g, "\\'") + '\')">⬇️ Télécharger original</button>';
+    
+    html += '<div style="position: relative; display: inline-block;">';
+    html += '<button class="btn btn-success" onclick="toggleExportMenu()" id="export-menu-btn">📥 Exporter ▼</button>';
+    html += '<div id="export-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 4px; min-width: 180px; z-index: 1000;">';
+    html += '<button onclick="exporterDocument(\'pdf\', \'' + nomFichier.replace(/'/g, "\\'") + '\')" style="display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font-size: 14px;" onmouseover="this.style.backgroundColor=\'#f3f4f6\'" onmouseout="this.style.backgroundColor=\'white\'">📄 PDF</button>';
+    html += '<button onclick="exporterDocument(\'docx\', \'' + nomFichier.replace(/'/g, "\\'") + '\')" style="display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font-size: 14px;" onmouseover="this.style.backgroundColor=\'#f3f4f6\'" onmouseout="this.style.backgroundColor=\'white\'">📝 Word (.docx)</button>';
+    html += '<button onclick="exporterDocument(\'xlsx\', \'' + nomFichier.replace(/'/g, "\\'") + '\')" style="display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font-size: 14px;" onmouseover="this.style.backgroundColor=\'#f3f4f6\'" onmouseout="this.style.backgroundColor=\'white\'">📊 Excel (.xlsx)</button>';
+    html += '<button onclick="exporterDocument(\'pptx\', \'' + nomFichier.replace(/'/g, "\\'") + '\')" style="display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font-size: 14px;" onmouseover="this.style.backgroundColor=\'#f3f4f6\'" onmouseout="this.style.backgroundColor=\'white\'">📽️ PowerPoint (.pptx)</button>';
+    html += '<button onclick="exporterDocument(\'txt\', \'' + nomFichier.replace(/'/g, "\\'") + '\')" style="display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font-size: 14px;" onmouseover="this.style.backgroundColor=\'#f3f4f6\'" onmouseout="this.style.backgroundColor=\'white\'">📋 Texte (.txt)</button>';
+    html += '<button onclick="exporterDocument(\'png\', \'' + nomFichier.replace(/'/g, "\\'") + '\')" style="display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font-size: 14px;" onmouseover="this.style.backgroundColor=\'#f3f4f6\'" onmouseout="this.style.backgroundColor=\'white\'">🖼️ Image (.png)</button>';
+    html += '</div></div>';
+    
+    html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Fermer</button>';
+    html += '</div></div>';
+    
+    html += '<div id="document-viewer-container" style="flex: 1; overflow: auto; background-color: #f9fafb; border-radius: 8px; padding: 16px;">';
+    
+    if (extension === 'pdf') {
+        html += '<iframe src="' + fileUrl + '" style="width: 100%; height: 100%; min-height: 600px; border: none;"></iframe>';
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].indexOf(extension) !== -1) {
+        html += '<div style="text-align: center;"><img src="' + fileUrl + '" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>';
+    } else if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].indexOf(extension) !== -1) {
+        html += '<div style="text-align: center; padding: 40px;">';
+        html += '<p style="font-size: 18px; color: #6b7280; margin-bottom: 24px;">📄 Document Office détecté</p>';
+        html += '<p style="margin-bottom: 16px;">Choisissez votre méthode de visualisation :</p>';
+        html += '<div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">';
+        var googleViewerUrl = 'https://docs.google.com/viewer?url=' + encodeURIComponent(fileUrl) + '&embedded=true';
+        html += '<button class="btn btn-primary" onclick="chargerDocumentDansViewer(\'' + googleViewerUrl.replace(/'/g, "\\'") + '\')">🔍 Visualiser avec Google Docs</button>';
+        var officeViewerUrl = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(fileUrl);
+        html += '<button class="btn btn-success" onclick="chargerDocumentDansViewer(\'' + officeViewerUrl.replace(/'/g, "\\'") + '\')">📊 Visualiser avec Office Online</button>';
+        html += '<button class="btn btn-warning" onclick="telechargerFichier(\'' + fileUrl.replace(/'/g, "\\'") + '\', \'' + nomFichier.replace(/'/g, "\\'") + '\')">⬇️ Télécharger</button>';
+        html += '</div></div>';
+    } else if (['txt', 'csv', 'json', 'xml', 'html', 'css', 'js'].indexOf(extension) !== -1) {
+        html += '<div style="text-align: center; padding: 20px;"><p>📝 Chargement du fichier texte...</p></div>';
+    } else {
+        html += '<div style="text-align: center; padding: 40px;">';
+        html += '<p style="font-size: 18px; color: #6b7280; margin-bottom: 16px;">⚠️ Aperçu non disponible</p>';
+        html += '<button class="btn btn-primary" onclick="telechargerFichier(\'' + fileUrl.replace(/'/g, "\\'") + '\', \'' + nomFichier.replace(/'/g, "\\'") + '\')">⬇️ Télécharger</button>';
+        html += '</div>';
+    }
+    
+    html += '</div></div></div>';
+    
+    modalContainer.innerHTML = html;
+    
+    if (['txt', 'csv', 'json', 'xml', 'html', 'css', 'js'].indexOf(extension) !== -1) {
+        setTimeout(function() { chargerFichierTexte(fileUrl); }, 100);
+    }
+}
+
+function toggleExportMenu() {
+    var menu = document.getElementById('export-menu');
+    if (!menu) return;
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', function(e) {
+    var menu = document.getElementById('export-menu');
+    var btn = document.getElementById('export-menu-btn');
+    if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+});
+
+function chargerDocumentDansViewer(viewerUrl) {
+    var container = document.getElementById('document-viewer-container');
+    if (!container) return;
+    container.innerHTML = '<iframe src="' + viewerUrl + '" style="width: 100%; height: 100%; min-height: 600px; border: none;"></iframe>';
+}
+
+async function chargerFichierTexte(fileUrl) {
+    try {
+        var response = await fetch(fileUrl);
+        var texte = await response.text();
+        var container = document.getElementById('document-viewer-container');
+        if (!container) return;
+        container.innerHTML = '<pre style="background-color: white; padding: 20px; border-radius: 8px; overflow: auto; max-height: 600px; font-family: monospace; font-size: 13px; line-height: 1.5;">' + texte.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
+    } catch (error) {
+        console.error('Erreur:', error);
+        var container = document.getElementById('document-viewer-container');
+        if (container) container.innerHTML = '<div style="text-align: center; padding: 40px; color: #ef4444;"><p>❌ Erreur</p></div>';
+    }
+}
+
+function telechargerFichier(fileUrl, nomFichier) {
+    var link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = nomFichier;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exporterDocument(format, nomFichier) {
+    var container = document.getElementById('document-viewer-container');
+    if (!container) {
+        alert('❌ Impossible d\'exporter');
+        return;
+    }
+    
+    var menu = document.getElementById('export-menu');
+    if (menu) menu.style.display = 'none';
+    
+    var contenu = container.innerText || container.textContent || '';
+    var contenuHTML = container.innerHTML || '';
+    var nomBase = nomFichier.replace(/\.[^.]+$/, '');
+    
+    switch(format) {
+        case 'pdf': exporterEnPDF(nomBase, container); break;
+        case 'docx': exporterEnWord(nomBase, contenuHTML); break;
+        case 'xlsx': exporterEnExcel(nomBase, contenu); break;
+        case 'pptx': exporterEnPowerPoint(nomBase, container); break;
+        case 'txt': exporterEnTexte(nomBase, contenu); break;
+        case 'png': exporterEnImage(nomBase, container); break;
+        default: alert('⚠️ Format non supporté');
+    }
+}
+
+function exporterEnPDF(nomBase, container) {
+    if (typeof html2pdf === 'undefined') {
+        alert('⚠️ html2pdf non disponible');
+        return;
+    }
+    var options = {
+        margin: 10,
+        filename: nomBase + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(options).from(container).save();
+}
+
+function exporterEnWord(nomBase, contenuHTML) {
+    var htmlWord = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + nomBase + '</title></head><body>' + contenuHTML + '</body></html>';
+    var blob = new Blob(['\ufeff', htmlWord], { type: 'application/msword' });
+    telechargerBlob(blob, nomBase + '.doc');
+}
+
+function exporterEnExcel(nomBase, contenu) {
+    var lignes = contenu.split('\n');
+    var csv = lignes.join('\n');
+    var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    telechargerBlob(blob, nomBase + '.csv');
+}
+
+async function exporterEnPowerPoint(nomBase, container) {
+    try {
+        if (typeof PptxGenJS === 'undefined') {
+            alert('❌ PptxGenJS non disponible');
+            return;
+        }
+        
+        if (typeof html2canvas === 'undefined') {
+            alert('❌ html2canvas non disponible');
+            return;
+        }
+        
+        var loadingMsg = document.createElement('div');
+        loadingMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); z-index: 10000; text-align: center;';
+        loadingMsg.innerHTML = '<h3 style="margin: 0 0 10px 0;">⏳ Création...</h3><p style="margin: 0;">Patientez</p>';
+        document.body.appendChild(loadingMsg);
+        
+        let pptx = new PptxGenJS();
+        pptx.author = 'GESTION-BSD-MEPUA';
+        pptx.company = 'MEPUA';
+        pptx.title = nomBase;
+        pptx.layout = 'LAYOUT_16x9';
+        
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff'
+        });
+        
+        const imageData = canvas.toDataURL('image/png');
+        
+        let slide1 = pptx.addSlide();
+        slide1.background = { fill: '2563eb' };
+        slide1.addText(nomBase, { x: 0.5, y: 2, w: 9, h: 1.5, fontSize: 44, bold: true, color: 'FFFFFF', align: 'center' });
+        slide1.addText('Gestion Départementale - MEPUA', { x: 0.5, y: 3.8, w: 9, h: 0.5, fontSize: 20, color: 'E0E7FF', align: 'center' });
+        
+        let slide2 = pptx.addSlide();
+        slide2.addText('Document', { x: 0.5, y: 0.3, w: 9, h: 0.6, fontSize: 28, bold: true, color: '2563eb' });
+        slide2.addImage({ data: imageData, x: 0.5, y: 1, w: 9, h: 4.8 });
+        
+        await pptx.writeFile({ fileName: nomBase + '.pptx' });
+        
+        document.body.removeChild(loadingMsg);
+        alert('✅ Présentation créée !');
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('❌ Erreur : ' + error.message);
+    }
+}
+
+function exporterEnTexte(nomBase, contenu) {
+    var blob = new Blob([contenu], { type: 'text/plain;charset=utf-8' });
+    telechargerBlob(blob, nomBase + '.txt');
+}
+
+function exporterEnImage(nomBase, container) {
+    if (typeof html2canvas === 'undefined') {
+        alert('⚠️ html2canvas non disponible');
+        return;
+    }
+    html2canvas(container, { scale: 2, useCORS: true, allowTaint: true }).then(function(canvas) {
+        canvas.toBlob(function(blob) {
+            telechargerBlob(blob, nomBase + '.png');
+        });
+    });
+}
+
+function telechargerBlob(blob, nomFichier) {
+    var url = window.URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = nomFichier;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+}
+
         // Lancer l'initialisation
         init();
     </script>
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
