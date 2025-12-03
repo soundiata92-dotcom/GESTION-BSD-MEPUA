@@ -2516,11 +2516,25 @@ function updatePreuveActivites() {
     var activitesFiltrees = [];
     for (var i = 0; i < activitesData.length; i++) {
         var act = activitesData[i];
-        if (act.valide && act.categorie === objectif) {
+        
+        // Vérifier si l'activité est validée ET terminée à 100%
+        var taux = calcTaux(act);
+        var estTerminee = taux === 100;
+        
+        if (act.valide && estTerminee && act.categorie === objectif) {
             if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || act.service === currentUser.service) {
                 activitesFiltrees.push(act);
             }
         }
+    }
+    
+    if (activitesFiltrees.length === 0) {
+        var option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Aucune activité terminée à 100%';
+        option.disabled = true;
+        activiteSelect.appendChild(option);
+        return;
     }
     
     for (var i = 0; i < activitesFiltrees.length; i++) {
@@ -2531,6 +2545,7 @@ function updatePreuveActivites() {
         activiteSelect.appendChild(option);
     }
 }
+
 
 async function submitStatistiquesTableau(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
@@ -4328,6 +4343,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
