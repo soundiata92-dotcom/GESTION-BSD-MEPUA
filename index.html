@@ -2505,6 +2505,32 @@ function updatePrefecturesDropdown() {
         }
     }
 }
+function updatePreuveActivites() {
+    var objectif = document.getElementById('preuve-objectif').value;
+    var activiteSelect = document.getElementById('preuve-activite');
+    
+    activiteSelect.innerHTML = '<option value="">Sélectionnez...</option>';
+    
+    if (!objectif) return;
+    
+    var activitesFiltrees = [];
+    for (var i = 0; i < activitesData.length; i++) {
+        var act = activitesData[i];
+        if (act.valide && act.categorie === objectif) {
+            if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || act.service === currentUser.service) {
+                activitesFiltrees.push(act);
+            }
+        }
+    }
+    
+    for (var i = 0; i < activitesFiltrees.length; i++) {
+        var option = document.createElement('option');
+        option.value = activitesFiltrees[i].activite;
+        option.textContent = activitesFiltrees[i].activite + ' (' + activitesFiltrees[i].service + ')';
+        option.setAttribute('data-service', activitesFiltrees[i].service);
+        activiteSelect.appendChild(option);
+    }
+}
 
 async function submitStatistiquesTableau(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
@@ -4302,6 +4328,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
