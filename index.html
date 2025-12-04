@@ -139,7 +139,7 @@ var users = [];
             if (item.exec) checks++;
             return Math.round((checks / 6) * 100);
         }
-        async function toggle(activityId, field) {
+       async function toggle(activityId, field) {
     var activity = null;
     for (var i = 0; i < data.length; i++) {
         if (data[i].id === activityId) {
@@ -153,20 +153,15 @@ var users = [];
         return;
     }
 
-    // Mettre à jour localement
-    for (var i = 0; i < data.length; i++) {
-        if (data[i].id === activityId) {
-            data[i][field] = !data[i][field];
-            data[i].derniere_maj = new Date().toISOString();
-            data[i].maj_par = currentUser.nom;
-            break;
-        }
-    }
+    // Inverser la valeur
+    var newValue = !activity[field];
     
-    // Mettre à jour DIRECTEMENT dans Supabase (sans saveData())
+    console.log('🔄 Sauvegarde:', field, '=', newValue, 'pour activité', activityId);
+    
     try {
+        // 🔥 SAUVEGARDER DANS SUPABASE
         var updateObj = {};
-        updateObj[field] = activity[field] ? false : true; // Inverser
+        updateObj[field] = newValue;
         updateObj.derniere_maj = new Date().toISOString();
         updateObj.maj_par = currentUser.nom;
         
@@ -175,14 +170,26 @@ var users = [];
             .update(updateObj)
             .eq('id', activityId);
         
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Erreur Supabase:', error);
+            throw error;
+        }
+        
+        console.log('✅ Sauvegarde réussie dans Supabase');
+        
+        // Mettre à jour localement
+        activity[field] = newValue;
+        activity.derniere_maj = new Date().toISOString();
+        activity.maj_par = currentUser.nom;
         
         render();
+        
     } catch (error) {
-        console.error('Erreur toggle:', error);
-        alert('❌ Erreur lors de la mise à jour');
+        console.error('❌ Erreur toggle:', error);
+        alert('❌ Erreur : ' + error.message);
     }
 }
+
         // ========== FONCTIONS DE STOCKAGE SUPABASE ==========
         async function loadData() {
             try {
@@ -1013,7 +1020,7 @@ async function submitSignupWithInvitation() {
     modalContainer.innerHTML = html;
 }
 
-        async function submitCommentaireEtPreuve() {
+       async function submitCommentaireEtPreuve() {
     var objectif = document.getElementById('preuve-objectif').value;
     var activiteSelect = document.getElementById('preuve-activite');
     var activite = activiteSelect.value;
@@ -1037,6 +1044,7 @@ async function submitSignupWithInvitation() {
     try {
         var dataToInsert = [];
         
+        // 🔥 COMMENTAIRE
         if (commentaire) {
             dataToInsert.push({
                 type: 'commentaire',
@@ -1044,11 +1052,14 @@ async function submitSignupWithInvitation() {
                 activite: activite,
                 service: service,
                 commentaire: commentaire,
-                deposePar: currentUser.nom,
-                dateDepot: new Date().toISOString()
+                cree_par: currentUser.nom,
+                date_creation: new Date().toISOString(),
+                depose_par: currentUser.nom,
+                date_depot: new Date().toISOString()
             });
         }
         
+        // 🔥 FICHIER
         if (fichier) {
             console.log('📤 Upload du fichier:', fichier.name);
             
@@ -1056,6 +1067,7 @@ async function submitSignupWithInvitation() {
             var extension = fichier.name.split('.').pop();
             var nomUnique = 'preuve_' + timestamp + '_' + service.replace(/\s+/g, '_') + '.' + extension;
             
+            // Upload dans Supabase Storage
             const { data: uploadData, error: uploadError } = await supabase
                 .storage
                 .from('preuves_documents')
@@ -1064,8 +1076,12 @@ async function submitSignupWithInvitation() {
                     upsert: false
                 });
             
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error('❌ Erreur upload:', uploadError);
+                throw uploadError;
+            }
             
+            // Récupérer l'URL publique
             const { data: urlData } = await supabase
                 .storage
                 .from('preuves_documents')
@@ -1073,29 +1089,43 @@ async function submitSignupWithInvitation() {
             
             var fileUrl = urlData ? urlData.publicUrl : null;
             
-            if (!fileUrl) throw new Error('Impossible de générer l\'URL du fichier');
+            if (!fileUrl) {
+                throw new Error('Impossible de générer l\'URL du fichier');
+            }
+            
+            console.log('✅ Fichier uploadé, URL:', fileUrl);
             
             dataToInsert.push({
                 type: 'preuve',
                 objectif: objectif,
                 activite: activite,
                 service: service,
-                nomFichier: fichier.name,
-                nomFichierStorage: nomUnique,
-                fileUrl: fileUrl,
-                deposePar: currentUser.nom,
-                dateDepot: new Date().toISOString()
+                nom_fichier: fichier.name,
+                nom_fichier_storage: nomUnique,
+                file_url: fileUrl,
+                taille_fichier: Math.round(fichier.size / 1024) + ' Ko',
+                cree_par: currentUser.nom,
+                date_creation: new Date().toISOString(),
+                depose_par: currentUser.nom,
+                date_depot: new Date().toISOString()
             });
         }
         
+        // 🔥 INSÉRER DANS SUPABASE
         if (dataToInsert.length > 0) {
             const { data: insertData, error: insertError } = await supabase
                 .from('commentaires_preuves')
                 .insert(dataToInsert)
                 .select();
             
-            if (insertError) throw insertError;
+            if (insertError) {
+                console.error('❌ Erreur insertion:', insertError);
+                throw insertError;
+            }
             
+            console.log('✅ Données insérées:', insertData);
+            
+            // Ajouter aux données locales
             if (insertData) {
                 for (var i = 0; i < insertData.length; i++) {
                     commentairesEtPreuves.push(insertData[i]);
@@ -1108,11 +1138,10 @@ async function submitSignupWithInvitation() {
         render();
         
     } catch (error) {
-        console.error('❌ Erreur:', error);
+        console.error('❌ Erreur complète:', error);
         alert('❌ Erreur : ' + error.message);
     }
 }
-
 
         function showEditCommentaireModal(id) {
             var item = null;
@@ -4340,6 +4369,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
