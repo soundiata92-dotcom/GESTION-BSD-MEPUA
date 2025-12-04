@@ -81,7 +81,7 @@
     <!-- ========== CONNEXION SUPABASE ========== -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
+        const SUPABASE_URL = 'https:// 'https://kosqzeueikyehkblqosq.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
@@ -129,7 +129,60 @@ var users = [];
         var statistiquesData = [];
         var regionsData = [];
         var prefecturesData = [];
+        function calcTaux(item) {
+            var checks = 0;
+            if (item.tdr) checks++;
+            if (item.eng) checks++;
+            if (item.mand) checks++;
+            if (item.ordo) checks++;
+            if (item.liq) checks++;
+            if (item.exec) checks++;
+            return Math.round((checks / 6) * 100);
+        }
+        async function toggle(activityId, field) {
+    var activity = null;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === activityId) {
+            activity = data[i];
+            break;
+        }
+    }
+    
+    if (!activity || !canModify(activity)) {
+        alert('Vous ne pouvez pas modifier');
+        return;
+    }
 
+    // Mettre à jour localement
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === activityId) {
+            data[i][field] = !data[i][field];
+            data[i].derniere_maj = new Date().toISOString();
+            data[i].maj_par = currentUser.nom;
+            break;
+        }
+    }
+    
+    // Mettre à jour DIRECTEMENT dans Supabase (sans saveData())
+    try {
+        var updateObj = {};
+        updateObj[field] = activity[field] ? false : true; // Inverser
+        updateObj.derniere_maj = new Date().toISOString();
+        updateObj.maj_par = currentUser.nom;
+        
+        const { error } = await supabase
+            .from('activites')
+            .update(updateObj)
+            .eq('id', activityId);
+        
+        if (error) throw error;
+        
+        render();
+    } catch (error) {
+        console.error('Erreur toggle:', error);
+        alert('❌ Erreur lors de la mise à jour');
+    }
+}
         // ========== FONCTIONS DE STOCKAGE SUPABASE ==========
         async function loadData() {
             try {
@@ -153,14 +206,14 @@ var users = [];
                 }
                 
                 // Charger les activités
-                const { data: activitesData, error: activitesError } = await supabase
+                const { data: DataTemp, error: activitesError } = await supabase
                     .from('activites')
                     .select('*');
                 
                 if (activitesError) throw activitesError;
                 
-                if (activitesData && activitesData.length > 0) {
-                    data = activitesData;
+if (DataTemp && DataTemp.length > 0) {
+    data = DataTemp;
                 } else {
                     data = initialData;
                     await saveData();
@@ -173,24 +226,26 @@ var users = [];
                 
                 if (commentairesError) throw commentairesError;
                 
-                if (commentairesData) {
-                    commentairesEtPreuves = commentairesData.map(c => ({
-                        id: c.id,
-                        type: c.type,
-                        objectif: c.objectif,
-                        activite: c.activite,
-                        service: c.service,
-                        commentaire: c.commentaire,
-                        nomFichier: c.nom_fichier,
-                        tailleFichier: c.taille_fichier,
-                        creePar: c.cree_par,
-                        dateCreation: c.date_creation,
-                        deposePar: c.depose_par,
-                        dateDepot: c.date_depot,
-                        modifiePar: c.modifie_par,
-                        dateModification: c.date_modification
-                    }));
-                }
+     if (commentairesData) {
+    commentairesEtPreuves = commentairesData.map(c => ({
+        id: c.id,
+        type: c.type,
+        objectif: c.objectif,
+        activite: c.activite,
+        service: c.service,
+        commentaire: c.commentaire,
+        nomFichier: c.nom_fichier,
+        nomFichierStorage: c.nom_fichier_storage,
+        fileUrl: c.file_url,
+        tailleFichier: c.taille_fichier,
+        creePar: c.cree_par,
+        dateCreation: c.date_creation,
+        deposePar: c.depose_par,
+        dateDepot: c.date_depot,
+        modifiePar: c.modifie_par,
+        dateModification: c.date_modification
+    }));
+}
              // Charger les régions
                 const { data: regionsDataRaw, error: regionsError } = await supabase
                     .from('regions')
@@ -237,23 +292,24 @@ var users = [];
                 await supabase.from('commentaires_preuves').delete().neq('id', 0);
                 
                 // Insérer les nouveaux
-                const toSave = commentairesEtPreuves.map(c => ({
-                    id: c.id,
-                    type: c.type,
-                    objectif: c.objectif,
-                    activite: c.activite,
-                    service: c.service,
-                    commentaire: c.commentaire || null,
-                    nom_fichier: c.nomFichier || null,
-                    taille_fichier: c.tailleFichier || null,
-                    cree_par: c.creePar,
-                    date_creation: c.dateCreation || new Date().toISOString(),
-                    depose_par: c.deposePar || null,
-                    date_depot: c.dateDepot || null,
-                    modifie_par: c.modifiePar || null,
-                    date_modification: c.dateModification || null
-                }));
-                
+const toSave = commentairesEtPreuves.map(c => ({
+    id: c.id,
+    type: c.type,
+    objectif: c.objectif,
+    activite: c.activite,
+    service: c.service,
+    commentaire: c.commentaire || null,
+    nom_fichier: c.nomFichier || null,
+    nom_fichier_storage: c.nomFichierStorage || null,
+    file_url: c.fileUrl || null,
+    taille_fichier: c.tailleFichier || null,
+    cree_par: c.creePar,
+    date_creation: c.dateCreation || new Date().toISOString(),
+    depose_par: c.deposePar || null,
+    date_depot: c.dateDepot || null,
+    modifie_par: c.modifiePar || null,
+    date_modification: c.dateModification || null
+}));
                 if (toSave.length > 0) {
                     const { error } = await supabase.from('commentaires_preuves').insert(toSave);
                     if (error) throw error;
@@ -333,17 +389,6 @@ var users = [];
             }
         }
 // ========== FONCTIONS UTILITAIRES ==========
-        function calcTaux(item) {
-            var checks = 0;
-            if (item.tdr) checks++;
-            if (item.eng) checks++;
-            if (item.mand) checks++;
-            if (item.ordo) checks++;
-            if (item.liq) checks++;
-            if (item.exec) checks++;
-            return Math.round((checks / 6) * 100);
-        }
-
         function canModify(activity) {
             if (!currentUser) return false;
             if (currentUser.role === 'chefdept') return false;
@@ -702,53 +747,6 @@ async function submitSignupWithInvitation() {
             
             return baseData;
         }
-
-        async function toggle(activityId, field) {
-    var activity = null;
-    for (var i = 0; i < data.length; i++) {
-        if (data[i].id === activityId) {
-            activity = data[i];
-            break;
-        }
-    }
-    
-    if (!activity || !canModify(activity)) {
-        alert('Vous ne pouvez pas modifier');
-        return;
-    }
-
-    // Mettre à jour localement
-    for (var i = 0; i < data.length; i++) {
-        if (data[i].id === activityId) {
-            data[i][field] = !data[i][field];
-            data[i].derniere_maj = new Date().toISOString();
-            data[i].maj_par = currentUser.nom;
-            break;
-        }
-    }
-    
-    // Mettre à jour DIRECTEMENT dans Supabase (sans saveData())
-    try {
-        var updateObj = {};
-        updateObj[field] = activity[field] ? false : true; // Inverser
-        updateObj.derniere_maj = new Date().toISOString();
-        updateObj.maj_par = currentUser.nom;
-        
-        const { error } = await supabase
-            .from('activites')
-            .update(updateObj)
-            .eq('id', activityId);
-        
-        if (error) throw error;
-        
-        render();
-    } catch (error) {
-        console.error('Erreur toggle:', error);
-        alert('❌ Erreur lors de la mise à jour');
-    }
-}
-
-
        async function validateActivity(activityId) {
     if (!canValidate()) {
         alert('Seul l\'administrateur peut valider');
@@ -2514,9 +2512,8 @@ function updatePreuveActivites() {
     if (!objectif) return;
     
     var activitesFiltrees = [];
-    for (var i = 0; i < activitesData.length; i++) {
-        var act = activitesData[i];
-        
+    for (var i = 0; i < data.length; i++) {
+    var act = data[i];        
         // Vérifier si l'activité est validée ET terminée à 100%
         var taux = calcTaux(act);
         var estTerminee = taux === 100;
@@ -4343,6 +4340,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
