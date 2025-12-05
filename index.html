@@ -233,36 +233,21 @@ if (DataTemp && DataTemp.length > 0) {
                 
                 if (commentairesError) throw commentairesError;
                 
-    if (commentairesData) {
+   if (commentairesData) {
     commentairesEtPreuves = commentairesData.map(c => ({
         id: c.id,
         type: c.type,
         objectif: c.objectif,
         activite: c.activite,
         service: c.service,
-        commentaire: c.commentaire || null,
-        nom_fichier: c.nom_fichier || null,
-        nomFichier: c.nom_fichier || null, // 🔥 AJOUTER CETTE LIGNE
-        nom_fichier_storage: c.nom_fichier_storage || null,
-        nomFichierStorage: c.nom_fichier_storage || null, // 🔥 AJOUTER
-        file_url: c.file_url || null,
-        fileUrl: c.file_url || null, // 🔥 AJOUTER CETTE LIGNE
-        taille_fichier: c.taille_fichier || null,
-        tailleFichier: c.taille_fichier || null, // 🔥 AJOUTER
-        cree_par: c.cree_par,
-        creePar: c.cree_par, // 🔥 AJOUTER
-        date_creation: c.date_creation,
-        dateCreation: c.date_creation, // 🔥 AJOUTER
-        depose_par: c.depose_par,
-        deposePar: c.depose_par, // 🔥 AJOUTER
-        date_depot: c.date_depot,
-        dateDepot: c.date_depot, // 🔥 AJOUTER
-        modifie_par: c.modifie_par,
-        modifiePar: c.modifie_par, // 🔥 AJOUTER
-        date_modification: c.date_modification,
-        dateModification: c.date_modification // 🔥 AJOUTER
+        commentaire: c.commentaire,
+        nomFichier: c.nom_fichier,
+        nomFichierStorage: c.nom_fichier_storage,
+        fileUrl: c.file_url,
+        // ...
     }));
 }
+
              // Charger les régions
                 const { data: regionsDataRaw, error: regionsError } = await supabase
                     .from('regions')
@@ -3438,13 +3423,8 @@ if (!currentUser) {
                         for (var j = 0; j < item.preuves.length; j++) {
                             var p = item.preuves[j];
                             if (j > 0) html += '<br/>';
-                           var fileUrl = p.file_url || p.fileUrl || '';
-var nomFichier = p.nom_fichier || p.nomFichier || 'Fichier';
-
-if (fileUrl && nomFichier) {
-    html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="ouvrirPreuve(\'' + fileUrl.replace(/'/g, "\\'") + '\', \'' + nomFichier.replace(/'/g, "\\'") + '\')">📎 ' + nomFichier + '</span>';
-} else {
-    html += '<span style="color: #dc2626;">❌ Fichier invalide</span>';
+                           html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="ouvrirPreuve(\'' + (p.fileUrl || '').replace(/'/g, "\\'") + '\', \'' + p.nomFichier.replace(/'/g, "\\'") + '\')">📎 ' + p.nomFichier + '</span>';
+                        }
                         }
                     } else {
                         html += '-';
@@ -4385,6 +4365,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
