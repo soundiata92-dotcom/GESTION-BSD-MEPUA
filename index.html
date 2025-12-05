@@ -3420,14 +3420,16 @@ if (!currentUser) {
                     
                     html += '<td>';
                     if (item.preuves.length > 0) {
-                        for (var j = 0; j < item.preuves.length; j++) {
-                            var p = item.preuves[j];
-                            if (j > 0) html += '<br/>';
-                           html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="ouvrirPreuve(\'' + (p.fileUrl || '').replace(/'/g, "\\'") + '\', \'' + p.nomFichier.replace(/'/g, "\\'") + '\')">📎 ' + p.nomFichier + '</span>';
-                        }
-                    } else {
-                        html += '-';
+                    for (var j = 0; j < item.preuves.length; j++) {
+                        var p = item.preuves[j];
+                        if (j > 0) html += '<br/>';
+                        html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="ouvrirPreuve(\'' + (p.fileUrl || '').replace(/'/g, "\\'") + '\', \'' + p.nomFichier.replace(/'/g, "\\'") + '\')">📎 ' + p.nomFichier + '</span>';
                     }
+                } else {
+                    html += '-';
+                }
+                html += '</td>';
+
                     html += '</td>';
                     
                     html += '<td style="font-size: 12px; color: #6b7280;">-</td>';
@@ -4364,6 +4366,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
