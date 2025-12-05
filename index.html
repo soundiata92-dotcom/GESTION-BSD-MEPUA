@@ -3418,12 +3418,21 @@ if (!currentUser) {
                     }
                     html += '</td>';
                     
-                    html += '<td>';
-                    if (item.preuves.length > 0) {
+              html += '<td>';
+                if (item.preuves.length > 0) {
                     for (var j = 0; j < item.preuves.length; j++) {
                         var p = item.preuves[j];
                         if (j > 0) html += '<br/>';
-                        html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="ouvrirPreuve(\'' + (p.fileUrl || '').replace(/'/g, "\\'") + '\', \'' + p.nomFichier.replace(/'/g, "\\'") + '\')">📎 ' + p.nomFichier + '</span>';
+                        
+                        // 🔥 CORRECTION - Vérifier que les propriétés existent
+                        var fileUrl = p.file_url || p.fileUrl || '';
+                        var nomFichier = p.nom_fichier || p.nomFichier || 'Fichier';
+                        
+                        if (fileUrl && nomFichier) {
+                            html += '<span style="color: #2563eb; cursor: pointer; text-decoration: underline;" onclick="ouvrirPreuve(\'' + fileUrl.replace(/'/g, "\\'") + '\', \'' + nomFichier.replace(/'/g, "\\'") + '\')">📎 ' + nomFichier + '</span>';
+                        } else {
+                            html += '<span style="color: #dc2626;">❌ Fichier invalide</span>';
+                        }
                     }
                 } else {
                     html += '-';
@@ -4366,6 +4375,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
