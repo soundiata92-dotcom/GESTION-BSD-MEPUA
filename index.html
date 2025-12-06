@@ -220,7 +220,12 @@ var users = [];
             break;
         }
     }
-    
+    // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
+    if (!hasPermission('activites', 'update', activity)) {
+        alert('❌ ' + getPermissionErrorMessage('activites', 'update'));
+        return;
+    }
+
     if (!activity || !canModify(activity)) {
         alert('Vous ne pouvez pas modifier');
         return;
@@ -866,7 +871,12 @@ async function submitSignupWithInvitation() {
             break;
         }
     }
-    
+    // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
+    if (!hasPermission('activites', 'delete', activity)) {
+        alert('❌ ' + getPermissionErrorMessage('activites', 'delete'));
+        return;
+    }
+
     if (!canDeleteInPlanning(activity)) {
         alert('Vous ne pouvez pas supprimer cette activité');
         return;
@@ -929,7 +939,13 @@ async function submitSignupWithInvitation() {
 
         async function submitNewActivity() {
     var activite = document.getElementById('new-activite').value.trim();
-    
+   // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
+    if (!hasPermission('activites', 'create', { service: service })) {
+        alert('❌ ' + getPermissionErrorMessage('activites', 'create'));
+        closeModal();
+        return;
+    }
+ 
     if (!activite) {
         alert('Veuillez remplir l\'activité');
         return;
@@ -4165,8 +4181,8 @@ html += '</div></div>';
         // ========== INITIALISATION ==========
 async function init() {
     await loadData();
-    await checkInvitationToken(); // NOUVELLE LIGNE
-    
+    await loadPermissions(); 
+    await checkInvitationToken(); // NOUVELLE LIGNE 
     var saved = localStorage.getItem('currentUser');
     if (saved) {
         currentUser = JSON.parse(saved);
@@ -4448,6 +4464,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
