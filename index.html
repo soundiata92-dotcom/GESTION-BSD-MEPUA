@@ -3544,7 +3544,6 @@ if (!currentUser) {
 var canEditComment = hasPermission('commentaires', 'update', { service: item.service });
 var canDeleteComment = hasPermission('commentaires', 'delete', { service: item.service });
 var canManage = canEditComment || canDeleteComment;
-Puis modifiez les boutons :
 if (canManage) {
     html += '<div style="display: flex; flex-direction: column; gap: 4px;">';
     
@@ -4491,6 +4490,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
