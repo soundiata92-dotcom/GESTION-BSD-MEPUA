@@ -3326,9 +3326,9 @@ if (!currentUser) {
 // ========== ONGLET 2 : PLANIFICATION ==========
             if (activeTab === 'planning') {
                 html += '<div class="flex-between"><h2>Planification 2026</h2>';
-                if (currentUser.role === 'admin' || currentUser.role === 'chef') {
-                    html += '<button class="btn btn-success" onclick="showAddModal()">+ Ajouter</button>';
-                }
+                if (currentUser && hasPermission('activites', 'create', {})) {
+    html += '<button class="btn btn-success" onclick="showAddModal()">+ Ajouter</button>';
+}
                 html += '</div>';
                 
                 var planningData = getFilteredDataForPlanning();
@@ -3352,16 +3352,22 @@ if (!currentUser) {
                         else html += '<span class="badge" style="background-color: #fef3c7; color: #92400e;">En attente</span>';
                         html += '</td>';
                         
-                        if (currentUser.role === 'admin' || currentUser.role === 'chef') {
-                            html += '<td style="text-align: center;"><div style="display: flex; gap: 4px; justify-content: center;">';
-                            if (canValidate() && !d.valide) {
-                                html += '<button class="btn btn-success" style="font-size: 11px; padding: 4px 8px;" onclick="validateActivity(' + d.id + ')">Valider</button>';
-                            }
-                            if (canDeleteInPlanning(d)) {
-                                html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteActivity(' + d.id + ')">Supprimer</button>';
-                            }
-                            html += '</div></td>';
-                        }
+                       if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+    html += '<td style="text-align: center;"><div style="display: flex; gap: 4px; justify-content: center;">';
+    
+    // Bouton Valider (seulement admin)
+    if (canValidate() && !d.valide) {
+        html += '<button class="btn btn-success" style="font-size: 11px; padding: 4px 8px;" onclick="validateActivity(' + d.id + ')">Valider</button>';
+    }
+    
+    // Bouton Supprimer (vérifier permission)
+    if (hasPermission('activites', 'delete', d)) {
+        html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteActivity(' + d.id + ')">Supprimer</button>';
+    }
+    
+    html += '</div></td>';
+}
+
                         html += '</tr>';
                     }
                 } else {
@@ -3413,9 +3419,9 @@ if (!currentUser) {
 // ========== ONGLET 4 : COMMENTAIRES ET PREUVES ==========
             if (activeTab === 'commentaires') {
                 html += '<div class="flex-between"><h2>📋 Commentaires et Preuves 2026</h2>';
-                if (currentUser.role === 'admin' || currentUser.role === 'chef') {
-                    html += '<button class="btn btn-primary" onclick="showCommentaireEtPreuveModal()">📋 Déposer une preuve et Commenter</button>';
-                }
+                if (currentUser && hasPermission('commentaires', 'create', {})) {
+    html += '<button class="btn btn-primary" onclick="showCommentaireEtPreuveModal()">📋 Déposer une preuve et Commenter</button>';
+}
                 html += '</div>';
                 
                 if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
@@ -3534,7 +3540,28 @@ if (!currentUser) {
                     
                     if (currentUser.role !== 'chefdept') {
                         html += '<td style="text-align: center;">';
-                        var canManage = currentUser.role === 'admin' || (currentUser.role === 'chef' && item.service === currentUser.service);
+                        // Vérifier les permissions pour chaque action
+var canEditComment = hasPermission('commentaires', 'update', { service: item.service });
+var canDeleteComment = hasPermission('commentaires', 'delete', { service: item.service });
+var canManage = canEditComment || canDeleteComment;
+Puis modifiez les boutons :
+if (canManage) {
+    html += '<div style="display: flex; flex-direction: column; gap: 4px;">';
+    
+    if (item.commentaires.length > 0 && canEditComment) {
+        html += '<button class="btn btn-warning" style="font-size: 11px; padding: 4px 8px;" onclick="showEditCommentaireModal(' + item.commentaires[0].id + ')">✏️ Modifier</button>';
+    }
+    if (item.commentaires.length > 0 && canDeleteComment) {
+        html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteCommentaireOuPreuve(' + item.commentaires[0].id + ')">🗑️ Suppr. comm.</button>';
+    }
+    
+    if (item.preuves.length > 0) {
+        html += '<button class="btn btn-primary" style="font-size: 11px; padding: 4px 8px;" onclick="showManagePreuvesModal(\'' + item.activite.replace(/'/g, "\\'") + '\', \'' + item.service + '\')">📎 Gérer (' + item.preuves.length + ')</button>';
+    }
+    
+    html += '</div>';
+}
+
                         if (canManage) {
                             html += '<div style="display: flex; flex-direction: column; gap: 4px;">';
                             
@@ -4464,6 +4491,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
