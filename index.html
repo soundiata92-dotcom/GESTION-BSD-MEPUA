@@ -219,6 +219,7 @@ var users = [];
             return Math.round((checks / 6) * 100);
         }
        async function toggle(activityId, field) {
+    // 1️⃣ Trouver l'activité
     var activity = null;
     for (var i = 0; i < data.length; i++) {
         if (data[i].id === activityId) {
@@ -226,24 +227,28 @@ var users = [];
             break;
         }
     }
-    // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
-    if (!hasPermission('activites', 'update', activity)) {
+    
+    if (!activity) {
+        alert('❌ Activité introuvable');
+        return;
+    }
+    
+    // 2️⃣ Vérifier les permissions avec le contexte complet
+    if (!hasPermission('activites', 'update', { 
+        service: activity.service, 
+        valide: activity.valide 
+    })) {
         alert('❌ ' + getPermissionErrorMessage('activites', 'update'));
         return;
     }
 
-    if (!activity || !canModify(activity)) {
-        alert('Vous ne pouvez pas modifier');
-        return;
-    }
-
-    // Inverser la valeur
+    // 3️⃣ Inverser la valeur
     var newValue = !activity[field];
     
     console.log('🔄 Sauvegarde:', field, '=', newValue, 'pour activité', activityId);
     
     try {
-        // 🔥 SAUVEGARDER DANS SUPABASE
+        // 4️⃣ Sauvegarder dans Supabase
         var updateObj = {};
         updateObj[field] = newValue;
         updateObj.derniere_maj = new Date().toISOString();
@@ -261,7 +266,7 @@ var users = [];
         
         console.log('✅ Sauvegarde réussie dans Supabase');
         
-        // Mettre à jour localement
+        // 5️⃣ Mettre à jour localement
         activity[field] = newValue;
         activity.derniere_maj = new Date().toISOString();
         activity.maj_par = currentUser.nom;
@@ -4509,6 +4514,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
