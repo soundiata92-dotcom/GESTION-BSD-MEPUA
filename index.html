@@ -131,18 +131,24 @@ function hasPermission(resource, action, context) {
     }
     
     // Vérifier les conditions supplémentaires
-    if (perm.condition && context) {
-        if (perm.condition.service === 'own' && context.service !== currentUser.service) {
-            return false;
+    if (perm.condition) {
+        // Vérifier la condition "service: own"
+        if (perm.condition.service === 'own') {
+            // Si context.service n'est pas fourni, utiliser currentUser.service par défaut
+            var contextService = (context && context.service) ? context.service : currentUser.service;
+            if (contextService !== currentUser.service) {
+                return false;
+            }
         }
-        if (perm.condition.valide === false && context.valide === true) {
+        
+        // Vérifier la condition "valide: false"
+        if (perm.condition.valide === false && context && context.valide === true) {
             return false;
         }
     }
     
     return true;
 }
-
 // Obtenir un message d'erreur personnalisé
 function getPermissionErrorMessage(resource, action) {
     var messages = {
@@ -3326,7 +3332,7 @@ if (!currentUser) {
 // ========== ONGLET 2 : PLANIFICATION ==========
             if (activeTab === 'planning') {
                 html += '<div class="flex-between"><h2>Planification 2026</h2>';
-                if (currentUser && hasPermission('activites', 'create', {})) {
+                if (currentUser && hasPermission('activites', 'create', { service: currentUser.service })) {
     html += '<button class="btn btn-success" onclick="showAddModal()">+ Ajouter</button>';
 }
                 html += '</div>';
@@ -3419,7 +3425,7 @@ if (!currentUser) {
 // ========== ONGLET 4 : COMMENTAIRES ET PREUVES ==========
             if (activeTab === 'commentaires') {
                 html += '<div class="flex-between"><h2>📋 Commentaires et Preuves 2026</h2>';
-                if (currentUser && hasPermission('commentaires', 'create', {})) {
+                if (currentUser && hasPermission('commentaires', 'create', { service: currentUser.service })) {
     html += '<button class="btn btn-primary" onclick="showCommentaireEtPreuveModal()">📋 Déposer une preuve et Commenter</button>';
 }
                 html += '</div>';
@@ -4490,6 +4496,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
