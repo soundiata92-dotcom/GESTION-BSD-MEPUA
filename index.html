@@ -943,24 +943,30 @@ async function submitSignupWithInvitation() {
             modalContainer.innerHTML = html;
         }
 
-        async function submitNewActivity() {
+       async function submitNewActivity() {
+    // 1️⃣ D'ABORD : Récupérer les valeurs du formulaire
     var activite = document.getElementById('new-activite').value.trim();
-   // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
+    var service = document.getElementById('new-service').value;  // ← DÉPLACER ICI
+    var categorie = document.getElementById('new-categorie').value;
+    
+    // 2️⃣ ENSUITE : Vérifier les permissions
     if (!hasPermission('activites', 'create', { service: service })) {
         alert('❌ ' + getPermissionErrorMessage('activites', 'create'));
         closeModal();
         return;
     }
  
+    // 3️⃣ Vérifier que les champs sont remplis
     if (!activite) {
-        alert('Veuillez remplir l\'activité');
+        alert('⚠️ Veuillez remplir l\'activité');
         return;
     }
 
+    // 4️⃣ Créer l'objet activité
     var newActivity = {
-        categorie: document.getElementById('new-categorie').value,
+        categorie: categorie,
         activite: activite,
-        service: document.getElementById('new-service').value,
+        service: service,
         t1: false, t2: false, t3: false, t4: false,
         tdr: false, eng: false, mand: false, ordo: false, liq: false, exec: false,
         valide: false,
@@ -970,16 +976,23 @@ async function submitSignupWithInvitation() {
         maj_par: currentUser.nom
     };
     
-    // Insérer DIRECTEMENT dans Supabase (ne pas passer par data.push())
+    // 5️⃣ Insérer dans Supabase
     try {
+        console.log('📤 Tentative d\'insertion:', newActivity);
+        
         const { data: insertedData, error } = await supabase
             .from('activites')
             .insert([newActivity])
             .select();
         
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Erreur Supabase:', error);
+            throw error;
+        }
         
-        // Ajouter l'activité avec son ID généré au tableau local
+        console.log('✅ Données insérées:', insertedData);
+        
+        // Ajouter au tableau local
         if (insertedData && insertedData.length > 0) {
             data.push(insertedData[0]);
         }
@@ -988,8 +1001,8 @@ async function submitSignupWithInvitation() {
         closeModal();
         render();
     } catch (error) {
-        console.error('Erreur ajout activité:', error);
-        alert('❌ Erreur lors de l\'ajout de l\'activité');
+        console.error('❌ Erreur complète:', error);
+        alert('❌ Erreur lors de l\'ajout : ' + error.message);
     }
 }
 
@@ -4496,6 +4509,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
