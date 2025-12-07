@@ -810,12 +810,12 @@ async function submitSignupWithInvitation() {
             if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
                 baseData = data;
             } else {
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].service === currentUser.service && !data[i].valide) {
-                        baseData.push(data[i]);
-                    }
-                }
-            }
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].service === currentUser.service) {
+            baseData.push(data[i]);
+        }
+    }
+}
             
             if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && selectedServiceFilter !== 'TOUS') {
                 var filtered = [];
@@ -4490,6 +4490,7 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
