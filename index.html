@@ -131,24 +131,18 @@ function hasPermission(resource, action, context) {
     }
     
     // Vérifier les conditions supplémentaires
-    if (perm.condition) {
-        // Vérifier la condition "service: own"
-        if (perm.condition.service === 'own') {
-            // Si context.service n'est pas fourni, utiliser currentUser.service par défaut
-            var contextService = (context && context.service) ? context.service : currentUser.service;
-            if (contextService !== currentUser.service) {
-                return false;
-            }
+    if (perm.condition && context) {
+        if (perm.condition.service === 'own' && context.service !== currentUser.service) {
+            return false;
         }
-        
-        // Vérifier la condition "valide: false"
-        if (perm.condition.valide === false && context && context.valide === true) {
+        if (perm.condition.valide === false && context.valide === true) {
             return false;
         }
     }
     
     return true;
 }
+
 // Obtenir un message d'erreur personnalisé
 function getPermissionErrorMessage(resource, action) {
     var messages = {
@@ -219,7 +213,6 @@ var users = [];
             return Math.round((checks / 6) * 100);
         }
        async function toggle(activityId, field) {
-    // 1️⃣ Trouver l'activité
     var activity = null;
     for (var i = 0; i < data.length; i++) {
         if (data[i].id === activityId) {
@@ -227,28 +220,24 @@ var users = [];
             break;
         }
     }
-    
-    if (!activity) {
-        alert('❌ Activité introuvable');
-        return;
-    }
-    
-    // 2️⃣ Vérifier les permissions avec le contexte complet
-    if (!hasPermission('activites', 'update', { 
-        service: activity.service, 
-        valide: activity.valide 
-    })) {
+    // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
+    if (!hasPermission('activites', 'update', activity)) {
         alert('❌ ' + getPermissionErrorMessage('activites', 'update'));
         return;
     }
 
-    // 3️⃣ Inverser la valeur
+    if (!activity || !canModify(activity)) {
+        alert('Vous ne pouvez pas modifier');
+        return;
+    }
+
+    // Inverser la valeur
     var newValue = !activity[field];
     
     console.log('🔄 Sauvegarde:', field, '=', newValue, 'pour activité', activityId);
     
     try {
-        // 4️⃣ Sauvegarder dans Supabase
+        // 🔥 SAUVEGARDER DANS SUPABASE
         var updateObj = {};
         updateObj[field] = newValue;
         updateObj.derniere_maj = new Date().toISOString();
@@ -266,7 +255,7 @@ var users = [];
         
         console.log('✅ Sauvegarde réussie dans Supabase');
         
-        // 5️⃣ Mettre à jour localement
+        // Mettre à jour localement
         activity[field] = newValue;
         activity.derniere_maj = new Date().toISOString();
         activity.maj_par = currentUser.nom;
@@ -821,12 +810,12 @@ async function submitSignupWithInvitation() {
             if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
                 baseData = data;
             } else {
-    for (var i = 0; i < data.length; i++) {
-        if (data[i].service === currentUser.service) {
-            baseData.push(data[i]);
-        }
-    }
-}
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].service === currentUser.service && !data[i].valide) {
+                        baseData.push(data[i]);
+                    }
+                }
+            }
             
             if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && selectedServiceFilter !== 'TOUS') {
                 var filtered = [];
@@ -948,30 +937,24 @@ async function submitSignupWithInvitation() {
             modalContainer.innerHTML = html;
         }
 
-       async function submitNewActivity() {
-    // 1️⃣ D'ABORD : Récupérer les valeurs du formulaire
+        async function submitNewActivity() {
     var activite = document.getElementById('new-activite').value.trim();
-    var service = document.getElementById('new-service').value;  // ← DÉPLACER ICI
-    var categorie = document.getElementById('new-categorie').value;
-    
-    // 2️⃣ ENSUITE : Vérifier les permissions
+   // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
     if (!hasPermission('activites', 'create', { service: service })) {
         alert('❌ ' + getPermissionErrorMessage('activites', 'create'));
         closeModal();
         return;
     }
  
-    // 3️⃣ Vérifier que les champs sont remplis
     if (!activite) {
-        alert('⚠️ Veuillez remplir l\'activité');
+        alert('Veuillez remplir l\'activité');
         return;
     }
 
-    // 4️⃣ Créer l'objet activité
     var newActivity = {
-        categorie: categorie,
+        categorie: document.getElementById('new-categorie').value,
         activite: activite,
-        service: service,
+        service: document.getElementById('new-service').value,
         t1: false, t2: false, t3: false, t4: false,
         tdr: false, eng: false, mand: false, ordo: false, liq: false, exec: false,
         valide: false,
@@ -981,23 +964,16 @@ async function submitSignupWithInvitation() {
         maj_par: currentUser.nom
     };
     
-    // 5️⃣ Insérer dans Supabase
+    // Insérer DIRECTEMENT dans Supabase (ne pas passer par data.push())
     try {
-        console.log('📤 Tentative d\'insertion:', newActivity);
-        
         const { data: insertedData, error } = await supabase
             .from('activites')
             .insert([newActivity])
             .select();
         
-        if (error) {
-            console.error('❌ Erreur Supabase:', error);
-            throw error;
-        }
+        if (error) throw error;
         
-        console.log('✅ Données insérées:', insertedData);
-        
-        // Ajouter au tableau local
+        // Ajouter l'activité avec son ID généré au tableau local
         if (insertedData && insertedData.length > 0) {
             data.push(insertedData[0]);
         }
@@ -1006,8 +982,8 @@ async function submitSignupWithInvitation() {
         closeModal();
         render();
     } catch (error) {
-        console.error('❌ Erreur complète:', error);
-        alert('❌ Erreur lors de l\'ajout : ' + error.message);
+        console.error('Erreur ajout activité:', error);
+        alert('❌ Erreur lors de l\'ajout de l\'activité');
     }
 }
 
@@ -3270,22 +3246,20 @@ if (!currentUser) {
                 html += '<button class="' + (activeTab === 'admin' ? 'active' : '') + '" onclick="changeTab(\'admin\')">Administration</button>';
             }
             html += '</div>';
-
-
-            if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
-                html += '<div style="background-color: white; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 16px;"><label style="font-weight: bold; font-size: 14px;">Filtrer:</label><select onchange="changeServiceFilter(this.value)" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;"><option value="TOUS"' + (selectedServiceFilter === 'TOUS' ? ' selected' : '') + '>Tous les services</option>';
-                
-                for (var i = 0; i < services.length; i++) {
-                    html += '<option value="' + services[i] + '"' + (selectedServiceFilter === services[i] ? ' selected' : '') + '>' + services[i] + '</option>';
-                }
-                
-                html += '</select>';
-                if (selectedServiceFilter !== 'TOUS') {
-                    html += '<button onclick="changeServiceFilter(\'TOUS\')" style="padding: 6px 12px; background-color: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">Réinitialiser</button>';
-                }
-                html += '</div></div>';
-            }
-
+// Afficher le filtre service SAUF dans l'onglet statistiques
+if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && activeTab !== 'statistiques') {
+    html += '<div style="background-color: white; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 16px;"><label style="font-weight: bold; font-size: 14px;">Filtrer:</label><select onchange="changeServiceFilter(this.value)" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;"><option value="TOUS"' + (selectedServiceFilter === 'TOUS' ? ' selected' : '') + '>Tous les services</option>';
+    
+    for (var i = 0; i < services.length; i++) {
+        html += '<option value="' + services[i] + '"' + (selectedServiceFilter === services[i] ? ' selected' : '') + '>' + services[i] + '</option>';
+    }
+    
+    html += '</select>';
+    if (selectedServiceFilter !== 'TOUS') {
+        html += '<button onclick="changeServiceFilter(\'TOUS\')" style="padding: 6px 12px; background-color: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">Réinitialiser</button>';
+    }
+    html += '</div></div>';
+}
             html += '<div class="main">';
 // ========== ONGLET 1 : TABLEAU DE BORD ==========
             if (activeTab === 'dashboard') {
@@ -3350,9 +3324,9 @@ if (!currentUser) {
 // ========== ONGLET 2 : PLANIFICATION ==========
             if (activeTab === 'planning') {
                 html += '<div class="flex-between"><h2>Planification 2026</h2>';
-                if (currentUser && hasPermission('activites', 'create', { service: currentUser.service })) {
-    html += '<button class="btn btn-success" onclick="showAddModal()">+ Ajouter</button>';
-}
+                if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+                    html += '<button class="btn btn-success" onclick="showAddModal()">+ Ajouter</button>';
+                }
                 html += '</div>';
                 
                 var planningData = getFilteredDataForPlanning();
@@ -3376,22 +3350,16 @@ if (!currentUser) {
                         else html += '<span class="badge" style="background-color: #fef3c7; color: #92400e;">En attente</span>';
                         html += '</td>';
                         
-                       if (currentUser.role === 'admin' || currentUser.role === 'chef') {
-    html += '<td style="text-align: center;"><div style="display: flex; gap: 4px; justify-content: center;">';
-    
-    // Bouton Valider (seulement admin)
-    if (canValidate() && !d.valide) {
-        html += '<button class="btn btn-success" style="font-size: 11px; padding: 4px 8px;" onclick="validateActivity(' + d.id + ')">Valider</button>';
-    }
-    
-    // Bouton Supprimer (vérifier permission)
-    if (hasPermission('activites', 'delete', d)) {
-        html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteActivity(' + d.id + ')">Supprimer</button>';
-    }
-    
-    html += '</div></td>';
-}
-
+                        if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+                            html += '<td style="text-align: center;"><div style="display: flex; gap: 4px; justify-content: center;">';
+                            if (canValidate() && !d.valide) {
+                                html += '<button class="btn btn-success" style="font-size: 11px; padding: 4px 8px;" onclick="validateActivity(' + d.id + ')">Valider</button>';
+                            }
+                            if (canDeleteInPlanning(d)) {
+                                html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteActivity(' + d.id + ')">Supprimer</button>';
+                            }
+                            html += '</div></td>';
+                        }
                         html += '</tr>';
                     }
                 } else {
@@ -3443,14 +3411,13 @@ if (!currentUser) {
 // ========== ONGLET 4 : COMMENTAIRES ET PREUVES ==========
             if (activeTab === 'commentaires') {
                 html += '<div class="flex-between"><h2>📋 Commentaires et Preuves 2026</h2>';
-                if (currentUser && hasPermission('commentaires', 'create', { service: currentUser.service })) {
-    html += '<button class="btn btn-primary" onclick="showCommentaireEtPreuveModal()">📋 Déposer une preuve et Commenter</button>';
-}
+                if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+                    html += '<button class="btn btn-primary" onclick="showCommentaireEtPreuveModal()">📋 Déposer une preuve et Commenter</button>';
+                }
                 html += '</div>';
                 
                 if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
-                    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;"><div><label style="font-weight: bold; display: block; margin-bottom: 8px;">🏢 Service</label><select onchange="changeCommentairesServiceFilter(this.value)" class="form-control"><option value="TOUS"' + (commentairesServiceFilter === 'TOUS' ? ' selected' : '') + '>Tous les services</option>';
-                    
+                    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;"><div><label style="font-weight: bold; display: block; margin-bottom: 8px;">🏢 Service</label><select onchange="changeCommentairesServiceFilter(this.value)" class="form-control"><option value="TOUS"' + (commentairesServiceFilter === 'TOUS' ? ' selected' : '') + '>Tous les services</option>';              
                     for (var i = 0; i < services.length; i++) {
                         html += '<option value="' + services[i] + '"' + (commentairesServiceFilter === services[i] ? ' selected' : '') + '>' + services[i] + '</option>';
                     }
@@ -3564,27 +3531,7 @@ if (!currentUser) {
                     
                     if (currentUser.role !== 'chefdept') {
                         html += '<td style="text-align: center;">';
-                        // Vérifier les permissions pour chaque action
-var canEditComment = hasPermission('commentaires', 'update', { service: item.service });
-var canDeleteComment = hasPermission('commentaires', 'delete', { service: item.service });
-var canManage = canEditComment || canDeleteComment;
-if (canManage) {
-    html += '<div style="display: flex; flex-direction: column; gap: 4px;">';
-    
-    if (item.commentaires.length > 0 && canEditComment) {
-        html += '<button class="btn btn-warning" style="font-size: 11px; padding: 4px 8px;" onclick="showEditCommentaireModal(' + item.commentaires[0].id + ')">✏️ Modifier</button>';
-    }
-    if (item.commentaires.length > 0 && canDeleteComment) {
-        html += '<button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteCommentaireOuPreuve(' + item.commentaires[0].id + ')">🗑️ Suppr. comm.</button>';
-    }
-    
-    if (item.preuves.length > 0) {
-        html += '<button class="btn btn-primary" style="font-size: 11px; padding: 4px 8px;" onclick="showManagePreuvesModal(\'' + item.activite.replace(/'/g, "\\'") + '\', \'' + item.service + '\')">📎 Gérer (' + item.preuves.length + ')</button>';
-    }
-    
-    html += '</div>';
-}
-
+                        var canManage = currentUser.role === 'admin' || (currentUser.role === 'chef' && item.service === currentUser.service);
                         if (canManage) {
                             html += '<div style="display: flex; flex-direction: column; gap: 4px;">';
                             
@@ -4514,11 +4461,6 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
-
-
-
-
 
 
 
