@@ -3952,17 +3952,36 @@ if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && activeT
 if (activeTab === 'analyse') {
     html += '<h2 style="margin-bottom: 16px;">📊 Analyse Stratégique</h2>';
     
-    // SOUS-MENU
-    html += '<div style="background-color: white; padding: 12px; margin-bottom: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<div style="display: flex; gap: 8px;">';
-    
-    html += '<button class="' + (activeAnalyseTab === 'acces' ? 'btn btn-primary' : 'btn btn-secondary') + '" onclick="changeAnalyseTab(\'acces\')">⚖️ Accès équitable</button>';
-    html += '<button class="' + (activeAnalyseTab === 'qualite' ? 'btn btn-primary' : 'btn btn-secondary') + '" onclick="changeAnalyseTab(\'qualite\')">🎓 Qualité</button>';
-    html += '<button class="' + (activeAnalyseTab === 'alphabetisation' ? 'btn btn-primary' : 'btn btn-secondary') + '" onclick="changeAnalyseTab(\'alphabetisation\')">✍️ Alphabétisation</button>';
-    html += '<button class="' + (activeAnalyseTab === 'decisions' ? 'btn btn-primary' : 'btn btn-secondary') + '" onclick="changeAnalyseTab(\'decisions\')">🎯 Décisions</button>';
-    
-    html += '</div></div>';
-    
+   // SOUS-MENU avec couleurs personnalisées
+html += '<div style="background-color: white; padding: 16px; margin-bottom: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
+html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+
+// Bouton 1 : Accès équitable (Bleu turquoise)
+var styleAcces = activeAnalyseTab === 'acces' 
+    ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; transform: scale(1.02);' 
+    : 'background: linear-gradient(135deg, #a8b7f5 0%, #c3b1d9 100%); color: #4c1d95;';
+html += '<button onclick="changeAnalyseTab(\'acces\')" style="' + styleAcces + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">⚖️ Accès équitable</button>';
+
+// Bouton 2 : Qualité des enseignements (Vert émeraude)
+var styleQualite = activeAnalyseTab === 'qualite'
+    ? 'background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; transform: scale(1.02);'
+    : 'background: linear-gradient(135deg, #a7f3d0 0%, #d1fae5 100%); color: #065f46;';
+html += '<button onclick="changeAnalyseTab(\'qualite\')" style="' + styleQualite + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🎓 Qualité</button>';
+
+// Bouton 3 : Alphabétisation (Orange corail)
+var styleAlpha = activeAnalyseTab === 'alphabetisation'
+    ? 'background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%); color: white; transform: scale(1.02);'
+    : 'background: linear-gradient(135deg, #fed7aa 0%, #fecaca 100%); color: #9a3412;';
+html += '<button onclick="changeAnalyseTab(\'alphabetisation\')" style="' + styleAlpha + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">✍️ Alphabétisation</button>';
+
+// Bouton 4 : Décisions (Bleu cyan)
+var styleDecisions = activeAnalyseTab === 'decisions'
+    ? 'background: linear-gradient(135deg, #2196F3 0%, #00BCD4 100%); color: white; transform: scale(1.02);'
+    : 'background: linear-gradient(135deg, #bfdbfe 0%, #a5f3fc 100%); color: #075985;';
+html += '<button onclick="changeAnalyseTab(\'decisions\')" style="' + styleDecisions + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🎯 Décisions</button>';
+
+html += '</div></div>';
+   
     // CONTENU CONDITIONNEL
     if (activeAnalyseTab === 'acces') {
         html += renderAnalyseAcces();
@@ -4526,6 +4545,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
