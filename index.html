@@ -4508,15 +4508,347 @@ function telechargerBlob(blob, nomFichier) {
     window.URL.revokeObjectURL(url);
 }
 // ========== FONCTIONS DE RENDU ANALYSE ==========
+// ========== FONCTIONS DE CALCUL POUR ANALYSE ACCÈS ==========
 
+function calculerStatsAcces() {
+    var stats = {
+        tauxNational: 0,
+        tauxUrbain: 0,
+        tauxRural: 0,
+        ecartUrbanRural: 0,
+        ipgNational: 0,
+        distanceUrbaine: 0,
+        distanceRurale: 0,
+        ecartDistance: 0,
+        impactDistance: 15, // Valeur par défaut
+        top5Faibles: [],
+        top5FaibleIPG: []
+    };
+    
+    if (!statistiquesData || statistiquesData.length === 0) {
+        return stats;
+    }
+    
+    // Calcul taux de scolarisation
+    var totalScolar = 0, countScolar = 0;
+    var totalScolarUrbain = 0, countScolarUrbain = 0;
+    var totalScolarRural = 0, countScolarRural = 0;
+    
+    // Calcul IPG (Total/Filles)
+    var totalScolarTotal = 0, countScolarTotal = 0;
+    var totalScolarFilles = 0, countScolarFilles = 0;
+    
+    // Calcul distance
+    var totalDistUrbain = 0, countDistUrbain = 0;
+    var totalDistRural = 0, countDistRural = 0;
+    
+    // Par préfecture pour top 5
+    var scolarParPrefecture = {};
+    
+    // Par région pour IPG
+    var ipgParRegion = {};
+    
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        // Taux scolarisation
+        if (stat.taux_scolarisation !== null) {
+            totalScolar += parseFloat(stat.taux_scolarisation);
+            countScolar++;
+            
+            // Par zone
+            if (stat.zone === 'Urbaine') {
+                totalScolarUrbain += parseFloat(stat.taux_scolarisation);
+                countScolarUrbain++;
+            } else if (stat.zone === 'Rurale') {
+                totalScolarRural += parseFloat(stat.taux_scolarisation);
+                countScolarRural++;
+            }
+            
+            // Par préfecture (Total uniquement)
+            if (stat.genre === 'Total' && stat.niveau !== 'Alphabétisation') {
+                var key = stat.prefecture + '|' + stat.zone;
+                if (!scolarParPrefecture[key]) {
+                    scolarParPrefecture[key] = { prefecture: stat.prefecture + ' (' + stat.zone + ')', taux: 0, count: 0 };
+                }
+                scolarParPrefecture[key].taux += parseFloat(stat.taux_scolarisation);
+                scolarParPrefecture[key].count++;
+            }
+            
+            // Pour IPG
+            if (stat.niveau !== 'Alphabétisation') {
+                if (stat.genre === 'Total') {
+                    totalScolarTotal += parseFloat(stat.taux_scolarisation);
+                    countScolarTotal++;
+                } else if (stat.genre === 'Filles') {
+                    totalScolarFilles += parseFloat(stat.taux_scolarisation);
+                    countScolarFilles++;
+                }
+            }
+        }
+        
+        // Distance (Total uniquement)
+        if (stat.distance_moyenne_ecole_domicile !== null && stat.genre === 'Total') {
+            if (stat.zone === 'Urbaine') {
+                totalDistUrbain += parseFloat(stat.distance_moyenne_ecole_domicile);
+                countDistUrbain++;
+            } else if (stat.zone === 'Rurale') {
+                totalDistRural += parseFloat(stat.distance_moyenne_ecole_domicile);
+                countDistRural++;
+            }
+        }
+        
+        // IPG par région (scolarisation)
+        if (stat.taux_scolarisation !== null && stat.niveau !== 'Alphabétisation') {
+            if (!ipgParRegion[stat.region]) {
+                ipgParRegion[stat.region] = { region: stat.region, total: 0, filles: 0, countTotal: 0, countFilles: 0 };
+            }
+            if (stat.genre === 'Total') {
+                ipgParRegion[stat.region].total += parseFloat(stat.taux_scolarisation);
+                ipgParRegion[stat.region].countTotal++;
+            } else if (stat.genre === 'Filles') {
+                ipgParRegion[stat.region].filles += parseFloat(stat.taux_scolarisation);
+                ipgParRegion[stat.region].countFilles++;
+            }
+        }
+    }
+    
+    // Moyennes
+    stats.tauxNational = countScolar > 0 ? (totalScolar / countScolar).toFixed(1) : 0;
+    stats.tauxUrbain = countScolarUrbain > 0 ? (totalScolarUrbain / countScolarUrbain).toFixed(1) : 0;
+    stats.tauxRural = countScolarRural > 0 ? (totalScolarRural / countScolarRural).toFixed(1) : 0;
+    stats.ecartUrbanRural = (stats.tauxUrbain - stats.tauxRural).toFixed(1);
+    
+    // IPG National
+    var moyenneTotal = countScolarTotal > 0 ? totalScolarTotal / countScolarTotal : 0;
+    var moyenneFilles = countScolarFilles > 0 ? totalScolarFilles / countScolarFilles : 0;
+    stats.ipgNational = moyenneTotal > 0 ? (moyenneFilles / moyenneTotal).toFixed(2) : 0;
+    
+    // Distance
+    stats.distanceUrbaine = countDistUrbain > 0 ? (totalDistUrbain / countDistUrbain).toFixed(1) : 0;
+    stats.distanceRurale = countDistRural > 0 ? (totalDistRural / countDistRural).toFixed(1) : 0;
+    stats.ecartDistance = (stats.distanceRurale - stats.distanceUrbaine).toFixed(1);
+    
+    // Top 5 préfectures faibles
+    var prefArray = [];
+    for (var key in scolarParPrefecture) {
+        var pref = scolarParPrefecture[key];
+        prefArray.push({
+            prefecture: pref.prefecture,
+            taux: (pref.taux / pref.count).toFixed(1)
+        });
+    }
+    prefArray.sort(function(a, b) { return parseFloat(a.taux) - parseFloat(b.taux); });
+    stats.top5Faibles = prefArray.slice(0, 5);
+    
+    // Top 5 régions faible IPG
+    var regionArray = [];
+    for (var region in ipgParRegion) {
+        var reg = ipgParRegion[region];
+        var moyTotal = reg.countTotal > 0 ? reg.total / reg.countTotal : 0;
+        var moyFilles = reg.countFilles > 0 ? reg.filles / reg.countFilles : 0;
+        var ipg = moyTotal > 0 ? moyFilles / moyTotal : 0;
+        
+        if (ipg < 0.80 && ipg > 0) { // Seulement IPG < 0.80
+            regionArray.push({
+                region: reg.region,
+                ipg: ipg.toFixed(2)
+            });
+        }
+    }
+    regionArray.sort(function(a, b) { return parseFloat(a.ipg) - parseFloat(b.ipg); });
+    stats.top5FaibleIPG = regionArray.slice(0, 5);
+    
+    return stats;
+}
+function exporterAnalyseAcces() {
+    alert('📥 Export PDF en cours de développement...\n\nFonctionnalité disponible prochainement.');
+    // TODO: Implémenter export PDF avec html2pdf ou jsPDF
+}
 function renderAnalyseAcces() {
+    // Vérifier si des données statistiques existent
+    if (!statistiquesData || statistiquesData.length === 0) {
+        return '<div style="background-color: #fef3c7; padding: 24px; border-radius: 8px; border-left: 4px solid #f59e0b;">' +
+               '<h3 style="color: #92400e;">⚠️ Aucune donnée disponible</h3>' +
+               '<p style="color: #92400e; margin-top: 8px;">Veuillez d\'abord saisir des statistiques dans l\'onglet "Statistiques".</p>' +
+               '</div>';
+    }
+    
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>⚖️ Analyse de l\'Accès Équitable</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Contenu en cours de développement...</p>';
+    
+    // ========== EN-TÊTE ==========
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">';
+    html += '<h2 style="color: #667eea; font-size: 24px; margin: 0;">⚖️ Analyse de l\'Accès Équitable</h2>';
+    html += '<button class="btn btn-primary" onclick="exporterAnalyseAcces()">📥 Exporter PDF</button>';
     html += '</div>';
+    
+    // ========== CALCULS ==========
+    var stats = calculerStatsAcces();
+    
+    // ========== SECTION A : DISPARITÉ GÉOGRAPHIQUE ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">📊 A. DISPARITÉ GÉOGRAPHIQUE</h3>';
+    
+    // Taux national
+    html += '<div style="text-align: center; margin-bottom: 20px;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Taux de scolarisation National</div>';
+    html += '<div style="font-size: 48px; font-weight: bold; color: #667eea;">' + stats.tauxNational + '%</div>';
+    html += '</div>';
+    
+    // Comparaison Urbain/Rural
+    html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">';
+    
+    // Urbain
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #10b981;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">🏙️ Urbain</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: #10b981;">' + stats.tauxUrbain + '%</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: #d1fae5; color: #065f46; border-radius: 4px; font-size: 12px; display: inline-block;">✅ Satisfaisant</div>';
+    html += '</div>';
+    
+    // Rural
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #ef4444;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">🏘️ Rural</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: #ef4444;">' + stats.tauxRural + '%</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: #fee2e2; color: #991b1b; border-radius: 4px; font-size: 12px; display: inline-block;">🔴 Critique</div>';
+    html += '</div>';
+    
+    // Écart
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #f59e0b;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">📏 ÉCART</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: #f59e0b;">' + stats.ecartUrbanRural + ' pp</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: #fef3c7; color: #92400e; border-radius: 4px; font-size: 12px; display: inline-block;">⚠️ Important</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Graphique barres (Simulation visuelle)
+    html += '<div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">';
+    html += '<div style="font-weight: bold; margin-bottom: 12px; color: #4b5563;">Comparaison Urbain vs Rural</div>';
+    
+    html += '<div style="margin-bottom: 12px;">';
+    html += '<div style="display: flex; align-items: center; gap: 12px;">';
+    html += '<div style="width: 100px; font-size: 13px; color: #6b7280;">Urbain</div>';
+    html += '<div style="flex: 1; background-color: #e5e7eb; border-radius: 4px; height: 32px; position: relative; overflow: hidden;">';
+    html += '<div style="width: ' + stats.tauxUrbain + '%; height: 100%; background: linear-gradient(90deg, #10b981, #34d399); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; color: white; font-weight: bold; font-size: 14px;">' + stats.tauxUrbain + '%</div>';
+    html += '</div></div></div>';
+    
+    html += '<div style="margin-bottom: 12px;">';
+    html += '<div style="display: flex; align-items: center; gap: 12px;">';
+    html += '<div style="width: 100px; font-size: 13px; color: #6b7280;">Rural</div>';
+    html += '<div style="flex: 1; background-color: #e5e7eb; border-radius: 4px; height: 32px; position: relative; overflow: hidden;">';
+    html += '<div style="width: ' + stats.tauxRural + '%; height: 100%; background: linear-gradient(90deg, #ef4444, #f87171); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; color: white; font-weight: bold; font-size: 14px;">' + stats.tauxRural + '%</div>';
+    html += '</div></div></div>';
+    
+    html += '</div>';
+    
+    // Top 5 préfectures faible accès
+    html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #ef4444;">';
+    html += '<h4 style="color: #991b1b; margin-bottom: 12px;">⚠️ TOP 5 PRÉFECTURES À FAIBLE ACCÈS</h4>';
+    
+    if (stats.top5Faibles.length > 0) {
+        html += '<table style="width: 100%; font-size: 13px;"><thead><tr style="background-color: #fecaca;"><th style="padding: 8px; text-align: left; color: #991b1b;">Préfecture</th><th style="padding: 8px; text-align: center; color: #991b1b;">Taux</th><th style="padding: 8px; text-align: center; color: #991b1b;">Statut</th></tr></thead><tbody>';
+        
+        for (var i = 0; i < Math.min(5, stats.top5Faibles.length); i++) {
+            var pref = stats.top5Faibles[i];
+            var badge = pref.taux < 40 ? '🔴 Critique' : pref.taux < 50 ? '🟠 Faible' : '🟡 Moyen';
+            var bgColor = i % 2 === 0 ? '#fff' : '#fef2f2';
+            html += '<tr style="background-color: ' + bgColor + ';"><td style="padding: 8px;">' + (i+1) + '. ' + pref.prefecture + '</td><td style="padding: 8px; text-align: center; font-weight: bold;">' + pref.taux + '%</td><td style="padding: 8px; text-align: center;">' + badge + '</td></tr>';
+        }
+        
+        html += '</tbody></table>';
+    } else {
+        html += '<p style="color: #991b1b;">Aucune donnée disponible</p>';
+    }
+    
+    html += '</div>';
+    
+    html += '</div>'; // Fin Section A
+    
+    // ========== SECTION B : ÉQUITÉ DE GENRE ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">⚖️ B. ÉQUITÉ DE GENRE</h3>';
+    
+    // IPG National
+    html += '<div style="text-align: center; margin-bottom: 20px;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Indice de Parité Genre (IPG) - Scolarisation</div>';
+    html += '<div style="font-size: 48px; font-weight: bold; color: ' + (stats.ipgNational < 0.90 ? '#ef4444' : stats.ipgNational < 0.95 ? '#f59e0b' : '#10b981') + ';">' + stats.ipgNational + '</div>';
+    html += '<div style="margin-top: 8px; font-size: 13px; color: #6b7280;">🎯 Objectif: 0.95 (Parité)</div>';
+    
+    var statusIPG = stats.ipgNational < 0.90 ? '🔴 Disparité importante' : stats.ipgNational < 0.95 ? '🟡 Disparité modérée' : '✅ Quasi-parité';
+    var bgIPG = stats.ipgNational < 0.90 ? '#fee2e2' : stats.ipgNational < 0.95 ? '#fef3c7' : '#d1fae5';
+    var colorIPG = stats.ipgNational < 0.90 ? '#991b1b' : stats.ipgNational < 0.95 ? '#92400e' : '#065f46';
+    
+    html += '<div style="margin-top: 12px; padding: 8px 16px; background-color: ' + bgIPG + '; color: ' + colorIPG + '; border-radius: 6px; display: inline-block; font-weight: bold;">' + statusIPG + '</div>';
+    html += '</div>';
+    
+    // Explication IPG
+    html += '<div style="background-color: #dbeafe; padding: 12px; border-radius: 6px; border-left: 4px solid #2563eb; margin-bottom: 16px;">';
+    html += '<div style="font-size: 13px; color: #1e40af;"><strong>💡 Lecture de l\'IPG :</strong></div>';
+    html += '<div style="font-size: 12px; color: #1e3a8a; margin-top: 4px;">• IPG = 1.00 : Parité parfaite (filles = garçons)</div>';
+    html += '<div style="font-size: 12px; color: #1e3a8a;">• IPG < 0.90 : Disparité défavorable aux filles</div>';
+    html += '<div style="font-size: 12px; color: #1e3a8a;">• IPG > 1.10 : Disparité défavorable aux garçons</div>';
+    html += '</div>';
+    
+    // Top 5 régions faible IPG
+    if (stats.top5FaibleIPG.length > 0) {
+        html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #ef4444;">';
+        html += '<h4 style="color: #991b1b; margin-bottom: 12px;">⚠️ RÉGIONS AVEC FORTE INÉGALITÉ GENRE (IPG < 0.80)</h4>';
+        
+        html += '<table style="width: 100%; font-size: 13px;"><thead><tr style="background-color: #fecaca;"><th style="padding: 8px; text-align: left; color: #991b1b;">Région</th><th style="padding: 8px; text-align: center; color: #991b1b;">IPG</th><th style="padding: 8px; text-align: center; color: #991b1b;">Statut</th></tr></thead><tbody>';
+        
+        for (var i = 0; i < Math.min(5, stats.top5FaibleIPG.length); i++) {
+            var reg = stats.top5FaibleIPG[i];
+            var badge = reg.ipg < 0.75 ? '🔴 Critique' : reg.ipg < 0.85 ? '🟠 Préoccupant' : '🟡 Attention';
+            var bgColor = i % 2 === 0 ? '#fff' : '#fef2f2';
+            html += '<tr style="background-color: ' + bgColor + ';"><td style="padding: 8px;">' + (i+1) + '. ' + reg.region + '</td><td style="padding: 8px; text-align: center; font-weight: bold;">' + reg.ipg + '</td><td style="padding: 8px; text-align: center;">' + badge + '</td></tr>';
+        }
+        
+        html += '</tbody></table>';
+        html += '</div>';
+    }
+    
+    html += '</div>'; // Fin Section B
+    
+    // ========== SECTION C : DISTANCE ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">📏 C. DISTANCE ET ACCESSIBILITÉ</h3>';
+    
+    html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">';
+    
+    // Distance urbaine
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #10b981;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">🏙️ Distance Urbain</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: #10b981;">' + stats.distanceUrbaine + ' km</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: #d1fae5; color: #065f46; border-radius: 4px; font-size: 12px; display: inline-block;">✅ Acceptable</div>';
+    html += '</div>';
+    
+    // Distance rurale
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #ef4444;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">🏘️ Distance Rural</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: #ef4444;">' + stats.distanceRurale + ' km</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: #fee2e2; color: #991b1b; border-radius: 4px; font-size: 12px; display: inline-block;">🔴 Excessive</div>';
+    html += '</div>';
+    
+    // Écart distance
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #f59e0b;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">📏 ÉCART</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: #f59e0b;">+' + stats.ecartDistance + ' km</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: #fef3c7; color: #92400e; border-radius: 4px; font-size: 12px; display: inline-block;">⚠️ Problématique</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Impact
+    html += '<div style="background-color: #dbeafe; padding: 12px; border-radius: 6px; border-left: 4px solid #2563eb; margin-top: 16px;">';
+    html += '<div style="font-size: 13px; color: #1e40af;"><strong>💡 Impact :</strong> ' + stats.impactDistance + '% des abandons scolaires sont liés à une distance excessive entre l\'école et le domicile.</div>';
+    html += '</div>';
+    
+    html += '</div>'; // Fin Section C
+    
+    html += '</div>'; // Fin container principal
+    
     return html;
 }
-
 function renderAnalyseQualite() {
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
     html += '<h3>🎓 Analyse de la Qualité</h3>';
@@ -4545,6 +4877,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
