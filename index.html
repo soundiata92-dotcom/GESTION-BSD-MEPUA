@@ -212,7 +212,7 @@ var users = [];
             if (item.exec) checks++;
             return Math.round((checks / 6) * 100);
         }
-       async function toggle(activityId, field) {
+async function toggle(activityId, field) {
     var activity = null;
     for (var i = 0; i < data.length; i++) {
         if (data[i].id === activityId) {
@@ -220,14 +220,15 @@ var users = [];
             break;
         }
     }
-    // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
-    if (!hasPermission('activites', 'update', activity)) {
-        alert('❌ ' + getPermissionErrorMessage('activites', 'update'));
+    
+    if (!activity) {
+        alert('Activité introuvable');
         return;
     }
-
-    if (!activity || !canModify(activity)) {
-        alert('Vous ne pouvez pas modifier');
+    
+    // 🔥 VÉRIFICATION SIMPLIFIÉE
+    if (!canModify(activity)) {
+        alert('❌ Vous ne pouvez pas modifier cette activité');
         return;
     }
 
@@ -267,7 +268,6 @@ var users = [];
         alert('❌ Erreur : ' + error.message);
     }
 }
-
         // ========== FONCTIONS DE STOCKAGE SUPABASE ==========
         async function loadData() {
             try {
@@ -832,6 +832,7 @@ async function submitSignupWithInvitation() {
         alert('Seul l\'administrateur peut valider');
         return;
     }
+    
     if (confirm('Valider cette activité?')) {
         try {
             const { error } = await supabase
@@ -862,8 +863,7 @@ async function submitSignupWithInvitation() {
         }
     }
 }
-
-        async function deleteActivity(activityId) {
+async function deleteActivity(activityId) {
     var activity = null;
     for (var i = 0; i < data.length; i++) {
         if (data[i].id === activityId) {
@@ -871,14 +871,15 @@ async function submitSignupWithInvitation() {
             break;
         }
     }
-    // 🔥 UTILISER LE SYSTÈME DE PERMISSIONS
-    if (!hasPermission('activites', 'delete', activity)) {
-        alert('❌ ' + getPermissionErrorMessage('activites', 'delete'));
+    
+    if (!activity) {
+        alert('Activité introuvable');
         return;
     }
-
+    
+    // 🔥 VÉRIFICATION SIMPLIFIÉE
     if (!canDeleteInPlanning(activity)) {
-        alert('Vous ne pouvez pas supprimer cette activité');
+        alert('❌ Vous ne pouvez pas supprimer cette activité');
         return;
     }
 
@@ -905,8 +906,6 @@ async function submitSignupWithInvitation() {
         }
     }
 }
-
-
         function showAddModal() {
             var modalContainer = document.getElementById('modal-container');
             var defaultService = currentUser.role === 'chef' ? currentUser.service : services[0];
@@ -938,27 +937,22 @@ async function submitSignupWithInvitation() {
         }
 
         async function submitNewActivity() {
-    // 1️⃣ D'ABORD : Récupérer les valeurs du formulaire
     var activite = document.getElementById('new-activite').value.trim();
-    var service = document.getElementById('new-service').value;  // ← DÉPLACER ICI
-    var categorie = document.getElementById('new-categorie').value;
+    var service = document.getElementById('new-service').value; // 🔥 DÉPLACER ICI
     
-    // 2️⃣ ENSUITE : Vérifier les permissions
-    if (!hasPermission('activites', 'create', { service: service })) {
-        alert('❌ ' + getPermissionErrorMessage('activites', 'create'));
-        closeModal();
+    // 🔥 VÉRIFICATION SIMPLIFIÉE
+    if (currentUser.role === 'chef' && service !== currentUser.service) {
+        alert('❌ Vous ne pouvez ajouter que pour votre service');
         return;
     }
  
-    // 3️⃣ Vérifier que les champs sont remplis
     if (!activite) {
-        alert('⚠️ Veuillez remplir l\'activité');
+        alert('Veuillez remplir l\'activité');
         return;
     }
 
-    // 4️⃣ Créer l'objet activité
     var newActivity = {
-        categorie: categorie,
+        categorie: document.getElementById('new-categorie').value,
         activite: activite,
         service: service,
         t1: false, t2: false, t3: false, t4: false,
@@ -970,23 +964,16 @@ async function submitSignupWithInvitation() {
         maj_par: currentUser.nom
     };
     
-    // 5️⃣ Insérer dans Supabase
+    // Insérer DIRECTEMENT dans Supabase
     try {
-        console.log('📤 Tentative d\'insertion:', newActivity);
-        
         const { data: insertedData, error } = await supabase
             .from('activites')
             .insert([newActivity])
             .select();
         
-        if (error) {
-            console.error('❌ Erreur Supabase:', error);
-            throw error;
-        }
+        if (error) throw error;
         
-        console.log('✅ Données insérées:', insertedData);
-        
-        // Ajouter au tableau local
+        // Ajouter l'activité avec son ID généré au tableau local
         if (insertedData && insertedData.length > 0) {
             data.push(insertedData[0]);
         }
@@ -995,11 +982,10 @@ async function submitSignupWithInvitation() {
         closeModal();
         render();
     } catch (error) {
-        console.error('❌ Erreur complète:', error);
-        alert('❌ Erreur lors de l\'ajout : ' + error.message);
+        console.error('Erreur ajout activité:', error);
+        alert('❌ Erreur lors de l\'ajout de l\'activité');
     }
 }
-
         function getFilteredDataForSuivi() {
             if (!currentUser) return [];
             
@@ -4474,7 +4460,6 @@ function telechargerBlob(blob, nomFichier) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
 
 
 
