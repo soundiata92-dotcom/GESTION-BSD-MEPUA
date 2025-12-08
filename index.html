@@ -3239,15 +3239,17 @@ if (!currentUser) {
             html += '<button class="' + (activeTab === 'suivi' ? 'active' : '') + '" onclick="changeTab(\'suivi\')">Suivi-Évaluation</button>';
             html += '<button class="' + (activeTab === 'commentaires' ? 'active' : '') + '" onclick="changeTab(\'commentaires\')">Commentaires et Preuves</button>';
             html += '<button class="' + (activeTab === 'rapport' ? 'active' : '') + '" onclick="changeTab(\'rapport\')">Rapport de performance</button>';
- // Onglet Analyse (visible pour Admin, Chef Dép, et chefs de service)
+
+// Onglet Statistiques (visible pour DG du BSD, Chef Dép, Admin)
+if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || currentUser.service === 'BSD') {
+    html += '<button class="' + (activeTab === 'statistiques' ? 'active' : '') + '" onclick="changeTab(\'statistiques\')">📊 Statistiques</button>';
+}
+
+// Onglet Analyse (visible pour Admin, Chef Dép, et chefs de service)
 if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || currentUser.role === 'chef') {
-    html += '<button class="' + (activeTab === 'analyse' ? 'active' : '') + '" onclick="changeTab(\'analyse\')">📊 Analyse</button>';
-}          
-            // Onglet Statistiques (visible pour DG du BSD, Chef Dép, Admin)
-            if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || currentUser.service === 'BSD') {
-                html += '<button class="' + (activeTab === 'statistiques' ? 'active' : '') + '" onclick="changeTab(\'statistiques\')">📊 Statistiques</button>';
-            }
-            
+    html += '<button class="' + (activeTab === 'analyse' ? 'active' : '') + '" onclick="changeTab(\'analyse\')">🔍 Analyse</button>';
+}
+
             if (currentUser.role === 'admin') {
                 html += '<button class="' + (activeTab === 'admin' ? 'active' : '') + '" onclick="changeTab(\'admin\')">Administration</button>';
             }
@@ -4524,6 +4526,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
