@@ -4661,6 +4661,157 @@ function calculerStatsAcces() {
     
     return stats;
 }
+function calculerStatsQualite() {
+    var stats = {
+        ratioPrescolaire: 0,
+        ratioPrimaire: 0,
+        ratioSecondaire: 0,
+        ratioClassePresco: 0,
+        ratioClassePrimaire: 0,
+        ratioClasseSecondaire: 0,
+        tauxReussiteGlobal: 0,
+        abandonPrescolaire: 0,
+        abandonPrimaire: 0,
+        abandonSecondaire: 0,
+        zonesSureffectif: []
+    };
+    
+    if (!statistiquesData || statistiquesData.length === 0) {
+        return stats;
+    }  
+    // Calcul ratios élèves/enseignant par niveau
+    var totalRatioPresco = 0, countRatioPresco = 0;
+    var totalRatioPrimaire = 0, countRatioPrimaire = 0;
+    var totalRatioSecondaire = 0, countRatioSecondaire = 0;
+    // Calcul ratios élèves/classe
+    var totalClassePresco = 0, countClassePresco = 0;
+    var totalClassePrimaire = 0, countClassePrimaire = 0;
+    var totalClasseSecondaire = 0, countClasseSecondaire = 0;
+    
+    // Calcul taux réussite
+    var totalReussite = 0, countReussite = 0;
+    
+    // Calcul taux abandon par niveau
+    var totalAbandonPresco = 0, countAbandonPresco = 0;
+    var totalAbandonPrimaire = 0, countAbandonPrimaire = 0;
+    var totalAbandonSecondaire = 0, countAbandonSecondaire = 0;
+    
+    // Pour zones sureffectif
+    var ratioParZone = {};
+    
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        // Ratios élèves/enseignant (Total uniquement)
+        if (stat.ratio_eleves_enseignant !== null && stat.genre === 'Total') {
+            var ratio = parseFloat(stat.ratio_eleves_enseignant);
+            
+            if (stat.niveau === 'Préscolaire') {
+                totalRatioPresco += ratio;
+                countRatioPresco++;
+            } else if (stat.niveau === 'Primaire') {
+                totalRatioPrimaire += ratio;
+                countRatioPrimaire++;
+            } else if (stat.niveau === 'Secondaire') {
+                totalRatioSecondaire += ratio;
+                countRatioSecondaire++;
+            }
+            
+            // Zones sureffectif (>60:1)
+            if (ratio > 60) {
+                var key = stat.region + '|' + stat.zone + '|' + stat.niveau;
+                if (!ratioParZone[key]) {
+                    ratioParZone[key] = { 
+                        region: stat.region, 
+                        zone: stat.zone, 
+                        niveau: stat.niveau,
+                        total: 0, 
+                        count: 0 
+                    };
+                }
+                ratioParZone[key].total += ratio;
+                ratioParZone[key].count++;
+            }
+        }
+        
+        // Ratios élèves/classe (Total uniquement)
+        if (stat.ratio_eleves_classe !== null && stat.genre === 'Total') {
+            var ratioClasse = parseFloat(stat.ratio_eleves_classe);
+            
+            if (stat.niveau === 'Préscolaire') {
+                totalClassePresco += ratioClasse;
+                countClassePresco++;
+            } else if (stat.niveau === 'Primaire') {
+                totalClassePrimaire += ratioClasse;
+                countClassePrimaire++;
+            } else if (stat.niveau === 'Secondaire') {
+                totalClasseSecondaire += ratioClasse;
+                countClasseSecondaire++;
+            }
+        }
+        
+        // Taux de réussite
+        if (stat.taux_reussite_examens !== null) {
+            totalReussite += parseFloat(stat.taux_reussite_examens);
+            countReussite++;
+        }
+        
+        // Taux d'abandon par niveau
+        if (stat.taux_abandon !== null) {
+            var abandon = parseFloat(stat.taux_abandon);
+            
+            if (stat.niveau === 'Préscolaire') {
+                totalAbandonPresco += abandon;
+                countAbandonPresco++;
+            } else if (stat.niveau === 'Primaire') {
+                totalAbandonPrimaire += abandon;
+                countAbandonPrimaire++;
+            } else if (stat.niveau === 'Secondaire') {
+                totalAbandonSecondaire += abandon;
+                countAbandonSecondaire++;
+            }
+        }
+    }
+    
+    // Moyennes ratios enseignant
+    stats.ratioPrescolaire = countRatioPresco > 0 ? (totalRatioPresco / countRatioPresco).toFixed(0) : 0;
+    stats.ratioPrimaire = countRatioPrimaire > 0 ? (totalRatioPrimaire / countRatioPrimaire).toFixed(0) : 0;
+    stats.ratioSecondaire = countRatioSecondaire > 0 ? (totalRatioSecondaire / countRatioSecondaire).toFixed(0) : 0;
+    
+    // Moyennes ratios classe
+    stats.ratioClassePresco = countClassePresco > 0 ? (totalClassePresco / countClassePresco).toFixed(0) : 0;
+    stats.ratioClassePrimaire = countClassePrimaire > 0 ? (totalClassePrimaire / countClassePrimaire).toFixed(0) : 0;
+    stats.ratioClasseSecondaire = countClasseSecondaire > 0 ? (totalClasseSecondaire / countClasseSecondaire).toFixed(0) : 0;
+    
+    // Moyenne taux réussite
+    stats.tauxReussiteGlobal = countReussite > 0 ? (totalReussite / countReussite).toFixed(1) : 0;
+    
+    // Moyennes abandon
+    stats.abandonPrescolaire = countAbandonPresco > 0 ? (totalAbandonPresco / countAbandonPresco).toFixed(1) : 0;
+    stats.abandonPrimaire = countAbandonPrimaire > 0 ? (totalAbandonPrimaire / countAbandonPrimaire).toFixed(1) : 0;
+    stats.abandonSecondaire = countAbandonSecondaire > 0 ? (totalAbandonSecondaire / countAbandonSecondaire).toFixed(1) : 0;
+    
+    // Zones sureffectif (Top 5)
+    var zonesArray = [];
+    for (var key in ratioParZone) {
+        var zone = ratioParZone[key];
+        zonesArray.push({
+            region: zone.region,
+            zone: zone.zone,
+            ratio: (zone.total / zone.count).toFixed(0)
+        });
+    }
+    zonesArray.sort(function(a, b) { 
+        return parseFloat(b.ratio) - parseFloat(a.ratio); 
+    });
+    stats.zonesSureffectif = zonesArray.slice(0, 5);
+    
+    return stats;
+}
+function exporterAnalyseQualite() {
+    alert('📥 Export PDF en cours de développement...\n\nFonctionnalité disponible prochainement.');
+    // TODO: Implémenter export PDF avec html2pdf ou jsPDF
+}
 function exporterAnalyseAcces() {
     alert('📥 Export PDF en cours de développement...\n\nFonctionnalité disponible prochainement.');
     // TODO: Implémenter export PDF avec html2pdf ou jsPDF
@@ -4850,13 +5001,246 @@ function renderAnalyseAcces() {
     return html;
 }
 function renderAnalyseQualite() {
+    // Vérifier si des données statistiques existent
+    if (!statistiquesData || statistiquesData.length === 0) {
+        return '<div style="background-color: #fef3c7; padding: 24px; border-radius: 8px; border-left: 4px solid #f59e0b;">' +
+               '<h3 style="color: #92400e;">⚠️ Aucune donnée disponible</h3>' +
+               '<p style="color: #92400e; margin-top: 8px;">Veuillez d\'abord saisir des statistiques dans l\'onglet "Statistiques".</p>' +
+               '</div>';
+    }
+    
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>🎓 Analyse de la Qualité</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Contenu en cours de développement...</p>';
+    
+    // ========== EN-TÊTE ==========
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">';
+    html += '<h2 style="color: #11998e; font-size: 24px; margin: 0;">🎓 Analyse de la Qualité des Enseignements</h2>';
+    html += '<button class="btn btn-success" onclick="exporterAnalyseQualite()">📥 Exporter PDF</button>';
     html += '</div>';
+    
+    // ========== CALCULS ==========
+    var stats = calculerStatsQualite();
+    
+    // ========== SECTION A : CONDITIONS D'ENSEIGNEMENT ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">👥 A. CONDITIONS D\'ENSEIGNEMENT</h3>';
+    
+    // Titre section ratios
+    html += '<div style="font-weight: bold; margin-bottom: 16px; color: #11998e; font-size: 16px;">Ratios Élèves/Enseignant par Niveau</div>';
+    
+    // Grille des ratios
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">';
+    
+    // Préscolaire
+    var statusPresco = stats.ratioPrescolaire <= 25 ? '✅ Conforme' : stats.ratioPrescolaire <= 30 ? '🟡 Acceptable' : '🔴 Sureffectif';
+    var colorPresco = stats.ratioPrescolaire <= 25 ? '#10b981' : stats.ratioPrescolaire <= 30 ? '#f59e0b' : '#ef4444';
+    var bgPresco = stats.ratioPrescolaire <= 25 ? '#d1fae5' : stats.ratioPrescolaire <= 30 ? '#fef3c7' : '#fee2e2';
+    var borderPresco = stats.ratioPrescolaire <= 25 ? '#10b981' : stats.ratioPrescolaire <= 30 ? '#f59e0b' : '#ef4444';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; border: 2px solid ' + borderPresco + ';">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">📚 Préscolaire</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: ' + colorPresco + ';">' + stats.ratioPrescolaire + ':1</div>';
+    html += '<div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Norme UNESCO: <strong>&lt;25:1</strong></div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: ' + bgPresco + '; color: ' + colorPresco + '; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">' + statusPresco + '</div>';
+    html += '</div>';
+    
+    // Primaire
+    var statusPrimaire = stats.ratioPrimaire <= 40 ? '✅ Conforme' : stats.ratioPrimaire <= 50 ? '🟡 Acceptable' : '🔴 Sureffectif';
+    var colorPrimaire = stats.ratioPrimaire <= 40 ? '#10b981' : stats.ratioPrimaire <= 50 ? '#f59e0b' : '#ef4444';
+    var bgPrimaire = stats.ratioPrimaire <= 40 ? '#d1fae5' : stats.ratioPrimaire <= 50 ? '#fef3c7' : '#fee2e2';
+    var borderPrimaire = stats.ratioPrimaire <= 40 ? '#10b981' : stats.ratioPrimaire <= 50 ? '#f59e0b' : '#ef4444';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; border: 2px solid ' + borderPrimaire + ';">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">📖 Primaire</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: ' + colorPrimaire + ';">' + stats.ratioPrimaire + ':1</div>';
+    html += '<div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Norme UNESCO: <strong>&lt;40:1</strong></div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: ' + bgPrimaire + '; color: ' + colorPrimaire + '; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">' + statusPrimaire + '</div>';
+    html += '</div>';
+    
+    // Secondaire
+    var statusSecondaire = stats.ratioSecondaire <= 35 ? '✅ Conforme' : stats.ratioSecondaire <= 45 ? '🟡 Acceptable' : '🔴 Sureffectif';
+    var colorSecondaire = stats.ratioSecondaire <= 35 ? '#10b981' : stats.ratioSecondaire <= 45 ? '#f59e0b' : '#ef4444';
+    var bgSecondaire = stats.ratioSecondaire <= 35 ? '#d1fae5' : stats.ratioSecondaire <= 45 ? '#fef3c7' : '#fee2e2';
+    var borderSecondaire = stats.ratioSecondaire <= 35 ? '#10b981' : stats.ratioSecondaire <= 45 ? '#f59e0b' : '#ef4444';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; border: 2px solid ' + borderSecondaire + ';">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">🎓 Secondaire</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: ' + colorSecondaire + ';">' + stats.ratioSecondaire + ':1</div>';
+    html += '<div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Norme UNESCO: <strong>&lt;35:1</strong></div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: ' + bgSecondaire + '; color: ' + colorSecondaire + '; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">' + statusSecondaire + '</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Graphique comparatif avec normes
+    html += '<div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">';
+    html += '<div style="font-weight: bold; margin-bottom: 12px; color: #4b5563;">Comparaison avec normes UNESCO</div>';
+    
+    // Préscolaire
+    html += '<div style="margin-bottom: 16px;">';
+    html += '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">';
+    html += '<div style="width: 120px; font-size: 13px; color: #6b7280;">Préscolaire</div>';
+    html += '<div style="flex: 1; background-color: #e5e7eb; border-radius: 4px; height: 32px; position: relative; overflow: hidden;">';
+    var widthPresco = Math.min((stats.ratioPrescolaire / 50) * 100, 100);
+    html += '<div style="width: ' + widthPresco + '%; height: 100%; background: linear-gradient(90deg, ' + colorPresco + ', ' + colorPresco + 'cc); display: flex; align-items: center; padding-left: 8px; color: white; font-weight: bold; font-size: 13px;">' + stats.ratioPrescolaire + ':1</div>';
+    html += '<div style="position: absolute; left: 50%; top: 0; height: 100%; width: 2px; background-color: #10b981;"></div>';
+    html += '<div style="position: absolute; left: 50%; top: -20px; font-size: 10px; color: #10b981; font-weight: bold;">← 25:1</div>';
+    html += '</div></div></div>';
+    
+    // Primaire
+    html += '<div style="margin-bottom: 16px;">';
+    html += '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">';
+    html += '<div style="width: 120px; font-size: 13px; color: #6b7280;">Primaire</div>';
+    html += '<div style="flex: 1; background-color: #e5e7eb; border-radius: 4px; height: 32px; position: relative; overflow: hidden;">';
+    var widthPrimaire = Math.min((stats.ratioPrimaire / 80) * 100, 100);
+    html += '<div style="width: ' + widthPrimaire + '%; height: 100%; background: linear-gradient(90deg, ' + colorPrimaire + ', ' + colorPrimaire + 'cc); display: flex; align-items: center; padding-left: 8px; color: white; font-weight: bold; font-size: 13px;">' + stats.ratioPrimaire + ':1</div>';
+    html += '<div style="position: absolute; left: 50%; top: 0; height: 100%; width: 2px; background-color: #10b981;"></div>';
+    html += '<div style="position: absolute; left: 50%; top: -20px; font-size: 10px; color: #10b981; font-weight: bold;">← 40:1</div>';
+    html += '</div></div></div>';
+    
+    // Secondaire
+    html += '<div style="margin-bottom: 8px;">';
+    html += '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">';
+    html += '<div style="width: 120px; font-size: 13px; color: #6b7280;">Secondaire</div>';
+    html += '<div style="flex: 1; background-color: #e5e7eb; border-radius: 4px; height: 32px; position: relative; overflow: hidden;">';
+    var widthSecondaire = Math.min((stats.ratioSecondaire / 70) * 100, 100);
+    html += '<div style="width: ' + widthSecondaire + '%; height: 100%; background: linear-gradient(90deg, ' + colorSecondaire + ', ' + colorSecondaire + 'cc); display: flex; align-items: center; padding-left: 8px; color: white; font-weight: bold; font-size: 13px;">' + stats.ratioSecondaire + ':1</div>';
+    html += '<div style="position: absolute; left: 50%; top: 0; height: 100%; width: 2px; background-color: #10b981;"></div>';
+    html += '<div style="position: absolute; left: 50%; top: -20px; font-size: 10px; color: #10b981; font-weight: bold;">← 35:1</div>';
+    html += '</div></div></div>';
+    
+    html += '</div>';
+    
+    // Ratios élèves/classe
+    html += '<div style="font-weight: bold; margin-bottom: 12px; margin-top: 24px; color: #11998e; font-size: 16px;">Ratios Élèves/Classe par Niveau</div>';
+    
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">';
+    
+    html += '<div style="background-color: #f3f4f6; padding: 12px; border-radius: 6px; text-align: center;">';
+    html += '<div style="font-size: 12px; color: #6b7280;">Préscolaire</div>';
+    html += '<div style="font-size: 24px; font-weight: bold; color: #4b5563;">' + stats.ratioClassePresco + ':1</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #f3f4f6; padding: 12px; border-radius: 6px; text-align: center;">';
+    html += '<div style="font-size: 12px; color: #6b7280;">Primaire</div>';
+    html += '<div style="font-size: 24px; font-weight: bold; color: #4b5563;">' + stats.ratioClassePrimaire + ':1</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #f3f4f6; padding: 12px; border-radius: 6px; text-align: center;">';
+    html += '<div style="font-size: 12px; color: #6b7280;">Secondaire</div>';
+    html += '<div style="font-size: 24px; font-weight: bold; color: #4b5563;">' + stats.ratioClasseSecondaire + ':1</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Zones en sureffectif
+    if (stats.zonesSureffectif.length > 0) {
+        html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #ef4444;">';
+        html += '<h4 style="color: #991b1b; margin-bottom: 12px;">⚠️ ZONES EN SUREFFECTIF CRITIQUE (Ratio &gt;60:1)</h4>';
+        
+        html += '<table style="width: 100%; font-size: 13px;"><thead><tr style="background-color: #fecaca;"><th style="padding: 8px; text-align: left; color: #991b1b;">Région</th><th style="padding: 8px; text-align: center; color: #991b1b;">Zone</th><th style="padding: 8px; text-align: center; color: #991b1b;">Ratio moyen</th><th style="padding: 8px; text-align: center; color: #991b1b;">Priorité</th></tr></thead><tbody>';
+        
+        for (var i = 0; i < Math.min(5, stats.zonesSureffectif.length); i++) {
+            var zone = stats.zonesSureffectif[i];
+            var bgColor = i % 2 === 0 ? '#fff' : '#fef2f2';
+            html += '<tr style="background-color: ' + bgColor + ';"><td style="padding: 8px;">' + zone.region + '</td><td style="padding: 8px; text-align: center;">' + zone.zone + '</td><td style="padding: 8px; text-align: center; font-weight: bold; color: #ef4444;">' + zone.ratio + ':1</td><td style="padding: 8px; text-align: center;">🔴 Urgente</td></tr>';
+        }
+        
+        html += '</tbody></table>';
+        html += '</div>';
+    }
+    
+    html += '</div>'; // Fin Section A
+    
+    // ========== SECTION B : PERFORMANCE ACADÉMIQUE ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">📈 B. PERFORMANCE ACADÉMIQUE</h3>';
+    
+    // Taux de réussite global
+    html += '<div style="text-align: center; margin-bottom: 20px;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Taux de Réussite Moyen aux Examens</div>';
+    html += '<div style="font-size: 48px; font-weight: bold; color: #11998e;">' + stats.tauxReussiteGlobal + '%</div>';
+    html += '</div>';
+    
+    // Évolution (simulation - si pas de données historiques)
+    html += '<div style="background-color: #dbeafe; padding: 12px; border-radius: 6px; border-left: 4px solid #2563eb; margin-bottom: 20px;">';
+    html += '<div style="font-size: 13px; color: #1e40af;"><strong>📊 Tendance :</strong> ' + (stats.tauxReussiteGlobal > 70 ? '↗️ Performance satisfaisante' : '⚠️ Nécessite amélioration') + '</div>';
+    html += '</div>';
+    
+    html += '</div>'; // Fin Section B
+    
+    // ========== SECTION C : ABANDON SCOLAIRE ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">⚠️ C. ABANDON ET RÉTENTION SCOLAIRE</h3>';
+    
+    // Taux abandon par niveau
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">';
+    
+    // Préscolaire
+    var statusAbandonPresco = stats.abandonPrescolaire <= 8 ? '✅ Faible' : stats.abandonPrescolaire <= 12 ? '🟡 Moyen' : '🔴 Élevé';
+    var colorAbandonPresco = stats.abandonPrescolaire <= 8 ? '#10b981' : stats.abandonPrescolaire <= 12 ? '#f59e0b' : '#ef4444';
+    var bgAbandonPresco = stats.abandonPrescolaire <= 8 ? '#d1fae5' : stats.abandonPrescolaire <= 12 ? '#fef3c7' : '#fee2e2';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid ' + colorAbandonPresco + ';">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">📚 Préscolaire</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: ' + colorAbandonPresco + ';">' + stats.abandonPrescolaire + '%</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: ' + bgAbandonPresco + '; color: ' + colorAbandonPresco + '; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">' + statusAbandonPresco + '</div>';
+    html += '</div>';
+    
+    // Primaire
+    var statusAbandonPrimaire = stats.abandonPrimaire <= 10 ? '✅ Faible' : stats.abandonPrimaire <= 15 ? '🟡 Moyen' : '🔴 Élevé';
+    var colorAbandonPrimaire = stats.abandonPrimaire <= 10 ? '#10b981' : stats.abandonPrimaire <= 15 ? '#f59e0b' : '#ef4444';
+    var bgAbandonPrimaire = stats.abandonPrimaire <= 10 ? '#d1fae5' : stats.abandonPrimaire <= 15 ? '#fef3c7' : '#fee2e2';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid ' + colorAbandonPrimaire + ';">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">📖 Primaire</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: ' + colorAbandonPrimaire + ';">' + stats.abandonPrimaire + '%</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: ' + bgAbandonPrimaire + '; color: ' + colorAbandonPrimaire + '; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">' + statusAbandonPrimaire + '</div>';
+    html += '</div>';
+    
+    // Secondaire
+    var statusAbandonSecondaire = stats.abandonSecondaire <= 12 ? '✅ Faible' : stats.abandonSecondaire <= 18 ? '🟡 Moyen' : '🔴 Élevé';
+    var colorAbandonSecondaire = stats.abandonSecondaire <= 12 ? '#10b981' : stats.abandonSecondaire <= 18 ? '#f59e0b' : '#ef4444';
+    var bgAbandonSecondaire = stats.abandonSecondaire <= 12 ? '#d1fae5' : stats.abandonSecondaire <= 18 ? '#fef3c7' : '#fee2e2';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid ' + colorAbandonSecondaire + ';">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">🎓 Secondaire</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: ' + colorAbandonSecondaire + ';">' + stats.abandonSecondaire + '%</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: ' + bgAbandonSecondaire + '; color: ' + colorAbandonSecondaire + '; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">' + statusAbandonSecondaire + '</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Principales causes (données fixes pour l'instant)
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">Principales causes identifiées</h4>';
+    
+    html += '<div style="margin-bottom: 8px;">';
+    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 13px; color: #6b7280;">Facteurs économiques</span><span style="font-weight: bold;">45%</span></div>';
+    html += '<div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden;"><div style="width: 45%; height: 100%; background-color: #ef4444;"></div></div>';
+    html += '</div>';
+    
+    html += '<div style="margin-bottom: 8px;">';
+    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 13px; color: #6b7280;">Mariages précoces (filles)</span><span style="font-weight: bold;">22%</span></div>';
+    html += '<div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden;"><div style="width: 22%; height: 100%; background-color: #f59e0b;"></div></div>';
+    html += '</div>';
+    
+    html += '<div style="margin-bottom: 8px;">';
+    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 13px; color: #6b7280;">Distance excessive</span><span style="font-weight: bold;">18%</span></div>';
+    html += '<div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden;"><div style="width: 18%; height: 100%; background-color: #2563eb;"></div></div>';
+    html += '</div>';    
+    html += '<div style="margin-bottom: 8px;">';
+    html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 13px; color: #6b7280;">Faible qualité enseignement</span><span style="font-weight: bold;">15%</span></div>';
+    html += '<div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px; overflow: hidden;"><div style="width: 15%; height: 100%; background-color: #8b5cf6;"></div></div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    html += '</div>'; // Fin Section C
+    
+    html += '</div>'; // Fin container principal
+    
     return html;
 }
-
 function renderAnalyseAlphabetisation() {
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
     html += '<h3>✍️ Analyse de l\'Alphabétisation</h3>';
@@ -4877,6 +5261,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
