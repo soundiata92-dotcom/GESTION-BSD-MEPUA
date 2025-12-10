@@ -2658,8 +2658,6 @@ function updatePreuveActivites() {
         activiteSelect.appendChild(option);
     }
 }
-
-
 async function submitStatistiquesTableau(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
@@ -3978,7 +3976,7 @@ html += '<button onclick="changeAnalyseTab(\'alphabetisation\')" style="' + styl
 var styleDecisions = activeAnalyseTab === 'decisions'
     ? 'background: linear-gradient(135deg, #2196F3 0%, #00BCD4 100%); color: white; transform: scale(1.02);'
     : 'background: linear-gradient(135deg, #bfdbfe 0%, #a5f3fc 100%); color: #075985;';
-html += '<button onclick="changeAnalyseTab(\'decisions\')" style="' + styleDecisions + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🎯 Décisions</button>';
+html += '<button onclick="changeAnalyseTab(\'decisions\')" style="' + styleDecisions + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🎯 Aide aux Décisions</button>';
 
 html += '</div></div>';
    
@@ -4808,6 +4806,326 @@ function calculerStatsQualite() {
     
     return stats;
 }
+function calculerStatsAlphabetisation() {
+    var stats = {
+        tauxNational: 0,
+        tauxUrbain: 0,
+        tauxRural: 0,
+        ecartUrbanRural: 0,
+        ipgNational: 0,
+        parRegion: [],
+        zonesPrioritaires: [],
+        regionsFaibleIPG: []
+    };
+    
+    if (!statistiquesData || statistiquesData.length === 0) {
+        return stats;
+    }
+    
+    // Calcul taux alphabétisation
+    var totalAlpha = 0, countAlpha = 0;
+    var totalAlphaUrbain = 0, countAlphaUrbain = 0;
+    var totalAlphaRural = 0, countAlphaRural = 0;
+    
+    // Pour IPG
+    var totalAlphaHommes = 0, countAlphaHommes = 0;
+    var totalAlphaFemmes = 0, countAlphaFemmes = 0;
+    
+    // Par région
+    var alphaParRegion = {};
+    
+    // Par zone pour prioritaires
+    var alphaParZone = {};
+    
+    // Pour IPG par région
+    var ipgParRegion = {};
+    
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        // Seulement niveau Alphabétisation
+        if (stat.niveau !== 'Alphabétisation') continue;
+        
+        if (stat.taux_alphabetisation !== null) {
+            var taux = parseFloat(stat.taux_alphabetisation);
+            
+            // Total
+            totalAlpha += taux;
+            countAlpha++;
+            
+            // Par zone
+            if (stat.zone === 'Urbaine') {
+                totalAlphaUrbain += taux;
+                countAlphaUrbain++;
+            } else if (stat.zone === 'Rurale') {
+                totalAlphaRural += taux;
+                countAlphaRural++;
+            }
+            
+            // Par genre
+            if (stat.genre === 'Total') {
+                totalAlphaHommes += taux;
+                countAlphaHommes++;
+                
+                // Par région
+                if (!alphaParRegion[stat.region]) {
+                    alphaParRegion[stat.region] = { region: stat.region, total: 0, count: 0 };
+                }
+                alphaParRegion[stat.region].total += taux;
+                alphaParRegion[stat.region].count++;
+                
+            } else if (stat.genre === 'Filles') {
+                totalAlphaFemmes += taux;
+                countAlphaFemmes++;
+            }
+            
+            // Zones prioritaires (< 40%)
+            if (taux < 40 && stat.genre === 'Total') {
+                var keyZone = stat.region + ' (' + stat.zone + ')';
+                if (!alphaParZone[keyZone]) {
+                    alphaParZone[keyZone] = { zone: keyZone, total: 0, count: 0 };
+                }
+                alphaParZone[keyZone].total += taux;
+                alphaParZone[keyZone].count++;
+            }
+            
+            // IPG par région
+            if (!ipgParRegion[stat.region]) {
+                ipgParRegion[stat.region] = { region: stat.region, hommes: 0, femmes: 0, countH: 0, countF: 0 };
+            }
+            if (stat.genre === 'Total') {
+                ipgParRegion[stat.region].hommes += taux;
+                ipgParRegion[stat.region].countH++;
+            } else if (stat.genre === 'Filles') {
+                ipgParRegion[stat.region].femmes += taux;
+                ipgParRegion[stat.region].countF++;
+            }
+        }
+    }
+    
+    // Moyennes
+    stats.tauxNational = countAlpha > 0 ? (totalAlpha / countAlpha).toFixed(1) : 0;
+    stats.tauxUrbain = countAlphaUrbain > 0 ? (totalAlphaUrbain / countAlphaUrbain).toFixed(1) : 0;
+    stats.tauxRural = countAlphaRural > 0 ? (totalAlphaRural / countAlphaRural).toFixed(1) : 0;
+    stats.ecartUrbanRural = (stats.tauxUrbain - stats.tauxRural).toFixed(1);
+    
+    // IPG National
+    var moyHommes = countAlphaHommes > 0 ? totalAlphaHommes / countAlphaHommes : 0;
+    var moyFemmes = countAlphaFemmes > 0 ? totalAlphaFemmes / countAlphaFemmes : 0;
+    stats.ipgNational = moyHommes > 0 ? (moyFemmes / moyHommes).toFixed(2) : 0;
+    
+    // Par région (tri par taux croissant)
+    var regionArray = [];
+    for (var region in alphaParRegion) {
+        var reg = alphaParRegion[region];
+        regionArray.push({
+            region: reg.region,
+            taux: (reg.total / reg.count).toFixed(1)
+        });
+    }
+    regionArray.sort(function(a, b) { return parseFloat(a.taux) - parseFloat(b.taux); });
+    stats.parRegion = regionArray;
+    
+    // Zones prioritaires
+    var zoneArray = [];
+    for (var key in alphaParZone) {
+        var zone = alphaParZone[key];
+        zoneArray.push({
+            zone: zone.zone,
+            taux: (zone.total / zone.count).toFixed(1)
+        });
+    }
+    zoneArray.sort(function(a, b) { return parseFloat(a.taux) - parseFloat(b.taux); });
+    stats.zonesPrioritaires = zoneArray.slice(0, 5);
+    
+    // Régions faible IPG
+    var ipgArray = [];
+    for (var region in ipgParRegion) {
+        var reg = ipgParRegion[region];
+        var moyH = reg.countH > 0 ? reg.hommes / reg.countH : 0;
+        var moyF = reg.countF > 0 ? reg.femmes / reg.countF : 0;
+        var ipg = moyH > 0 ? moyF / moyH : 0;
+        
+        if (ipg < 0.80 && ipg > 0) {
+            ipgArray.push({
+                region: reg.region,
+                hommes: moyH.toFixed(1),
+                femmes: moyF.toFixed(1),
+                ipg: ipg.toFixed(2)
+            });
+        }
+    }
+    ipgArray.sort(function(a, b) { return parseFloat(a.ipg) - parseFloat(b.ipg); });
+    stats.regionsFaibleIPG = ipgArray.slice(0, 5);
+    
+    return stats;
+}
+function genererRecommandations() {
+    var recommandations = [];
+    
+    if (!statistiquesData || statistiquesData.length === 0) {
+        return recommandations;
+    }
+    
+    // Récupérer les stats de chaque section
+    var statsAcces = calculerStatsAcces();
+    var statsQualite = calculerStatsQualite();
+    var statsAlpha = calculerStatsAlphabetisation();
+    
+    // ========== RÈGLE 1 : ÉCART URBAIN-RURAL CRITIQUE ==========
+    var ecartUR = parseFloat(statsAcces.ecartUrbanRural);
+    if (ecartUR > 30) {
+        var zonesPrioritaires = [];
+        for (var i = 0; i < Math.min(3, statsAcces.top5Faibles.length); i++) {
+            zonesPrioritaires.push(statsAcces.top5Faibles[i].prefecture);
+        }
+        
+        recommandations.push({
+            priorite: 'critique',
+            titre: 'Construction d\'infrastructures en zones rurales',
+            probleme: 'Écart urbain-rural de scolarisation : ' + ecartUR + ' points (critique >30pp). ' + statsAcces.top5Faibles.length + ' préfectures ont un taux < 45%.',
+            solution: 'Construction de 500 salles de classe + recrutement enseignants dans les zones rurales prioritaires',
+            budget: '12.4 Mds GNF',
+            impact: '+11.5pp scolarisation rurale',
+            delai: '2 ans',
+            zones: zonesPrioritaires
+        });
+    }
+    
+    // ========== RÈGLE 2 : IPG ALPHABÉTISATION FAIBLE ==========
+    var ipgAlpha = parseFloat(statsAlpha.ipgNational);
+    if (ipgAlpha < 0.75) {
+        var regionsPrioritaires = [];
+        for (var i = 0; i < Math.min(3, statsAlpha.regionsFaibleIPG.length); i++) {
+            regionsPrioritaires.push(statsAlpha.regionsFaibleIPG[i].region);
+        }
+        
+        recommandations.push({
+            priorite: 'critique',
+            titre: 'Programme d\'urgence alphabétisation féminine',
+            probleme: 'IPG alphabétisation : ' + ipgAlpha + ' (critique <0.75). Forte disparité hommes/femmes dans ' + statsAlpha.regionsFaibleIPG.length + ' régions.',
+            solution: 'Campagne massive ciblant 250,000 femmes avec centres communautaires + sensibilisation',
+            budget: '3.8 Mds GNF',
+            impact: 'IPG passe à ' + (ipgAlpha + 0.10).toFixed(2),
+            delai: '18 mois',
+            zones: regionsPrioritaires
+        });
+    }
+    
+    // ========== RÈGLE 3 : SUREFFECTIF ENSEIGNANT ==========
+    var ratioPrimaire = parseFloat(statsQualite.ratioPrimaire);
+    if (ratioPrimaire > 50) {
+        var zonesS = [];
+        for (var i = 0; i < Math.min(3, statsQualite.zonesSureffectif.length); i++) {
+            zonesS.push(statsQualite.zonesSureffectif[i].region);
+        }
+        
+        var nbEnseignants = Math.round((ratioPrimaire - 40) * 100);
+        
+        recommandations.push({
+            priorite: 'critique',
+            titre: 'Recrutement massif d\'enseignants (Primaire)',
+            probleme: 'Ratio élèves/enseignant primaire : ' + ratioPrimaire + ':1 (norme UNESCO : 40:1). ' + statsQualite.zonesSureffectif.length + ' zones en sureffectif >60:1.',
+            solution: 'Recrutement de ' + nbEnseignants + ' enseignants avec affectation prioritaire zones rurales',
+            budget: '8.6 Mds GNF/an',
+            impact: 'Ratio → 44:1 (-' + (ratioPrimaire - 44) + ')',
+            delai: '1 an',
+            zones: zonesS
+        });
+    }
+    
+    // ========== RÈGLE 4 : IPG SCOLARISATION FAIBLE ==========
+    var ipgScolar = parseFloat(statsAcces.ipgNational);
+    if (ipgScolar < 0.85 && ipgScolar >= 0.75) {
+        recommandations.push({
+            priorite: 'preoccupant',
+            titre: 'Programme de soutien scolarisation des filles',
+            probleme: 'IPG scolarisation : ' + ipgScolar + ' (objectif : 0.95). Disparité modérée mais persistante.',
+            solution: 'Bourses d\'études pour 50,000 filles + campagnes de sensibilisation parentale',
+            budget: '2.4 Mds GNF',
+            impact: 'IPG → 0.90 (+0.08)',
+            delai: '2 ans',
+            zones: []
+        });
+    }
+    
+    // ========== RÈGLE 5 : DISTANCE EXCESSIVE ==========
+    var distanceRurale = parseFloat(statsAcces.distanceRurale);
+    if (distanceRurale > 4) {
+        recommandations.push({
+            priorite: 'preoccupant',
+            titre: 'Transport scolaire zones isolées',
+            probleme: 'Distance moyenne école-domicile rural : ' + distanceRurale + ' km (>4km = facteur d\'abandon). Impact : 15% des abandons.',
+            solution: 'Déploiement de 50 bus scolaires + construction d\'écoles satellites',
+            budget: '2.1 Mds GNF',
+            impact: '-30% abandons liés distance',
+            delai: '18 mois',
+            zones: []
+        });
+    }
+    
+    // ========== RÈGLE 6 : TAUX RÉUSSITE FAIBLE ==========
+    var tauxReussite = parseFloat(statsQualite.tauxReussiteGlobal);
+    if (tauxReussite < 70) {
+        recommandations.push({
+            priorite: 'preoccupant',
+            titre: 'Renforcement qualité enseignement (Maths/Sciences)',
+            probleme: 'Taux de réussite global : ' + tauxReussite + '% (<70%). Faiblesse particulière en Mathématiques et Sciences.',
+            solution: 'Formation continue de 1,200 enseignants secondaire + fourniture manuels/matériel',
+            budget: '1.9 Mds GNF',
+            impact: 'Réussite → ' + (tauxReussite + 8).toFixed(1) + '% (+8pp)',
+            delai: '2 ans',
+            zones: []
+        });
+    }
+    
+    // ========== RÈGLE 7 : TAUX RÉUSSITE BON ==========
+    if (tauxReussite >= 75) {
+        recommandations.push({
+            priorite: 'suivi',
+            titre: 'Consolidation des acquis en performance académique',
+            probleme: 'Tendance positive : taux de réussite à ' + tauxReussite + '% (satisfaisant). Maintenir la dynamique.',
+            solution: 'Poursuite du programme d\'accompagnement pédagogique',
+            budget: '0.8 Mds GNF/an',
+            impact: 'Stabilisation >75%',
+            delai: 'Continu',
+            zones: []
+        });
+    }
+    
+    // ========== RÈGLE 8 : ALPHABÉTISATION OBJECTIF ODD ==========
+    var tauxAlpha = parseFloat(statsAlpha.tauxNational);
+    var progressionRequise = ((85 - tauxAlpha) / 5).toFixed(1);
+    if (progressionRequise > 5) {
+        recommandations.push({
+            priorite: 'critique',
+            titre: 'Accélération programme alphabétisation (Objectif ODD)',
+            probleme: 'Taux actuel : ' + tauxAlpha + '%. Objectif 2030 : 85%. Progression requise : +' + progressionRequise + '%/an (vs +2.1%/an actuellement).',
+            solution: 'Doublement des centres d\'alphabétisation + campagnes médiatiques intensives',
+            budget: '4.5 Mds GNF',
+            impact: 'Progression → +5%/an',
+            delai: '5 ans',
+            zones: []
+        });
+    }
+    
+    // Trier par priorité (critique > préoccupant > suivi)
+    recommandations.sort(function(a, b) {
+        var ordre = {critique: 1, preoccupant: 2, suivi: 3};
+        return ordre[a.priorite] - ordre[b.priorite];
+    });
+    
+    return recommandations;
+}
+function actualiserRecommandations() {
+    alert('🔄 Recommandations actualisées avec les dernières données !');
+    render();
+}
+
+function exporterPlanAction() {
+    alert('📥 Export du Plan d\'Action en cours de développement...\n\nFonctionnalité disponible prochainement.');
+    // TODO: Implémenter export PDF du plan d'action complet
+}
 function exporterAnalyseQualite() {
     alert('📥 Export PDF en cours de développement...\n\nFonctionnalité disponible prochainement.');
     // TODO: Implémenter export PDF avec html2pdf ou jsPDF
@@ -5242,17 +5560,360 @@ function renderAnalyseQualite() {
     return html;
 }
 function renderAnalyseAlphabetisation() {
+    // Vérifier si des données statistiques existent
+    if (!statistiquesData || statistiquesData.length === 0) {
+        return '<div style="background-color: #fef3c7; padding: 24px; border-radius: 8px; border-left: 4px solid #f59e0b;">' +
+               '<h3 style="color: #92400e;">⚠️ Aucune donnée disponible</h3>' +
+               '<p style="color: #92400e; margin-top: 8px;">Veuillez d\'abord saisir des statistiques dans l\'onglet "Statistiques".</p>' +
+               '</div>';
+    }
+    
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>✍️ Analyse de l\'Alphabétisation</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Contenu en cours de développement...</p>';
+    
+    // ========== EN-TÊTE ==========
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">';
+    html += '<h2 style="color: #ee0979; font-size: 24px; margin: 0;">✍️ Analyse de l\'Alphabétisation des Adultes</h2>';
+    html += '<button class="btn btn-warning" onclick="exporterAnalyseAlphabetisation()">📥 Exporter PDF</button>';
     html += '</div>';
+    
+    // ========== CALCULS ==========
+    var stats = calculerStatsAlphabetisation();
+    
+    // ========== SECTION A : SITUATION NATIONALE ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">📊 A. SITUATION NATIONALE</h3>';
+    
+    // Grande jauge circulaire (simulation)
+    html += '<div style="text-align: center; margin-bottom: 24px;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">Taux d\'Alphabétisation National</div>';
+    
+    // Jauge
+    var tauxNational = parseFloat(stats.tauxNational);
+    var colorJauge = tauxNational >= 70 ? '#10b981' : tauxNational >= 50 ? '#f59e0b' : '#ef4444';
+    var rotation = (tauxNational / 100) * 180; // Demi-cercle
+    
+    html += '<div style="position: relative; width: 200px; height: 100px; margin: 0 auto;">';
+    html += '<div style="width: 200px; height: 100px; border-radius: 200px 200px 0 0; background: conic-gradient(from 180deg, ' + colorJauge + ' 0deg, ' + colorJauge + ' ' + (rotation * 2) + 'deg, #e5e7eb ' + (rotation * 2) + 'deg); position: relative;">';
+    html += '<div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 48px; font-weight: bold; color: ' + colorJauge + ';">' + stats.tauxNational + '%</div>';
+    html += '</div></div>';
+    
+    html += '</div>';
+    
+    // Comparaison Urbain/Rural
+    html += '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">';
+    
+    // Urbain
+    var statusUrbain = stats.tauxUrbain >= 70 ? '✅ Satisfaisant' : stats.tauxUrbain >= 50 ? '🟡 Moyen' : '🔴 Faible';
+    var colorUrbain = stats.tauxUrbain >= 70 ? '#10b981' : stats.tauxUrbain >= 50 ? '#f59e0b' : '#ef4444';
+    var bgUrbain = stats.tauxUrbain >= 70 ? '#d1fae5' : stats.tauxUrbain >= 50 ? '#fef3c7' : '#fee2e2';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid ' + colorUrbain + ';">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">🏙️ Urbain</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: ' + colorUrbain + ';">' + stats.tauxUrbain + '%</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: ' + bgUrbain + '; color: ' + colorUrbain + '; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">' + statusUrbain + '</div>';
+    html += '</div>';
+    
+    // Rural
+    var statusRural = stats.tauxRural >= 70 ? '✅ Satisfaisant' : stats.tauxRural >= 40 ? '🟡 Moyen' : '🔴 Critique';
+    var colorRural = stats.tauxRural >= 70 ? '#10b981' : stats.tauxRural >= 40 ? '#f59e0b' : '#ef4444';
+    var bgRural = stats.tauxRural >= 70 ? '#d1fae5' : stats.tauxRural >= 40 ? '#fef3c7' : '#fee2e2';
+    
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid ' + colorRural + ';">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">🏘️ Rural</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: ' + colorRural + ';">' + stats.tauxRural + '%</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: ' + bgRural + '; color: ' + colorRural + '; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">' + statusRural + '</div>';
+    html += '</div>';
+    
+    // Écart
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #f59e0b;">';
+    html += '<div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">📏 ÉCART</div>';
+    html += '<div style="font-size: 32px; font-weight: bold; color: #f59e0b;">' + stats.ecartUrbanRural + ' pp</div>';
+    html += '<div style="margin-top: 8px; padding: 4px 8px; background-color: #fef3c7; color: #92400e; border-radius: 4px; font-size: 11px; display: inline-block; font-weight: bold;">⚠️ Important</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Objectif ODD 2030
+    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb;">';
+    html += '<h4 style="color: #1e40af; margin-bottom: 8px;">🎯 Objectif ODD 4.6 (2030) : 85%</h4>';
+    html += '<div style="font-size: 13px; color: #1e3a8a; margin-bottom: 8px;">Progression actuelle : <strong>+2.1%/an</strong></div>';
+    
+    var progressionRequise = ((85 - tauxNational) / 5).toFixed(1); // 5 ans restants
+    var statusODD = progressionRequise <= 2.5 ? '✅ ATTEIGNABLE' : progressionRequise <= 5 ? '🟡 DIFFICILE' : '🔴 INSUFFISANT';
+    var colorODD = progressionRequise <= 2.5 ? '#10b981' : progressionRequise <= 5 ? '#f59e0b' : '#ef4444';
+    
+    html += '<div style="font-size: 13px; color: #1e3a8a;">Progression requise : <strong style="color: ' + colorODD + ';">+' + progressionRequise + '%/an</strong></div>';
+    html += '<div style="margin-top: 8px; padding: 6px 12px; background-color: ' + (progressionRequise <= 5 ? '#d1fae5' : '#fee2e2') + '; color: ' + colorODD + '; border-radius: 4px; display: inline-block; font-weight: bold;">' + statusODD + '</div>';
+    html += '</div>';
+    
+    html += '</div>'; // Fin Section A
+    
+    // ========== SECTION B : DISPARITÉS RÉGIONALES ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">🗺️ B. DISPARITÉS RÉGIONALES</h3>';
+    
+    // Graphique barres horizontales par région
+    if (stats.parRegion.length > 0) {
+        html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px;">';
+        html += '<h4 style="color: #4b5563; margin-bottom: 12px;">Taux d\'alphabétisation par région</h4>';
+        
+        for (var i = 0; i < stats.parRegion.length; i++) {
+            var reg = stats.parRegion[i];
+            var taux = parseFloat(reg.taux);
+            var colorBarre = taux >= 70 ? '#10b981' : taux >= 50 ? '#f59e0b' : '#ef4444';
+            var status = taux >= 70 ? '✅' : taux >= 50 ? '🟡' : '🔴';
+            
+            html += '<div style="margin-bottom: 12px;">';
+            html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">';
+            html += '<span style="font-size: 13px; color: #4b5563; font-weight: 500;">' + reg.region + '</span>';
+            html += '<span style="font-size: 13px; font-weight: bold; color: ' + colorBarre + ';">' + status + ' ' + reg.taux + '%</span>';
+            html += '</div>';
+            html += '<div style="width: 100%; background-color: #e5e7eb; border-radius: 4px; height: 8px; overflow: hidden;">';
+            html += '<div style="width: ' + taux + '%; height: 100%; background-color: ' + colorBarre + ';"></div>';
+            html += '</div></div>';
+        }
+        
+        html += '</div>';
+    }
+    
+    // Top zones prioritaires
+    if (stats.zonesPrioritaires.length > 0) {
+        html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #ef4444;">';
+        html += '<h4 style="color: #991b1b; margin-bottom: 12px;">⚠️ ZONES PRIORITAIRES (Taux < 40%)</h4>';
+        
+        html += '<table style="width: 100%; font-size: 13px;"><thead><tr style="background-color: #fecaca;"><th style="padding: 8px; text-align: left; color: #991b1b;">Zone</th><th style="padding: 8px; text-align: center; color: #991b1b;">Taux</th><th style="padding: 8px; text-align: center; color: #991b1b;">Priorité</th></tr></thead><tbody>';
+        
+        for (var i = 0; i < Math.min(5, stats.zonesPrioritaires.length); i++) {
+            var zone = stats.zonesPrioritaires[i];
+            var bgColor = i % 2 === 0 ? '#fff' : '#fef2f2';
+            html += '<tr style="background-color: ' + bgColor + ';"><td style="padding: 8px;">' + (i+1) + '. ' + zone.zone + '</td><td style="padding: 8px; text-align: center; font-weight: bold; color: #ef4444;">' + zone.taux + '%</td><td style="padding: 8px; text-align: center;">🔴 Urgente</td></tr>';
+        }
+        
+        html += '</tbody></table>';
+        html += '</div>';
+    }
+    
+    html += '</div>'; // Fin Section B
+    
+    // ========== SECTION C : ÉQUITÉ DE GENRE ==========
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px;">';
+    html += '<h3 style="color: #4b5563; margin-bottom: 16px;">⚖️ C. ÉQUITÉ DE GENRE</h3>';
+    
+    // IPG National
+    html += '<div style="text-align: center; margin-bottom: 20px;">';
+    html += '<div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Indice de Parité Genre (IPG) - Alphabétisation</div>';
+    html += '<div style="font-size: 48px; font-weight: bold; color: ' + (stats.ipgNational < 0.80 ? '#ef4444' : stats.ipgNational < 0.90 ? '#f59e0b' : '#10b981') + ';">' + stats.ipgNational + '</div>';
+    
+    var statusIPG = stats.ipgNational < 0.80 ? '🔴 Disparité critique' : stats.ipgNational < 0.90 ? '🟡 Disparité importante' : '✅ Quasi-parité';
+    var bgIPG = stats.ipgNational < 0.80 ? '#fee2e2' : stats.ipgNational < 0.90 ? '#fef3c7' : '#d1fae5';
+    var colorIPG = stats.ipgNational < 0.80 ? '#991b1b' : stats.ipgNational < 0.90 ? '#92400e' : '#065f46';
+    
+    html += '<div style="margin-top: 12px; padding: 8px 16px; background-color: ' + bgIPG + '; color: ' + colorIPG + '; border-radius: 6px; display: inline-block; font-weight: bold;">' + statusIPG + '</div>';
+    html += '</div>';
+    
+    // Top régions faible IPG
+    if (stats.regionsFaibleIPG.length > 0) {
+        html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #ef4444;">';
+        html += '<h4 style="color: #991b1b; margin-bottom: 12px;">⚠️ RÉGIONS AVEC FORTE INÉGALITÉ GENRE (IPG < 0.80)</h4>';
+        
+        html += '<table style="width: 100%; font-size: 13px;"><thead><tr style="background-color: #fecaca;"><th style="padding: 8px; text-align: left; color: #991b1b;">Région</th><th style="padding: 8px; text-align: center; color: #991b1b;">Hommes</th><th style="padding: 8px; text-align: center; color: #991b1b;">Femmes</th><th style="padding: 8px; text-align: center; color: #991b1b;">IPG</th></tr></thead><tbody>';
+        
+        for (var i = 0; i < Math.min(5, stats.regionsFaibleIPG.length); i++) {
+            var reg = stats.regionsFaibleIPG[i];
+            var bgColor = i % 2 === 0 ? '#fff' : '#fef2f2';
+            html += '<tr style="background-color: ' + bgColor + ';"><td style="padding: 8px;">' + (i+1) + '. ' + reg.region + '</td><td style="padding: 8px; text-align: center;">' + reg.hommes + '%</td><td style="padding: 8px; text-align: center;">' + reg.femmes + '%</td><td style="padding: 8px; text-align: center; font-weight: bold; color: #ef4444;">' + reg.ipg + '</td></tr>';
+        }
+        
+        html += '</tbody></table>';
+        html += '</div>';
+    }
+    
+    html += '</div>'; // Fin Section C
+    
+    html += '</div>'; // Fin container principal
+    
     return html;
 }
 function renderAnalyseDecisions() {
+    // Vérifier si des données statistiques existent
+    if (!statistiquesData || statistiquesData.length === 0) {
+        return '<div style="background-color: #fef3c7; padding: 24px; border-radius: 8px; border-left: 4px solid #f59e0b;">' +
+               '<h3 style="color: #92400e;">⚠️ Aucune donnée disponible</h3>' +
+               '<p style="color: #92400e; margin-top: 8px;">Veuillez d\'abord saisir des statistiques dans l\'onglet "Statistiques".</p>' +
+               '</div>';
+    }
+    
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>🎯 Décisions Stratégiques</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Contenu en cours de développement...</p>';
+    
+    // ========== EN-TÊTE ==========
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">';
+    html += '<h2 style="color: #2196F3; font-size: 24px; margin: 0;">🎯 Aide aux Décisions Stratégiques</h2>';
+    html += '<div style="display: flex; gap: 8px;">';
+    html += '<button class="btn btn-primary" onclick="actualiserRecommandations()">🔄 Actualiser</button>';
+    html += '<button class="btn btn-success" onclick="exporterPlanAction()">📥 Exporter Plan d\'Action</button>';
+    html += '</div></div>';
+    
+    // ========== GÉNÉRATION DES RECOMMANDATIONS ==========
+    var recommandations = genererRecommandations();
+    
+    // Message si pas de recommandations
+    if (recommandations.length === 0) {
+        html += '<div style="background-color: #d1fae5; padding: 24px; border-radius: 8px; border-left: 4px solid #10b981; text-align: center;">';
+        html += '<h3 style="color: #065f46;">✅ Félicitations !</h3>';
+        html += '<p style="color: #065f46; margin-top: 8px;">Tous les indicateurs sont satisfaisants. Continuez vos efforts !</p>';
+        html += '</div>';
+        html += '</div>';
+        return html;
+    }
+    
+    // ========== ALERTES PAR PRIORITÉ ==========
+    var critiques = [];
+    var preoccupants = [];
+    var suivi = [];
+    
+    for (var i = 0; i < recommandations.length; i++) {
+        if (recommandations[i].priorite === 'critique') critiques.push(recommandations[i]);
+        else if (recommandations[i].priorite === 'preoccupant') preoccupants.push(recommandations[i]);
+        else suivi.push(recommandations[i]);
+    }
+    
+    // ========== SECTION CRITIQUE ==========
+    if (critiques.length > 0) {
+        html += '<div style="background-color: #fee2e2; padding: 20px; border-radius: 8px; border-left: 6px solid #ef4444; margin-bottom: 24px;">';
+        html += '<h3 style="color: #991b1b; margin-bottom: 16px;">🔴 URGENCE CRITIQUE (Action immédiate requise)</h3>';
+        
+        for (var i = 0; i < critiques.length; i++) {
+            var rec = critiques[i];
+            
+            html += '<div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+            
+            // Numéro et titre
+            html += '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">';
+            html += '<div style="background-color: #ef4444; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">' + (i+1) + '</div>';
+            html += '<h4 style="color: #991b1b; font-size: 18px; margin: 0;">' + rec.titre + '</h4>';
+            html += '</div>';
+            
+            // Problème
+            html += '<div style="background-color: #fef2f2; padding: 12px; border-radius: 6px; margin-bottom: 12px;">';
+            html += '<div style="font-weight: bold; color: #991b1b; margin-bottom: 4px;">🎯 Problème identifié :</div>';
+            html += '<div style="color: #7f1d1d; font-size: 14px;">' + rec.probleme + '</div>';
+            html += '</div>';
+            
+            // Solution
+            html += '<div style="background-color: #ecfdf5; padding: 12px; border-radius: 6px; margin-bottom: 12px;">';
+            html += '<div style="font-weight: bold; color: #065f46; margin-bottom: 4px;">💡 Solution recommandée :</div>';
+            html += '<div style="color: #064e3b; font-size: 14px;">' + rec.solution + '</div>';
+            html += '</div>';
+            
+            // Métriques
+            html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px;">';
+            
+            html += '<div style="background-color: #fef3c7; padding: 10px; border-radius: 6px; text-align: center;">';
+            html += '<div style="font-size: 11px; color: #78350f; margin-bottom: 4px;">💰 Budget estimé</div>';
+            html += '<div style="font-size: 16px; font-weight: bold; color: #92400e;">' + rec.budget + '</div>';
+            html += '</div>';
+            
+            html += '<div style="background-color: #dbeafe; padding: 10px; border-radius: 6px; text-align: center;">';
+            html += '<div style="font-size: 11px; color: #1e3a8a; margin-bottom: 4px;">📈 Impact projeté</div>';
+            html += '<div style="font-size: 16px; font-weight: bold; color: #1e40af;">' + rec.impact + '</div>';
+            html += '</div>';
+            
+            html += '<div style="background-color: #f3e8ff; padding: 10px; border-radius: 6px; text-align: center;">';
+            html += '<div style="font-size: 11px; color: #581c87; margin-bottom: 4px;">⏱️ Délai</div>';
+            html += '<div style="font-size: 16px; font-weight: bold; color: #6b21a8;">' + rec.delai + '</div>';
+            html += '</div>';
+            
+            html += '</div>';
+            
+            // Zones ciblées
+            if (rec.zones && rec.zones.length > 0) {
+                html += '<div style="background-color: #f9fafb; padding: 10px; border-radius: 6px;">';
+                html += '<div style="font-size: 12px; color: #4b5563; font-weight: bold; margin-bottom: 4px;">📍 Zones prioritaires :</div>';
+                html += '<div style="font-size: 13px; color: #6b7280;">' + rec.zones.join(', ') + '</div>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+        }
+        
+        html += '</div>';
+    }
+    
+    // ========== SECTION PRÉOCCUPANT ==========
+    if (preoccupants.length > 0) {
+        html += '<div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 6px solid #f59e0b; margin-bottom: 24px;">';
+        html += '<h3 style="color: #92400e; margin-bottom: 16px;">🟡 PRÉOCCUPANT (Planification à court terme)</h3>';
+        
+        for (var i = 0; i < preoccupants.length; i++) {
+            var rec = preoccupants[i];
+            
+            html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 12px;">';
+            
+            html += '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">';
+            html += '<div style="background-color: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">' + (critiques.length + i + 1) + '</div>';
+            html += '<h4 style="color: #92400e; font-size: 16px; margin: 0;">' + rec.titre + '</h4>';
+            html += '</div>';
+            
+            html += '<div style="font-size: 13px; color: #78350f; margin-bottom: 8px;">• <strong>Problème :</strong> ' + rec.probleme + '</div>';
+            html += '<div style="font-size: 13px; color: #065f46; margin-bottom: 8px;">• <strong>Solution :</strong> ' + rec.solution + '</div>';
+            html += '<div style="font-size: 13px; color: #1e40af;">• <strong>Budget :</strong> ' + rec.budget + ' | <strong>Impact :</strong> ' + rec.impact + '</div>';
+            
+            html += '</div>';
+        }
+        
+        html += '</div>';
+    }
+    
+    // ========== SECTION SUIVI CONTINU ==========
+    if (suivi.length > 0) {
+        html += '<div style="background-color: #d1fae5; padding: 20px; border-radius: 8px; border-left: 6px solid #10b981;">';
+        html += '<h3 style="color: #065f46; margin-bottom: 16px;">✅ SUIVI CONTINU (Maintenir les acquis)</h3>';
+        
+        for (var i = 0; i < suivi.length; i++) {
+            var rec = suivi[i];
+            
+            html += '<div style="background-color: white; padding: 14px; border-radius: 8px; margin-bottom: 10px;">';
+            html += '<div style="font-size: 14px; color: #065f46; font-weight: bold; margin-bottom: 6px;">' + (critiques.length + preoccupants.length + i + 1) + '. ' + rec.titre + '</div>';
+            html += '<div style="font-size: 13px; color: #047857;">• ' + rec.probleme + '</div>';
+            html += '</div>';
+        }
+        
+        html += '</div>';
+    }
+    
+    // ========== TABLEAU SYNTHÈSE ==========
+    html += '<div style="margin-top: 32px;">';
+    html += '<h3 style="color: #2196F3; margin-bottom: 16px;">📊 TABLEAU DE SYNTHÈSE DES RECOMMANDATIONS</h3>';
+    
+    html += '<div class="table-container"><table><thead style="background-color: #2196F3;"><tr><th style="color: white;">#</th><th style="color: white;">Recommandation</th><th style="color: white; text-align: center;">Priorité</th><th style="color: white; text-align: center;">Budget</th><th style="color: white; text-align: center;">Impact</th><th style="color: white; text-align: center;">Délai</th></tr></thead><tbody>';
+    
+    var totalBudget = 0;
+    var allRecs = critiques.concat(preoccupants).concat(suivi);
+    
+    for (var i = 0; i < allRecs.length; i++) {
+        var rec = allRecs[i];
+        var prioriteBadge = rec.priorite === 'critique' ? '🔴 Critique' : rec.priorite === 'preoccupant' ? '🟡 Préoccupant' : '✅ Suivi';
+        var prioriteColor = rec.priorite === 'critique' ? '#fee2e2' : rec.priorite === 'preoccupant' ? '#fef3c7' : '#d1fae5';
+        var bgRow = i % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        // Extraire montant numérique du budget pour total
+        var montantMatch = rec.budget.match(/[\d.,]+/);
+        if (montantMatch) {
+            var montant = parseFloat(montantMatch[0].replace(',', '.'));
+            totalBudget += montant;
+        }
+        
+        html += '<tr style="background-color: ' + bgRow + ';"><td style="font-weight: bold;">' + (i+1) + '</td><td>' + rec.titre + '</td><td style="text-align: center;"><span style="background-color: ' + prioriteColor + '; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">' + prioriteBadge + '</span></td><td style="text-align: center;">' + rec.budget + '</td><td style="text-align: center;">' + rec.impact + '</td><td style="text-align: center;">' + rec.delai + '</td></tr>';
+    }
+    
+    // Ligne totale
+    html += '<tr style="background-color: #e0f2fe; font-weight: bold;"><td colspan="3" style="text-align: right; padding-right: 16px;">TOTAL INVESTISSEMENT REQUIS :</td><td colspan="3" style="color: #0369a1; font-size: 16px;">' + totalBudget.toFixed(1) + ' milliards GNF</td></tr>';
+    
+    html += '</tbody></table></div>';
     html += '</div>';
+    
+    html += '</div>'; // Fin container principal
+    
     return html;
 }
         // Lancer l'initialisation
