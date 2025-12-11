@@ -201,6 +201,8 @@ var users = [];
         var rapportTextes = {};
         var initialData = [];
         var statistiquesData = [];
+        var reussiteExamensData = [];
+        var alphabetisationData = [];
         var regionsData = [];
         var prefecturesData = [];
         function calcTaux(item) {
@@ -353,7 +355,19 @@ if (DataTemp && DataTemp.length > 0) {
                 
                 if (statistiquesError) throw statistiquesError;
                 if (statistiquesDataRaw) statistiquesData = statistiquesDataRaw;
-   
+   const { data: examensDataRaw, error: examensError } = await supabase
+.from('reussite_examens')
+.select('*')
+.order('date_saisie', { ascending: false });
+if (examensError) throw examensError;
+if (examensDataRaw) reussiteExamensData = examensDataRaw;
+const { data: alphaDataRaw, error: alphaError } = await supabase
+.from('alphabetisation')
+.select('*')
+.order('date_saisie', { ascending: false });
+if (alphaError) throw alphaError;
+if (alphaDataRaw) alphabetisationData = alphaDataRaw;
+
             } catch (error) {
                 console.error('Erreur lors du chargement:', error);
                 alert('Erreur de connexion à la base de données');
@@ -4545,6 +4559,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
