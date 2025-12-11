@@ -201,6 +201,8 @@ var users = [];
         var rapportTextes = {};
         var initialData = [];
         var statistiquesData = [];
+        var reussiteExamensData = [];
+        var alphabetisationData = [];
         var regionsData = [];
         var prefecturesData = [];
         function calcTaux(item) {
@@ -353,7 +355,23 @@ if (DataTemp && DataTemp.length > 0) {
                 
                 if (statistiquesError) throw statistiquesError;
                 if (statistiquesDataRaw) statistiquesData = statistiquesDataRaw;
-   
+   // 🔥 NOUVEAU : Charger RÉUSSITE EXAMENS
+const { data: examensDataRaw, error: examensError } = await supabase
+    .from('reussite_examens')
+    .select('*')
+    .order('date_saisie', { ascending: false });
+
+if (examensError) throw examensError;
+if (examensDataRaw) reussiteExamensData = examensDataRaw;
+
+// 🔥 NOUVEAU : Charger ALPHABÉTISATION
+const { data: alphaDataRaw, error: alphaError } = await supabase
+    .from('alphabetisation')
+    .select('*')
+    .order('date_saisie', { ascending: false });
+
+if (alphaError) throw alphaError;
+if (alphaDataRaw) alphabetisationData = alphaDataRaw;
             } catch (error) {
                 console.error('Erreur lors du chargement:', error);
                 alert('Erreur de connexion à la base de données');
@@ -2569,6 +2587,501 @@ setTimeout(async function() {
             });
         }
     }, 600);
+// ========== MODAL RÉUSSITE AUX EXAMENS (DGECS) - PARTIE 1/2 ========== function showReussiteExamensModal() { if (!canSaisirExamens()) { alert('❌ Vous n\'avez pas accès à ce formulaire'); return; }
+var modalContainer = document.getElementById('modal-container');
+
+var html = '<div class="modal"><div class="modal-content" style="max-width: 95vw; max-height: 95vh; overflow: hidden; display: flex; flex-direction: column;">';
+html += '<h2 style="margin-bottom: 16px;">✅ Saisir les Taux de Réussite aux Examens Nationaux</h2>';
+
+// En-tête avec année et période
+html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
+html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="examens-annee" class="form-control" value="2025-2026"></div>';
+html += '<div class="form-group"><label>Période *</label><select id="examens-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+
+html += '<div class="form-group"><label>Filtre Région</label><select id="filter-examens-region" class="form-control" onchange="updateExamensPrefectureDropdown(); filterExamensRows();"><option value="">Toutes les régions</option>';
+for (var i = 0; i < regionsData.length; i++) {
+    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+}
+html += '</select></div>';
+
+html += '<div class="form-group"><label>Filtre Préfecture</label><select id="filter-examens-prefecture" class="form-control" onchange="filterExamensRows()"><option value="">Toutes les préfectures</option></select></div>';
+html += '</div>';
+
+// Tableau de saisie
+html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
+html += '<table id="examens-table" style="width: 100%; font-size: 11px; border-collapse: collapse;">';
+html += '<thead style="position: sticky; top: 0; background-color: #059669; color: white; z-index: 10;"><tr>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap;">Région</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap;">Préfecture</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap;">Zone</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #2563eb;">CEE Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #db2777;">CEE Filles (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #2563eb;">BEPC Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #db2777;">BEPC Filles (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #2563eb;">BAC Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #db2777;">BAC Filles (%)</th>';
+html += '</tr></thead><tbody>';
+
+var rowIndex = 0;
+var zones = ['Urbaine', 'Rurale'];
+
+for (var r = 0; r < regionsData.length; r++) {
+    var region = regionsData[r];
+    var prefecturesRegion = [];
+    
+    for (var p = 0; p < prefecturesData.length; p++) {
+        if (prefecturesData[p].region_id == region.id) {
+            prefecturesRegion.push(prefecturesData[p]);
+        }
+    }
+    
+    for (var p = 0; p < prefecturesRegion.length; p++) {
+        var prefecture = prefecturesRegion[p];
+        
+        for (var z = 0; z < zones.length; z++) {
+            var zone = zones[z];
+            var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
+            
+            html += '<tr class="examens-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" style="background-color: ' + bgColor + ';">';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb; font-weight: 600;">' + region.nom + '</td>';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + prefecture.nom + '</td>';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + zone + '</td>';
+            
+            // CEE
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            
+            // BEPC
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            
+            // BAC
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            
+            html += '</tr>';
+            rowIndex++;
+        }
+    }
+}
+
+html += '</tbody></table></div>';
+
+html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
+html += '<button class="btn btn-primary" onclick="submitReussiteExamens()">💾 Enregistrer</button>';
+html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+html += '</div>';
+
+html += '</div></div>';
+modalContainer.innerHTML = html;
+}
+function updateExamensPrefectureDropdown() {
+var regionId = document.getElementById('filter-examens-region') ? document.getElementById('filter-examens-region').value : '';
+var prefectureSelect = document.getElementById('filter-examens-prefecture');
+if (!prefectureSelect) return;
+
+prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
+
+if (regionId) {
+    for (var i = 0; i < prefecturesData.length; i++) {
+        if (prefecturesData[i].region_id == regionId) {
+            var option = document.createElement('option');
+            option.value = prefecturesData[i].nom;
+            option.textContent = prefecturesData[i].nom;
+            prefectureSelect.appendChild(option);
+        }
+    }
+}
+}
+function filterExamensRows() {
+var regionId = document.getElementById('filter-examens-region') ? document.getElementById('filter-examens-region').value : '';
+var prefecture = document.getElementById('filter-examens-prefecture') ? document.getElementById('filter-examens-prefecture').value : '';
+var rows = document.querySelectorAll('.examens-row');
+
+for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var rowRegion = row.getAttribute('data-region');
+    var rowPrefecture = row.getAttribute('data-prefecture');
+    
+    var show = true;
+    if (regionId && rowRegion != regionId) show = false;
+    if (prefecture && rowPrefecture != prefecture) show = false;
+    
+    row.style.display = show ? '' : 'none';
+}
+}
+async function submitReussiteExamens() {
+var annee = document.getElementById('examens-annee').value.trim();
+var periode = document.getElementById('examens-periode').value;
+if (!annee || !periode) {
+    alert('⚠️ Veuillez remplir année et période');
+    return;
+}
+
+var dataToInsert = [];
+var rowIndex = 0;
+var zones = ['Urbaine', 'Rurale'];
+
+for (var r = 0; r < regionsData.length; r++) {
+    var region = regionsData[r];
+    var prefecturesRegion = [];
+    
+    for (var p = 0; p < prefecturesData.length; p++) {
+        if (prefecturesData[p].region_id == region.id) {
+            prefecturesRegion.push(prefecturesData[p]);
+        }
+    }
+    
+    for (var p = 0; p < prefecturesRegion.length; p++) {
+        var prefecture = prefecturesRegion[p];
+        
+        for (var z = 0; z < zones.length; z++) {
+            var zone = zones[z];
+            
+            var ceeTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_total"]');
+            var ceeFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_filles"]');
+            var bepcTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_total"]');
+            var bepcFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_filles"]');
+            var bacTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_total"]');
+            var bacFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_filles"]');
+            
+            var valCeeT = ceeTotal && ceeTotal.value ? parseFloat(ceeTotal.value) : null;
+            var valCeeF = ceeFilles && ceeFilles.value ? parseFloat(ceeFilles.value) : null;
+            var valBepcT = bepcTotal && bepcTotal.value ? parseFloat(bepcTotal.value) : null;
+            var valBepcF = bepcFilles && bepcFilles.value ? parseFloat(bepcFilles.value) : null;
+            var valBacT = bacTotal && bacTotal.value ? parseFloat(bacTotal.value) : null;
+            var valBacF = bacFilles && bacFilles.value ? parseFloat(bacFilles.value) : null;
+            
+            // Total
+            if (valCeeT !== null || valBepcT !== null || valBacT !== null) {
+                dataToInsert.push({
+                    annee_scolaire: annee,
+                    periode: periode,
+                    region: region.nom,
+                    prefecture: prefecture.nom,
+                    zone: zone,
+                    genre: 'Total',
+                    taux_reussite_cee: valCeeT,
+                    taux_reussite_bepc: valBepcT,
+                    taux_reussite_bac: valBacT,
+                    saisi_par: currentUser.nom
+                });
+            }
+            
+            // Filles
+            if (valCeeF !== null || valBepcF !== null || valBacF !== null) {
+                dataToInsert.push({
+                    annee_scolaire: annee,
+                    periode: periode,
+                    region: region.nom,
+                    prefecture: prefecture.nom,
+                    zone: zone,
+                    genre: 'Filles',
+                    taux_reussite_cee: valCeeF,
+                    taux_reussite_bepc: valBepcF,
+                    taux_reussite_bac: valBacF,
+                    saisi_par: currentUser.nom
+                });
+            }
+            
+            rowIndex++;
+        }
+    }
+}
+
+if (dataToInsert.length === 0) {
+    alert('⚠️ Aucune donnée à enregistrer');
+    return;
+}
+
+if (!confirm('💾 Enregistrer ' + dataToInsert.length + ' lignes ?')) {
+    return;
+}
+
+try {
+    const { data: insertedData, error } = await supabase
+        .from('reussite_examens')
+        .upsert(dataToInsert, { 
+            onConflict: 'annee_scolaire,periode,region,prefecture,zone,genre',
+            ignoreDuplicates: false 
+        })
+        .select();
+    
+    if (error) throw error;
+    
+    if (insertedData) {
+        for (var i = 0; i < insertedData.length; i++) {
+            var found = false;
+            for (var j = 0; j < reussiteExamensData.length; j++) {
+                if (reussiteExamensData[j].id === insertedData[i].id) {
+                    reussiteExamensData[j] = insertedData[i];
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                reussiteExamensData.unshift(insertedData[i]);
+            }
+        }
+    }
+    
+    alert('✅ Données enregistrées avec succès !');
+    closeModal();
+    render();
+    
+} catch (error) {
+    console.error('Erreur:', error);
+    alert('❌ Erreur : ' + error.message);
+}
+}
+// ========== MODAL ALPHABÉTISATION (DNAENFP-LN) - PARTIE 2/2 ========== function showAlphabetisationModal() { if (!canSaisirAlphabetisation()) { alert('❌ Vous n\'avez pas accès à ce formulaire'); return; }
+var modalContainer = document.getElementById('modal-container');
+
+var html = '<div class="modal"><div class="modal-content" style="max-width: 95vw; max-height: 95vh; overflow: hidden; display: flex; flex-direction: column;">';
+html += '<h2 style="margin-bottom: 16px;">✍️ Saisir les Données d\'Alphabétisation</h2>';
+
+// En-tête
+html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
+html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="alpha-annee" class="form-control" value="2025-2026"></div>';
+html += '<div class="form-group"><label>Période *</label><select id="alpha-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+
+html += '<div class="form-group"><label>Filtre Région</label><select id="filter-alpha-region" class="form-control" onchange="updateAlphaPrefectureDropdown(); filterAlphaRows();"><option value="">Toutes les régions</option>';
+for (var i = 0; i < regionsData.length; i++) {
+    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+}
+html += '</select></div>';
+
+html += '<div class="form-group"><label>Filtre Préfecture</label><select id="filter-alpha-prefecture" class="form-control" onchange="filterAlphaRows()"><option value="">Toutes les préfectures</option></select></div>';
+html += '</div>';
+
+// Tableau
+html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
+html += '<table id="alpha-table" style="width: 100%; font-size: 11px; border-collapse: collapse;">';
+html += '<thead style="position: sticky; top: 0; background-color: #f59e0b; color: white; z-index: 10;"><tr>';
+html += '<th style="padding: 8px; border: 1px solid #d97706;">Région</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706;">Préfecture</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706;">Zone</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706; width: 80px; background-color: #2563eb;">Nb Centres</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706; width: 80px; background-color: #059669;">Taux Particip. Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706; width: 80px; background-color: #db2777;">Taux Particip. Filles (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706; width: 80px; background-color: #059669;">Taux Alpha Jeunes Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706; width: 80px; background-color: #db2777;">Taux Alpha Jeunes Filles (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706; width: 80px; background-color: #059669;">Taux Alpha Adultes Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #d97706; width: 80px; background-color: #db2777;">Taux Alpha Adultes Filles (%)</th>';
+html += '</tr></thead><tbody>';
+
+var rowIndex = 0;
+var zones = ['Urbaine', 'Rurale'];
+
+for (var r = 0; r < regionsData.length; r++) {
+    var region = regionsData[r];
+    var prefecturesRegion = [];
+    
+    for (var p = 0; p < prefecturesData.length; p++) {
+        if (prefecturesData[p].region_id == region.id) {
+            prefecturesRegion.push(prefecturesData[p]);
+        }
+    }
+    
+    for (var p = 0; p < prefecturesRegion.length; p++) {
+        var prefecture = prefecturesRegion[p];
+        
+        for (var z = 0; z < zones.length; z++) {
+            var zone = zones[z];
+            var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
+            
+            html += '<tr class="alpha-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" style="background-color: ' + bgColor + ';">';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb; font-weight: 600;">' + region.nom + '</td>';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + prefecture.nom + '</td>';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + zone + '</td>';
+            
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" class="form-control" data-row="' + rowIndex + '" data-field="nb_centres" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="particip_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="particip_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="jeunes_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="jeunes_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="adultes_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="adultes_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            
+            html += '</tr>';
+            rowIndex++;
+        }
+    }
+}
+
+html += '</tbody></table></div>';
+
+html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
+html += '<button class="btn btn-primary" onclick="submitAlphabetisation()">💾 Enregistrer</button>';
+html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+html += '</div>';
+
+html += '</div></div>';
+modalContainer.innerHTML = html;
+}
+function updateAlphaPrefectureDropdown() {
+var regionId = document.getElementById('filter-alpha-region') ? document.getElementById('filter-alpha-region').value : '';
+var prefectureSelect = document.getElementById('filter-alpha-prefecture');
+if (!prefectureSelect) return;
+
+prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
+
+if (regionId) {
+    for (var i = 0; i < prefecturesData.length; i++) {
+        if (prefecturesData[i].region_id == regionId) {
+            var option = document.createElement('option');
+            option.value = prefecturesData[i].nom;
+            option.textContent = prefecturesData[i].nom;
+            prefectureSelect.appendChild(option);
+        }
+    }
+}
+}
+function filterAlphaRows() {
+var regionId = document.getElementById('filter-alpha-region') ? document.getElementById('filter-alpha-region').value : '';
+var prefecture = document.getElementById('filter-alpha-prefecture') ? document.getElementById('filter-alpha-prefecture').value : '';
+var rows = document.querySelectorAll('.alpha-row');
+
+for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var rowRegion = row.getAttribute('data-region');
+    var rowPrefecture = row.getAttribute('data-prefecture');
+    
+    var show = true;
+    if (regionId && rowRegion != regionId) show = false;
+    if (prefecture && rowPrefecture != prefecture) show = false;
+    
+    row.style.display = show ? '' : 'none';
+}
+}
+async function submitAlphabetisation() {
+var annee = document.getElementById('alpha-annee').value.trim();
+var periode = document.getElementById('alpha-periode').value;
+if (!annee || !periode) {
+    alert('⚠️ Veuillez remplir année et période');
+    return;
+}
+
+var dataToInsert = [];
+var rowIndex = 0;
+var zones = ['Urbaine', 'Rurale'];
+
+for (var r = 0; r < regionsData.length; r++) {
+    var region = regionsData[r];
+    var prefecturesRegion = [];
+    
+    for (var p = 0; p < prefecturesData.length; p++) {
+        if (prefecturesData[p].region_id == region.id) {
+            prefecturesRegion.push(prefecturesData[p]);
+        }
+    }
+    
+    for (var p = 0; p < prefecturesRegion.length; p++) {
+        var prefecture = prefecturesRegion[p];
+        
+        for (var z = 0; z < zones.length; z++) {
+            var zone = zones[z];
+            
+            var nbCentres = document.querySelector('input[data-row="' + rowIndex + '"][data-field="nb_centres"]');
+            var participTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="particip_total"]');
+            var participFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="particip_filles"]');
+            var jeunesTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="jeunes_total"]');
+            var jeunesFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="jeunes_filles"]');
+            var adultesTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="adultes_total"]');
+            var adultesFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="adultes_filles"]');
+            
+            var valNbCentres = nbCentres && nbCentres.value ? parseInt(nbCentres.value) : null;
+            var valParticipT = participTotal && participTotal.value ? parseFloat(participTotal.value) : null;
+            var valParticipF = participFilles && participFilles.value ? parseFloat(participFilles.value) : null;
+            var valJeunesT = jeunesTotal && jeunesTotal.value ? parseFloat(jeunesTotal.value) : null;
+            var valJeunesF = jeunesFilles && jeunesFilles.value ? parseFloat(jeunesFilles.value) : null;
+            var valAdultesT = adultesTotal && adultesTotal.value ? parseFloat(adultesTotal.value) : null;
+            var valAdultesF = adultesFilles && adultesFilles.value ? parseFloat(adultesFilles.value) : null;
+            
+            // Total
+            if (valNbCentres !== null || valParticipT !== null || valJeunesT !== null || valAdultesT !== null) {
+                dataToInsert.push({
+                    annee_scolaire: annee,
+                    periode: periode,
+                    region: region.nom,
+                    prefecture: prefecture.nom,
+                    zone: zone,
+genre: 'Total',
+                        nb_centres: valNbCentres,
+                        taux_participation: valParticipT,
+                        taux_alpha_jeunes: valJeunesT,
+                        taux_alpha_adultes: valAdultesT,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                // Filles
+                if (valParticipF !== null || valJeunesF !== null || valAdultesF !== null) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: periode,
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        genre: 'Filles',
+                        nb_centres: null,
+                        taux_participation: valParticipF,
+                        taux_alpha_jeunes: valJeunesF,
+                        taux_alpha_adultes: valAdultesF,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                rowIndex++;
+            }
+        }
+    }
+    
+    if (dataToInsert.length === 0) {
+        alert('⚠️ Aucune donnée à enregistrer');
+        return;
+    }
+    
+    if (!confirm('💾 Enregistrer ' + dataToInsert.length + ' lignes ?')) {
+        return;
+    }
+    
+    try {
+        const { data: insertedData, error } = await supabase
+            .from('alphabetisation')
+            .upsert(dataToInsert, { 
+                onConflict: 'annee_scolaire,periode,region,prefecture,zone,genre',
+                ignoreDuplicates: false 
+            })
+            .select();
+        
+        if (error) throw error;
+        
+        if (insertedData) {
+            for (var i = 0; i < insertedData.length; i++) {
+                var found = false;
+                for (var j = 0; j < alphabetisationData.length; j++) {
+                    if (alphabetisationData[j].id === insertedData[i].id) {
+                        alphabetisationData[j] = insertedData[i];
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    alphabetisationData.unshift(insertedData[i]);
+                }
+            }
+        }
+        
+        alert('✅ Données enregistrées avec succès !');
+        closeModal();
+        render();
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('❌ Erreur : ' + error.message);
+    }
+}
 function rechargerFormulaireStatistiques() {
     console.log('🔄 Rechargement du formulaire...');
     
@@ -3204,7 +3717,25 @@ function appliquerFiltresStatistiques() {
     console.log('Cartes mises à jour');
     console.log('========================================');
 }
-
+// ========== PERMISSIONS ONGLET STATISTIQUES ========== function canAccessStatistiques() { if (!currentUser) return false; if (currentUser.role === 'admin') return true; if (currentUser.role === 'chefdept') return true; // Lecture seule if (currentUser.service === 'BSD') return true; if (currentUser.service === 'DGECS') return true; if (currentUser.service === 'DNAEFP-LN') return true; return false; }
+function canSaisirStatsGenerales() {
+if (!currentUser) return false;
+if (currentUser.role === 'admin') return true;
+if (currentUser.service === 'BSD') return true;
+return false;
+}
+function canSaisirExamens() {
+if (!currentUser) return false;
+if (currentUser.role === 'admin') return true;
+if (currentUser.service === 'DGECS') return true;
+return false;
+}
+function canSaisirAlphabetisation() {
+if (!currentUser) return false;
+if (currentUser.role === 'admin') return true;
+if (currentUser.service === 'DNAEFP-LN') return true;
+return false;
+}
         // ========== FONCTION RENDER PRINCIPALE 
 function render() {
             var app = document.getElementById('app');
@@ -3241,10 +3772,9 @@ if (!currentUser) {
             html += '<button class="' + (activeTab === 'rapport' ? 'active' : '') + '" onclick="changeTab(\'rapport\')">Rapport de performance</button>';
 
 // Onglet Statistiques (visible pour DG du BSD, Chef Dép, Admin)
-if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || currentUser.service === 'BSD') {
+if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || ['BSD', 'DGECS', 'DNAEFP-LN'].indexOf(currentUser.service) !== -1) {
     html += '<button class="' + (activeTab === 'statistiques' ? 'active' : '') + '" onclick="changeTab(\'statistiques\')">📊 Statistiques</button>';
 }
-
 // Onglet Analyse (visible pour Admin, Chef Dép, et chefs de service)
 if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || currentUser.role === 'chef') {
     html += '<button class="' + (activeTab === 'analyse' ? 'active' : '') + '" onclick="changeTab(\'analyse\')">🔍 Analyse</button>';
@@ -4101,14 +4631,102 @@ html += '</div></div>';
                 html += '</div>';
             }
 // ========== ONGLET 8 : STATISTIQUES ==========
-           if (activeTab === 'statistiques') {
-    html += '<h2 style="margin-bottom: 16px;">📊 Statistiques Éducatives</h2>';
-    
-    // Bouton d'ajout
-    if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-        html += '<div style="margin-bottom: 16px;"><button class="btn btn-success" onclick="showStatistiquesModal()">+ Saisir des statistiques</button></div>';
-    }
-    
+if (activeTab === 'statistiques') { html += '
+
+📊 Statistiques Éducatives
+
+';
+// 🔥 SOUS-MENU avec 3 boutons selon permissions
+html += '<div style="background-color: white; padding: 16px; margin-bottom: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
+html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
+
+// Bouton 1 : Stats Générales (BSD)
+if (canSaisirStatsGenerales() || currentUser.role === 'chefdept') {
+    var styleGeneral = 'background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+    html += '<button onclick="showStatistiquesModal()" style="' + styleGeneral + '">📊 Stats Générales (BSD)</button>';
+}
+
+// Bouton 2 : Réussite Examens (DGECS)
+if (canSaisirExamens() || currentUser.role === 'chefdept') {
+    var styleExamens = 'background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+    html += '<button onclick="showReussiteExamensModal()" style="' + styleExamens + '">✅ Réussite Examens (DGECS)</button>';
+}
+
+// Bouton 3 : Alphabétisation (DNAENFP-LN)
+if (canSaisirAlphabetisation() || currentUser.role === 'chefdept') {
+    var styleAlpha = 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+    html += '<button onclick="showAlphabetisationModal()" style="' + styleAlpha + '">✍️ Alphabétisation (DNAENFP-LN)</button>';
+}
+
+html += '</div></div>';
+
+// Filtres
+html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+html += '<h3 style="margin-bottom: 12px;">Filtres</h3>';
+html += '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;">';
+
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Afficher jusqu\'à</label>';
+html += '<select id="filter-stats-periode" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="TOUS">Toutes les périodes</option>';
+html += '<option value="T1">Jusqu\'à T1</option>';
+html += '<option value="T2">Jusqu\'à T2</option>';
+html += '<option value="T3">Jusqu\'à T3</option>';
+html += '<option value="T4">Jusqu\'à T4</option>';
+html += '<option value="Annuel">Année complète</option>';
+html += '</select></div>';
+
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
+html += '<select id="filter-stats-region" class="form-control" onchange="appliquerFiltresStatistiques(); updateStatsPrefectureDropdown();">';
+html += '<option value="">Toutes</option>';
+for (var i = 0; i < regionsData.length; i++) {
+    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+}
+html += '</select></div>';
+
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏛️ Préfecture</label>';
+html += '<select id="filter-stats-prefecture" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="">Toutes</option>';
+html += '</select></div>';
+
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏘️ Zone</label>';
+html += '<select id="filter-stats-zone" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="">Toutes</option>';
+html += '<option value="Urbaine">Urbaine</option>';
+html += '<option value="Rurale">Rurale</option>';
+html += '</select></div>';
+
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
+html += '<select id="filter-stats-niveau" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="">Tous</option>';
+html += '<option value="Préscolaire">Préscolaire</option>';
+html += '<option value="Primaire">Primaire</option>';
+html += '<option value="Secondaire">Secondaire</option>';
+html += '</select></div>';
+
+html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">👤 Genre</label>';
+html += '<select id="filter-stats-genre" class="form-control" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="Total">Total</option>';
+html += '<option value="Filles">Filles</option>';
+html += '</select></div>';
+
+html += '</div></div>';
+
+// 🔥 CARTES D'INDICATEURS - SEULEMENT 5 cartes
+html += '<div class="cards" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 24px;">';
+
+var moyenneAbandon = calculerMoyenne(statistiquesData, 'taux_abandon');
+var moyenneScolarisation = calculerMoyenne(statistiquesData, 'taux_scolarisation');
+var moyenneRatioEnseignant = calculerMoyenne(statistiquesData, 'ratio_eleves_enseignant');
+var moyenneRatioClasse = calculerMoyenne(statistiquesData, 'ratio_eleves_classe');
+var moyenneDistance = calculerMoyenne(statistiquesData, 'distance_moyenne_ecole_domicile');
+
+html += '<div class="card card-orange"><div class="card-title" style="color: #ea580c;">Taux d\'abandon</div><div class="card-value">' + moyenneAbandon + '%</div></div>';
+html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
+html += '<div class="card" style="background-color: #fce7f3; border-left: 4px solid #db2777;"><div class="card-title" style="color: #db2777;">Ratio élèves/enseignant</div><div class="card-value">' + moyenneRatioEnseignant + '</div></div>';
+html += '<div class="card" style="background-color: #e0e7ff; border-left: 4px solid #6366f1;"><div class="card-title" style="color: #6366f1;">Ratio élèves/classe</div><div class="card-value">' + moyenneRatioClasse + '</div></div>';
+html += '<div class="card" style="background-color: #fef3c7; border-left: 4px solid #f59e0b;"><div class="card-title" style="color: #f59e0b;">Distance moy. (km)</div><div class="card-value">' + moyenneDistance + '</div></div>';
+
+html += '</div>';
     // Filtres
     // Filtres
 html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
