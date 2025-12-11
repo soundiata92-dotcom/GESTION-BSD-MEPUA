@@ -4272,6 +4272,35 @@ async function init() {
     
     render();
 }
+        // ========== PERMISSIONS ONGLET STATISTIQUES ==========
+function canAccessStatistiques() {
+if (!currentUser) return false;
+if (currentUser.role === 'admin') return true;
+if (currentUser.role === 'chefdept') return true;
+if (currentUser.service === 'BSD') return true;
+if (currentUser.service === 'DGECS') return true;
+if (currentUser.service === 'DNAEFP-LN') return true;
+return false;
+}
+function canSaisirStatsGenerales() {
+if (!currentUser) return false;
+if (currentUser.role === 'admin') return true;
+if (currentUser.service === 'BSD') return true;
+return false;
+}
+function canSaisirExamens() {
+if (!currentUser) return false;
+if (currentUser.role === 'admin') return true;
+if (currentUser.service === 'DGECS') return true;
+return false;
+}
+function canSaisirAlphabetisation() {
+if (!currentUser) return false;
+if (currentUser.role === 'admin') return true;
+if (currentUser.service === 'DNAEFP-LN') return true;
+return false;
+}
+
         // ========== FONCTIONS DE VISUALISATION ET EXPORT ==========
 
 function ouvrirPreuve(fileUrl, nomFichier) {
@@ -4559,6 +4588,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
