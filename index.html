@@ -3254,12 +3254,10 @@ if (!currentUser) {
             html += '<button class="' + (activeTab === 'commentaires' ? 'active' : '') + '" onclick="changeTab(\'commentaires\')">Commentaires et Preuves</button>';
             html += '<button class="' + (activeTab === 'rapport' ? 'active' : '') + '" onclick="changeTab(\'rapport\')">Rapport de performance</button>';
 
-// Onglet Statistiques (visible pour DG du BSD, Chef Dép, Admin)
 if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || ['BSD', 'DGECS', 'DNAEFP-LN'].indexOf(currentUser.service) !== -1) {
-html += '📊 Statistiques';
+    html += '<button class="' + (activeTab === 'statistiques' ? 'active' : '') + '" onclick="changeTab(\'statistiques\')">📊 Statistiques</button>';
 }
 
-// Onglet Analyse (visible pour Admin, Chef Dép, et chefs de service)
 if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || currentUser.role === 'chef') {
     html += '<button class="' + (activeTab === 'analyse' ? 'active' : '') + '" onclick="changeTab(\'analyse\')">🔍 Analyse</button>';
 }
@@ -4606,6 +4604,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
