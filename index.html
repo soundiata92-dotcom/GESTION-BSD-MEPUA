@@ -2322,6 +2322,253 @@ html += '</div>';
 
     html += '</div></div>';
     modalContainer.innerHTML = html;
+}
+// ========== MODAL RÉUSSITE AUX EXAMENS (DGECS) ==========
+function showReussiteExamensModal() {
+if (!canSaisirExamens()) {
+alert('❌ Vous n'avez pas accès à ce formulaire');
+return;
+}
+var modalContainer = document.getElementById('modal-container');
+
+var html = '<div class="modal"><div class="modal-content" style="max-width: 95vw; max-height: 95vh; overflow: hidden; display: flex; flex-direction: column;">';
+html += '<h2 style="margin-bottom: 16px;">✅ Saisir les Taux de Réussite aux Examens Nationaux</h2>';
+
+html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
+html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="examens-annee" class="form-control" value="2025-2026"></div>';
+html += '<div class="form-group"><label>Période *</label><select id="examens-periode" class="form-control"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+
+html += '<div class="form-group"><label>Filtre Région</label><select id="filter-examens-region" class="form-control" onchange="updateExamensPrefectureDropdown(); filterExamensRows();"><option value="">Toutes les régions</option>';
+for (var i = 0; i < regionsData.length; i++) {
+    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+}
+html += '</select></div>';
+
+html += '<div class="form-group"><label>Filtre Préfecture</label><select id="filter-examens-prefecture" class="form-control" onchange="filterExamensRows()"><option value="">Toutes les préfectures</option></select></div>';
+html += '</div>';
+
+html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
+html += '<table id="examens-table" style="width: 100%; font-size: 11px; border-collapse: collapse;">';
+html += '<thead style="position: sticky; top: 0; background-color: #059669; color: white; z-index: 10;"><tr>';
+html += '<th style="padding: 8px; border: 1px solid #047857;">Région</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857;">Préfecture</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857;">Zone</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; width: 80px; background-color: #2563eb;">CEE Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; width: 80px; background-color: #db2777;">CEE Filles (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; width: 80px; background-color: #2563eb;">BEPC Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; width: 80px; background-color: #db2777;">BEPC Filles (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; width: 80px; background-color: #2563eb;">BAC Total (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; width: 80px; background-color: #db2777;">BAC Filles (%)</th>';
+html += '</tr></thead><tbody>';
+
+var rowIndex = 0;
+var zones = ['Urbaine', 'Rurale'];
+
+for (var r = 0; r < regionsData.length; r++) {
+    var region = regionsData[r];
+    var prefecturesRegion = [];
+    
+    for (var p = 0; p < prefecturesData.length; p++) {
+        if (prefecturesData[p].region_id == region.id) {
+            prefecturesRegion.push(prefecturesData[p]);
+        }
+    }
+    
+    for (var p = 0; p < prefecturesRegion.length; p++) {
+        var prefecture = prefecturesRegion[p];
+        
+        for (var z = 0; z < zones.length; z++) {
+            var zone = zones[z];
+            var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
+            
+            html += '<tr class="examens-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" style="background-color: ' + bgColor + ';">';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb; font-weight: 600;">' + region.nom + '</td>';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + prefecture.nom + '</td>';
+            html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + zone + '</td>';
+            
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100"></td>';
+            
+            html += '</tr>';
+            rowIndex++;
+        }
+    }
+}
+
+html += '</tbody></table></div>';
+
+html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
+html += '<button class="btn btn-primary" onclick="submitReussiteExamens()">💾 Enregistrer</button>';
+html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+html += '</div>';
+
+html += '</div></div>';
+modalContainer.innerHTML = html;
+}
+function updateExamensPrefectureDropdown() {
+var regionId = document.getElementById('filter-examens-region') ? document.getElementById('filter-examens-region').value : '';
+var prefectureSelect = document.getElementById('filter-examens-prefecture');
+if (!prefectureSelect) return;
+
+prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
+
+if (regionId) {
+    for (var i = 0; i < prefecturesData.length; i++) {
+        if (prefecturesData[i].region_id == regionId) {
+            var option = document.createElement('option');
+            option.value = prefecturesData[i].nom;
+            option.textContent = prefecturesData[i].nom;
+            prefectureSelect.appendChild(option);
+        }
+    }
+}
+}
+function filterExamensRows() {
+var regionId = document.getElementById('filter-examens-region') ? document.getElementById('filter-examens-region').value : '';
+var prefecture = document.getElementById('filter-examens-prefecture') ? document.getElementById('filter-examens-prefecture').value : '';
+var rows = document.querySelectorAll('.examens-row');
+
+for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var rowRegion = row.getAttribute('data-region');
+    var rowPrefecture = row.getAttribute('data-prefecture');
+    
+    var show = true;
+    if (regionId && rowRegion != regionId) show = false;
+    if (prefecture && rowPrefecture != prefecture) show = false;
+    
+    row.style.display = show ? '' : 'none';
+}
+}
+async function submitReussiteExamens() {
+var annee = document.getElementById('examens-annee').value.trim();
+var periode = document.getElementById('examens-periode').value;
+if (!annee || !periode) {
+    alert('⚠️ Veuillez remplir année et période');
+    return;
+}
+
+var dataToInsert = [];
+var rowIndex = 0;
+var zones = ['Urbaine', 'Rurale'];
+
+for (var r = 0; r < regionsData.length; r++) {
+    var region = regionsData[r];
+    var prefecturesRegion = [];
+    
+    for (var p = 0; p < prefecturesData.length; p++) {
+        if (prefecturesData[p].region_id == region.id) {
+            prefecturesRegion.push(prefecturesData[p]);
+        }
+    }
+    
+    for (var p = 0; p < prefecturesRegion.length; p++) {
+        var prefecture = prefecturesRegion[p];
+        
+        for (var z = 0; z < zones.length; z++) {
+            var zone = zones[z];
+            
+            var ceeTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_total"]');
+            var ceeFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_filles"]');
+            var bepcTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_total"]');
+            var bepcFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_filles"]');
+            var bacTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_total"]');
+            var bacFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_filles"]');
+            
+            var valCeeT = ceeTotal && ceeTotal.value ? parseFloat(ceeTotal.value) : null;
+            var valCeeF = ceeFilles && ceeFilles.value ? parseFloat(ceeFilles.value) : null;
+            var valBepcT = bepcTotal && bepcTotal.value ? parseFloat(bepcTotal.value) : null;
+            var valBepcF = bepcFilles && bepcFilles.value ? parseFloat(bepcFilles.value) : null;
+            var valBacT = bacTotal && bacTotal.value ? parseFloat(bacTotal.value) : null;
+            var valBacF = bacFilles && bacFilles.value ? parseFloat(bacFilles.value) : null;
+            
+            if (valCeeT !== null || valBepcT !== null || valBacT !== null) {
+                dataToInsert.push({
+                    annee_scolaire: annee,
+                    periode: periode,
+                    region: region.nom,
+                    prefecture: prefecture.nom,
+                    zone: zone,
+                    genre: 'Total',
+                    taux_reussite_cee: valCeeT,
+                    taux_reussite_bepc: valBepcT,
+                    taux_reussite_bac: valBacT,
+                    saisi_par: currentUser.nom
+                });
+            }
+            
+            if (valCeeF !== null || valBepcF !== null || valBacF !== null) {
+                dataToInsert.push({
+                    annee_scolaire: annee,
+                    periode: periode,
+                    region: region.nom,
+                    prefecture: prefecture.nom,
+                    zone: zone,
+                    genre: 'Filles',
+                    taux_reussite_cee: valCeeF,
+                    taux_reussite_bepc: valBepcF,
+                    taux_reussite_bac: valBacF,
+                    saisi_par: currentUser.nom
+                });
+            }
+            
+            rowIndex++;
+        }
+    }
+}
+
+if (dataToInsert.length === 0) {
+    alert('⚠️ Aucune donnée à enregistrer');
+    return;
+}
+
+if (!confirm('💾 Enregistrer ' + dataToInsert.length + ' lignes ?')) {
+    return;
+}
+
+try {
+    const { data: insertedData, error } = await supabase
+        .from('reussite_examens')
+        .upsert(dataToInsert, { 
+            onConflict: 'annee_scolaire,periode,region,prefecture,zone,genre',
+            ignoreDuplicates: false 
+        })
+        .select();
+    
+    if (error) throw error;
+    
+    if (insertedData) {
+        for (var i = 0; i < insertedData.length; i++) {
+            var found = false;
+            for (var j = 0; j < reussiteExamensData.length; j++) {
+                if (reussiteExamensData[j].id === insertedData[i].id) {
+                    reussiteExamensData[j] = insertedData[i];
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                reussiteExamensData.unshift(insertedData[i]);
+            }
+        }
+    }
+    
+    alert('✅ Données enregistrées avec succès !');
+    closeModal();
+    render();
+    
+} catch (error) {
+    console.error('Erreur:', error);
+    alert('❌ Erreur : ' + error.message);
+}
+}
+
   // ========== CHARGER LES DONNÉES EXISTANTES ==========
 setTimeout(async function() {
     var annee = document.getElementById('global-annee').value.trim();
@@ -4604,11 +4851,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
-
-
-
-
 
 
 
