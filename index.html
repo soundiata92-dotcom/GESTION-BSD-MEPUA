@@ -2204,22 +2204,13 @@ html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Niveau</th>';
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669; color: white; font-weight: bold;">Abandon T (%)</th>';
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">Abandon F (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669; color: white; font-weight: bold;">Réussite T (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">Réussite F (%)</th>';
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669; color: white; font-weight: bold;">Scolarisa. T (%)</th>';
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">Scolarisa. F (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669; color: white; font-weight: bold;">Alphabét. T (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">Alphabét. F (%)</th>';
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Ens</th>';
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Classe</th>';
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Distance (km)</th>';
 html += '</tr></thead><tbody>';
     
-    var rowIndex = 0;
-    var zones = ['Urbaine', 'Rurale'];
-    var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
-    
-    // Générer toutes les lignes
     var rowIndex = 0;
     var zones = ['Urbaine', 'Rurale'];
     var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
@@ -2240,8 +2231,7 @@ html += '</tr></thead><tbody>';
         
         for (var z = 0; z < zones.length; z++) {
             var zone = zones[z];
-            
-            // ========== LIGNES PAR NIVEAU (abandon, réussite, scolarisation) ==========
+           
             for (var n = 0; n < niveaux.length; n++) {
                 var niveau = niveaux[n];
                 var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
@@ -2255,18 +2245,9 @@ html += '</tr></thead><tbody>';
                 // Taux abandon (T/F)
                 html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
                 html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                
-                // Taux réussite (T/F)
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="reussite_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="reussite_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                
                 // Taux scolarisation (T/F)
                 html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
                 html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                
-                // Alphabétisation (désactivé pour les lignes par niveau)
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
                 
                 // Ratios et distance
                 html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
@@ -2275,29 +2256,14 @@ html += '</tr></thead><tbody>';
                 
                 html += '</tr>';
                 rowIndex++;
-            }
-            
-            // ========== LIGNE PAR ZONE (alphabétisation uniquement) ==========
-            var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
-            
-            html += '<tr class="stat-row stat-row-zone" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="zone-entiere" style="background-color: #fff3cd; border-left: 4px solid #ffc107;">';
-            html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
-            html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
-            html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + zone + '</td>';
-            html += '<td style="padding: 6px; border: 1px solid #e5e7eb; text-align: center; font-style: italic; color: #6b7280;">Zone entière</td>';
-            
+            }            
             // Désactiver abandon, réussite, scolarisation
             html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
             html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
             html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
             html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
             html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            
-            // Alphabétisation (ACTIF pour les lignes par zone)
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #fffbeb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="alphabetisation_total" data-type="zone" style="width: 100%; font-size: 11px; padding: 4px; font-weight: bold;" min="0" max="100" placeholder="T"></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #fffbeb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="alphabetisation_filles" data-type="zone" style="width: 100%; font-size: 11px; padding: 4px; font-weight: bold;" min="0" max="100" placeholder="F"></td>';
-            
+            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';            
             // Ratios désactivés
             html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
             html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
@@ -2310,7 +2276,7 @@ html += '</tr></thead><tbody>';
 }
 
     html += '</tbody></table></div>';
-    
+        // ========== BOUTONS D'ACTION ==========
   html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
 html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
 html += '<div style="display: flex; gap: 10px;">';
@@ -2378,7 +2344,6 @@ setTimeout(async function() {
                                 continue;
                             }
                             
-                            if (stat.niveau && stat.niveau !== 'Alphabétisation') {
                                 // Données par niveau
                                 var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
                                 for (var n = 0; n < niveaux.length; n++) {
@@ -2404,29 +2369,7 @@ setTimeout(async function() {
 
                                                 loaded++;
                                             }
-                                        }
-                                        
-                                        // Taux réussite
-                                        if (stat.taux_reussite_examens !== null) {
-                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="reussite_' + suffix + '"][data-type="niveau"]');
-                                            if (input) {
-                                                input.value = stat.taux_reussite_examens;
-                                                input.style.background = '#e8f5e9';
-                                                input.style.borderColor = '#4caf50';
-                                                input.disabled = true;
-                                                input.setAttribute('data-saved', 'true');
-                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
-    
-    // Ajouter la période sur la ligne entière
-    var row = input.closest('tr');
-    if (row && !row.getAttribute('data-periode')) {
-        row.setAttribute('data-periode', stat.periode);
-    }
-
-                                                loaded++;
-                                            }
-                                        }
-                                        
+                                        }                                        
                                         // Taux scolarisation
                                         if (stat.taux_scolarisation !== null) {
                                             var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_' + suffix + '"][data-type="niveau"]');
@@ -2516,39 +2459,7 @@ setTimeout(async function() {
                                     }
                                     rowIndex++;
                                 }
-                            } else {
-                                // Données par zone (alphabétisation)
-                                rowIndex += 3; // Sauter les 3 niveaux
-                                
-                                var suffix = stat.genre === 'Total' ? 'total' : 'filles';
-                                if (stat.taux_alphabetisation !== null) {
-                                    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation_' + suffix + '"][data-type="zone"]');
-                                    if (input) {
-                                        input.value = stat.taux_alphabetisation;
-                                        input.style.background = '#e8f5e9';
-                                        input.style.borderColor = '#4caf50';
-                                        input.disabled = true;
-                                        input.setAttribute('data-saved', 'true');
-                                        input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
-    
-    // Ajouter la période sur la ligne entière
-    var row = input.closest('tr');
-    if (row && !row.getAttribute('data-periode')) {
-        row.setAttribute('data-periode', stat.periode);
-    }
-
-                                        loaded++;
-                                    }
-                                }
-                                
-                                found = true;
-                                rowIndex++;
-                            }
-                        }
-                    }
-                }
-            }
-            
+                            } else {            
             // Mettre à jour la progression
             updateProgression();
             
