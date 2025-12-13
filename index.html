@@ -2099,36 +2099,37 @@ function calculerMoyenne(data, field) {
     return count > 0 ? Math.round(total / count * 10) / 10 : 0;
 }
 function updateFormFilters() {
-    var regionSelect = document.getElementById('filter-region');
+    var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var prefectureSelect = document.getElementById('filter-prefecture');
-    
-    if (!regionSelect || !prefectureSelect) {
-        console.log('❌ Sélecteurs non trouvés');
-        return;
-    }
-    
-    var regionId = regionSelect.value;
     
     console.log('=== UPDATE FILTERS ===');
     console.log('Région sélectionnée:', regionId);
-    console.log('Nombre de préfectures disponibles:', prefecturesData.length);
     
-    // Vider les options
+    if (!prefectureSelect) {
+        console.log('ERROR: prefectureSelect not found');
+        return;
+    }
+    
+    // Vider et reconstruire les options
     prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
     
-    if (regionId && regionId !== '') {
-        var count = 0;
+    if (regionId) {
         for (var i = 0; i < prefecturesData.length; i++) {
             if (prefecturesData[i].region_id == regionId) {
                 var option = document.createElement('option');
                 option.value = prefecturesData[i].nom;
                 option.textContent = prefecturesData[i].nom;
                 prefectureSelect.appendChild(option);
-                count++;
             }
         }
-        console.log('✅ Préfectures ajoutées:', count);
+        console.log('Préfectures ajoutées pour région', regionId);
     }
+    
+    // IMPORTANT : Réattacher l'événement onchange
+    prefectureSelect.onchange = function() {
+        console.log('Prefecture changed!');
+        filterTableRows();
+    };
     
     // Appliquer le filtrage
     filterTableRows();
@@ -2137,16 +2138,10 @@ function updateFormFilters() {
 function filterTableRows() {
     var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var prefectureNom = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
-    var zoneFilter = document.getElementById('filter-zone') ? document.getElementById('filter-zone').value : '';
-    var niveauFilter = document.getElementById('filter-niveau') ? document.getElementById('filter-niveau').value : '';
-    var genreFilter = document.getElementById('filter-genre') ? document.getElementById('filter-genre').value : '';
     
     console.log('=== FILTRAGE ===');
-    console.log('Région ID:', regionId);
-    console.log('Préfecture:', prefectureNom);
-    console.log('Zone:', zoneFilter);
-    console.log('Niveau:', niveauFilter);
-    console.log('Genre:', genreFilter);
+    console.log('Région ID sélectionnée:', regionId);
+    console.log('Préfecture sélectionnée:', prefectureNom);
     
     var rows = document.querySelectorAll('.stat-row');
     console.log('Nombre de lignes trouvées:', rows.length);
@@ -2157,8 +2152,6 @@ function filterTableRows() {
         var row = rows[i];
         var rowRegion = row.getAttribute('data-region');
         var rowPrefecture = row.getAttribute('data-prefecture');
-        var rowZone = row.getAttribute('data-zone');
-        var rowNiveau = row.getAttribute('data-niveau');
         
         var showRow = true;
         
@@ -2170,37 +2163,6 @@ function filterTableRows() {
         // Filtre par préfecture
         if (prefectureNom && prefectureNom !== '' && rowPrefecture != prefectureNom) {
             showRow = false;
-        }
-        
-        // Filtre par zone
-        if (zoneFilter && zoneFilter !== '' && rowZone != zoneFilter) {
-            showRow = false;
-        }
-        
-        // Filtre par niveau
-        if (niveauFilter && niveauFilter !== '' && rowNiveau != niveauFilter) {
-            showRow = false;
-        }
-        
-        // Filtre par genre (on cache/affiche les colonnes concernées)
-        if (genreFilter === 'Total') {
-            // Masquer colonnes Filles
-            var inputsFilles = row.querySelectorAll('input[data-field$="_filles"]');
-            for (var j = 0; j < inputsFilles.length; j++) {
-                inputsFilles[j].closest('td').style.display = 'none';
-            }
-        } else if (genreFilter === 'Filles') {
-            // Masquer colonnes Total
-            var inputsTotal = row.querySelectorAll('input[data-field$="_total"]');
-            for (var j = 0; j < inputsTotal.length; j++) {
-                inputsTotal[j].closest('td').style.display = 'none';
-            }
-        } else {
-            // Afficher toutes les colonnes
-            var allInputs = row.querySelectorAll('input');
-            for (var j = 0; j < allInputs.length; j++) {
-                allInputs[j].closest('td').style.display = '';
-            }
         }
         
         row.style.display = showRow ? '' : 'none';
@@ -3065,37 +3027,26 @@ async function deleteStatistique(id) {
     }
 }
 function updateStatsPrefectureDropdown() {
-    var regionSelect = document.getElementById('filter-stats-region');
+    var regionId = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
     var prefectureSelect = document.getElementById('filter-stats-prefecture');
     
-    if (!regionSelect || !prefectureSelect) {
-        console.log('❌ Sélecteurs stats non trouvés');
-        return;
-    }
+    if (!prefectureSelect) return;
     
-    var regionId = regionSelect.value;
-    
-    console.log('=== UPDATE STATS PREFECTURE ===');
-    console.log('Région sélectionnée:', regionId);
-    
-    // Vider les options
+    // Vider et reconstruire les options
     prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
     
-    if (regionId && regionId !== '') {
-        var count = 0;
+    if (regionId) {
         for (var i = 0; i < prefecturesData.length; i++) {
             if (prefecturesData[i].region_id == regionId) {
                 var option = document.createElement('option');
                 option.value = prefecturesData[i].nom;
                 option.textContent = prefecturesData[i].nom;
                 prefectureSelect.appendChild(option);
-                count++;
             }
         }
-        console.log('✅ Préfectures stats ajoutées:', count);
     }
 }
-
+       
 function appliquerFiltresStatistiques() {
     console.log('=== APPLICATION DES FILTRES STATISTIQUES ===');
     
@@ -4276,13 +4227,6 @@ html += '</div></div>';
             html += '</div><div id="modal-container"></div>';
             app.innerHTML = html;
         }
-function showReussiteExamensModal() {
-    alert('📊 Formulaire "Réussite Examens (DGECS)" en cours de développement...');
-}
-
-function showAlphabetisationModal() {
-    alert('✍️ Formulaire "Alphabétisation (DNAENFP-LN)" en cours de développement...');
-}
 
         // ========== INITIALISATION ==========
 async function init() {
@@ -4630,9 +4574,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
-
-
 
 
 
