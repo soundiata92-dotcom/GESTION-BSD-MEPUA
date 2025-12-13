@@ -4097,26 +4097,41 @@ html += '</select></div>';
 
 html += '</div></div>';
                 
-                // Cartes d'indicateurs
-                html += '<div class="cards" style="grid-template-columns: repeat(7, 1fr); margin-bottom: 24px;">';
-                
-                var moyenneAbandon = calculerMoyenne(statistiquesData, 'taux_abandon');
-                var moyenneReussite = calculerMoyenne(statistiquesData, 'taux_reussite_examens');
-                var moyenneScolarisation = calculerMoyenne(statistiquesData, 'taux_scolarisation');
-                var moyenneAlphabetisation = calculerMoyenne(statistiquesData, 'taux_alphabetisation');
-                var moyenneRatioEnseignant = calculerMoyenne(statistiquesData, 'ratio_eleves_enseignant');
-                var moyenneRatioClasse = calculerMoyenne(statistiquesData, 'ratio_eleves_classe');
-                var moyenneDistance = calculerMoyenne(statistiquesData, 'distance_moyenne_ecole_domicile');
-                
-                html += '<div class="card card-orange"><div class="card-title" style="color: #ea580c;">Taux d\'abandon scolaire</div><div class="card-value">' + moyenneAbandon + '%</div></div>';
-                html += '<div class="card card-green"><div class="card-title" style="color: #059669;">Taux de réussite</div><div class="card-value">' + moyenneReussite + '%</div></div>';
-                html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
-                html += '<div class="card card-yellow"><div class="card-title" style="color: #d97706;">Taux d\'alphabétisation</div><div class="card-value">' + moyenneAlphabetisation + '%</div></div>';
-                html += '<div class="card" style="background-color: #fce7f3; border-left: 4px solid #db2777;"><div class="card-title" style="color: #db2777;">Ratio élèves/enseignant</div><div class="card-value">' + moyenneRatioEnseignant + '</div></div>';
-                html += '<div class="card" style="background-color: #e0e7ff; border-left: 4px solid #6366f1;"><div class="card-title" style="color: #6366f1;">Ratio élèves/classe</div><div class="card-value">' + moyenneRatioClasse + '</div></div>';
-                html += '<div class="card" style="background-color: #fef3c7; border-left: 4px solid #f59e0b;"><div class="card-title" style="color: #f59e0b;">Distance moy. (km)</div><div class="card-value">' + moyenneDistance + '</div></div>';
-                
-                html += '</div>';
+               // Cartes d'indicateurs (9 cartes au total)
+html += '<div class="cards" style="grid-template-columns: repeat(9, 1fr); margin-bottom: 24px;">';
+
+// Calculer les moyennes
+var moyenneScolarisation = calculerMoyenne(statistiquesData, 'taux_scolarisation');
+var moyenneReussiteCEE = calculerMoyenne(statistiquesData, 'taux_reussite_cee');
+var moyenneReussiteBEPC = calculerMoyenne(statistiquesData, 'taux_reussite_bepc');
+var moyenneReussiteBAC = calculerMoyenne(statistiquesData, 'taux_reussite_bac');
+var moyenneAbandon = calculerMoyenne(statistiquesData, 'taux_abandon');
+var moyenneAlphabetisation = calculerMoyenne(statistiquesData, 'taux_alphabetisation');
+var moyenneRatioEnseignant = calculerMoyenne(statistiquesData, 'ratio_eleves_enseignant');
+var moyenneRatioClasse = calculerMoyenne(statistiquesData, 'ratio_eleves_classe');
+var moyenneDistance = calculerMoyenne(statistiquesData, 'distance_moyenne_ecole_domicile');
+
+// 1. Taux de scolarisation (bleu)
+html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
+
+// 2-4. Taux de réussite (3 cartes vertes)
+html += '<div class="card card-green"><div class="card-title" style="color: #059669;">Taux réussite CEE</div><div class="card-value">' + moyenneReussiteCEE + '%</div></div>';
+html += '<div class="card card-green"><div class="card-title" style="color: #059669;">Taux réussite BEPC</div><div class="card-value">' + moyenneReussiteBEPC + '%</div></div>';
+html += '<div class="card card-green"><div class="card-title" style="color: #059669;">Taux réussite BAC</div><div class="card-value">' + moyenneReussiteBAC + '%</div></div>';
+
+// 5. Taux d'abandon (orange)
+html += '<div class="card card-orange"><div class="card-title" style="color: #ea580c;">Taux d\'abandon</div><div class="card-value">' + moyenneAbandon + '%</div></div>';
+
+// 6. Taux d'alphabétisation (jaune)
+html += '<div class="card card-yellow"><div class="card-title" style="color: #d97706;">Taux d\'alphabétisation</div><div class="card-value">' + moyenneAlphabetisation + '%</div></div>';
+
+// 7-9. Ratios et distance
+html += '<div class="card" style="background-color: #fce7f3; border-left: 4px solid #db2777;"><div class="card-title" style="color: #db2777;">Ratio élèves/enseignant</div><div class="card-value">' + moyenneRatioEnseignant + '</div></div>';
+html += '<div class="card" style="background-color: #e0e7ff; border-left: 4px solid #6366f1;"><div class="card-title" style="color: #6366f1;">Ratio élèves/classe</div><div class="card-value">' + moyenneRatioClasse + '</div></div>';
+html += '<div class="card" style="background-color: #fef3c7; border-left: 4px solid #f59e0b;"><div class="card-title" style="color: #f59e0b;">Distance moy. (km)</div><div class="card-value">' + moyenneDistance + '</div></div>';
+
+html += '</div>';
+
                 
                 // Tableau des données
                 html += '<div class="table-container"><table><thead class="blue"><tr><th>Région</th><th>Préfecture</th><th>Niveau</th><th>Genre</th><th>Taux abandon (%)</th><th>Taux réussite (%)</th><th>Taux scolarisation (%)</th>';
@@ -4510,6 +4525,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
