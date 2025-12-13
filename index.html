@@ -2681,66 +2681,66 @@ async function submitStatistiquesTableau(forcerMiseAJour) {
                     var niveau = niveaux[n];
                     
                     // Récupérer les inputs
-                    var inputScolarisationT = document.querySelector('input[data-row="' + rowIndex  '"][data-field="scolarisation_total"]');
-                    var inputScolarisationF = document.querySelector('input[data-row="' + rowIndex  '"][data-field="scolarisation_filles"]');
-                    var inputAbandonT = document.querySelector('input[data-row="' + rowIndex + +'"][data-field="abandon_total"]');
-                    var inputAbandonF = document.querySelector('input[data-row="' + rowIndex + +'"][data-field="abandon_filles"]');
-                    var inputRatioEns = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"]');
-                    var inputRatioClasse = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"]');
-                    var inputDistance = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"]');
-                    
-                    // Vérifier si déjà enregistré
-  var alreadySavedF = inputAbandonF && inputAbandonF.getAttribute('data-saved') === 'true';
-                    var alreadySavedT = inputAbandonT && inputAbandonT.getAttribute('data-saved') === 'true';            
-                    
-                    // Collecter les valeurs (seulement si non saved OU si forcerMiseAJour)
-                    var scolarisationT = inputScolarisationT && inputScolarisationT.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputScolarisationT.value) : null;
-                    var scolarisationF = inputScolarisationF && inputScolarisationF.value && (!alreadySavedF || forcerMiseAJour) ? parseFloat(inputScolarisationF.value) : null;
-                    var abandonT = inputAbandonT && inputAbandonT.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputAbandonT.value) : null;
-                    var abandonF = inputAbandonF && inputAbandonF.value && (!alreadySavedF || forcerMiseAJour) ? parseFloat(inputAbandonF.value) : null;
-                    var ratioEns = inputRatioEns && inputRatioEns.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputRatioEns.value) : null;
-                    var ratioClasse = inputRatioClasse && inputRatioClasse.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputRatioClasse.value) : null;
-                    var distance = inputDistance && inputDistance.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputDistance.value) : null;
-                    
-                    // Enregistrement TOTAL
-                    if ((!alreadySavedT || forcerMiseAJour) && (scolarisationT !== null || abandonT !== null || ratioEns !== null || ratioClasse !== null || distance !== null)) {
-                        dataToInsert.push({
-                            annee_scolaire: annee,
-                            periode: periode,
-                            region: region.nom,
-                            prefecture: prefecture.nom,
-                            zone: zone,
-                            niveau: niveau,
-                            genre: 'Total',
-                            taux_scolarisation: scolarisationT,
-                            taux_abandon: abandonT,
-                            ratio_eleves_enseignant: ratioEns,
-                            ratio_eleves_classe: ratioClasse,
-                            distance_moyenne_ecole_domicile: distance,
-                            saisi_par: currentUser.nom
-                        });
-                    }
-                    
-                    // Enregistrement FILLES
-                    if ((!alreadySavedF || forcerMiseAJour) && (scolarisationF !== null || abandonF !== null)) {
-                        dataToInsert.push({
-                            annee_scolaire: annee,
-                            periode: periode,
-                            region: region.nom,
-                            prefecture: prefecture.nom,
-                            zone: zone,
-                            niveau: niveau,
-                            genre: 'Filles',
-                            taux_abandon: abandonF,
-                            taux_scolarisation: scolarisationF,
-                            ratio_eleves_enseignant: null,
-                            ratio_eleves_classe: null,
-                            distance_moyenne_ecole_domicile: null,
-                            saisi_par: currentUser.nom
-                        });
-                    }
-                    
-                    rowIndex++;
+                var inputAbandonT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_total"]');
+                var inputAbandonF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_filles"]');
+                var inputScolarisationT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_total"]');
+                var inputScolarisationF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_filles"]');
+                var inputRatioEns = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"]');
+                var inputRatioClasse = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"]');
+                var inputDistance = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"]');
+                
+                // Vérifier si déjà enregistré
+                var alreadySavedT = inputAbandonT && inputAbandonT.getAttribute('data-saved') === 'true';
+                var alreadySavedF = inputAbandonF && inputAbandonF.getAttribute('data-saved') === 'true';
+                
+                // Collecter les valeurs (seulement si non saved OU si forcerMiseAJour)
+                var abandonT = inputAbandonT && inputAbandonT.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputAbandonT.value) : null;
+                var abandonF = inputAbandonF && inputAbandonF.value && (!alreadySavedF || forcerMiseAJour) ? parseFloat(inputAbandonF.value) : null;
+                var scolarisationT = inputScolarisationT && inputScolarisationT.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputScolarisationT.value) : null;
+                var scolarisationF = inputScolarisationF && inputScolarisationF.value && (!alreadySavedF || forcerMiseAJour) ? parseFloat(inputScolarisationF.value) : null;
+                var ratioEns = inputRatioEns && inputRatioEns.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputRatioEns.value) : null;
+                var ratioClasse = inputRatioClasse && inputRatioClasse.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputRatioClasse.value) : null;
+                var distance = inputDistance && inputDistance.value && (!alreadySavedT || forcerMiseAJour) ? parseFloat(inputDistance.value) : null;
+                
+                // Enregistrement TOTAL
+                if ((!alreadySavedT || forcerMiseAJour) && (abandonT !== null || scolarisationT !== null || ratioEns !== null || ratioClasse !== null || distance !== null)) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: periode,
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: niveau,
+                        genre: 'Total',
+                        taux_abandon: abandonT,
+                        taux_scolarisation: scolarisationT,
+                        ratio_eleves_enseignant: ratioEns,
+                        ratio_eleves_classe: ratioClasse,
+                        distance_moyenne_ecole_domicile: distance,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                // Enregistrement FILLES
+                if ((!alreadySavedF || forcerMiseAJour) && (abandonF !== null || scolarisationF !== null)) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: periode,
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: niveau,
+                        genre: 'Filles',
+                        taux_abandon: abandonF,
+                        taux_scolarisation: scolarisationF,
+                        ratio_eleves_enseignant: null,
+                        ratio_eleves_classe: null,
+                        distance_moyenne_ecole_domicile: null,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                rowIndex++;
                 }
             }
         }
@@ -4510,6 +4510,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
