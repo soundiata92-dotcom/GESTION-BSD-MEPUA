@@ -2177,115 +2177,119 @@ function filterTableRows() {
 }
 
 function showStatistiquesModal() {
-    var modalContainer = document.getElementById('modal-container');
-   var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">📊 Saisir les statistiques nationales</h2>';
+var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">📊 Saisir les statistiques nationales</h2>';
     
-    // En-tête avec période et genre
-   html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
-html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="global-annee" class="form-control" value="2025-2026" onchange="rechargerFormulaireStatistiques()"></div>';
-html += '<div class="form-group"><label>Période *</label><select id="global-periode" class="form-control" onchange="rechargerFormulaireStatistiques()"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+    // ========== EN-TÊTE avec Année et Période ==========
+    html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
+    html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="global-annee" class="form-control" value="2025-2026" onchange="rechargerFormulaireStatistiques()"></div>';
+    html += '<div class="form-group"><label>Période *</label><select id="global-periode" class="form-control" onchange="rechargerFormulaireStatistiques()"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
+    html += '</div>';
     
-    html += '<div class="form-group"><label>Filtre Région</label><select id="filter-region" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les régions</option>';
+    // ========== FILTRES COMPLETS (5 filtres) ==========
+    html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
+    html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+    
+    // Filtre 1 : Région
+    html += '<div class="form-group"><label>Région</label><select id="filter-region" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les régions</option>';
     for (var i = 0; i < regionsData.length; i++) {
         html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
     }
     html += '</select></div>';
     
-    html += '<div class="form-group"><label>Filtre Préfecture</label><select id="filter-prefecture" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les préfectures</option></select></div>';
-    html += '</div>';
-
+    // Filtre 2 : Préfecture
+    html += '<div class="form-group"><label>Préfecture</label><select id="filter-prefecture" class="form-control" onchange="filterTableRows()"><option value="">Toutes les préfectures</option></select></div>';
     
-    // Tableau de saisie
-   html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
-   html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Région</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Préfecture</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Zone</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Niveau</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669; color: white; font-weight: bold;">Abandon T (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">Abandon F (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669; color: white; font-weight: bold;">Scolarisa. T (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">Scolarisa. F (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Ens</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Classe</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Distance (km)</th>';
-html += '</tr></thead><tbody>';
+    // Filtre 3 : Zone
+    html += '<div class="form-group"><label>Zone</label><select id="filter-zone" class="form-control" onchange="filterTableRows()"><option value="">Toutes les zones</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+    
+    // Filtre 4 : Niveau
+    html += '<div class="form-group"><label>Niveau</label><select id="filter-niveau" class="form-control" onchange="filterTableRows()"><option value="">Tous les niveaux</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Secondaire">Secondaire</option></select></div>';
+    
+    // Filtre 5 : Genre
+    html += '<div class="form-group"><label>Genre</label><select id="filter-genre" class="form-control" onchange="filterTableRows()"><option value="">Total et Filles</option><option value="Total">Total uniquement</option><option value="Filles">Filles uniquement</option></select></div>';
+    
+    html += '</div></div>';
+    
+    // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
+    html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
+    html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Région</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Préfecture</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Zone</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Niveau</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669; color: white; font-weight: bold;">Scolarisa. T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">Scolarisa. F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #059669; color: white; font-weight: bold;">Abandon T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">Abandon F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Ens</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Classe</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Distance (km)</th>';
+    html += '</tr></thead><tbody>';
     
     var rowIndex = 0;
     var zones = ['Urbaine', 'Rurale'];
     var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
     
-    // Générer toutes les lignes
-   for (var r = 0; r < regionsData.length; r++) {
-    var region = regionsData[r];
-    
-    var prefecturesRegion = [];
-    for (var p = 0; p < prefecturesData.length; p++) {
-        if (prefecturesData[p].region_id == region.id) {
-            prefecturesRegion.push(prefecturesData[p]);
-        }
-    }
-    
-    for (var p = 0; p < prefecturesRegion.length; p++) {
-        var prefecture = prefecturesRegion[p];
+    // Générer les lignes
+    for (var r = 0; r < regionsData.length; r++) {
+        var region = regionsData[r];
         
-        for (var z = 0; z < zones.length; z++) {
-            var zone = zones[z];
-           
-            for (var n = 0; n < niveaux.length; n++) {
-                var niveau = niveaux[n];
-                var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
-                
-                html += '<tr class="stat-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
-                html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
-                html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
-                html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
-                html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + niveau + '</td>';
-                
-                // Taux abandon (T/F)
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                // Taux scolarisation (T/F)
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                
-                // Ratios et distance
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_classe" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
-                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="distance" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
-                
-                html += '</tr>';
-                rowIndex++;
-            }            
-            // Désactiver abandon, réussite, scolarisation
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';            
-            // Ratios désactivés
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
-            html += '<td style="padding: 2px; border: 1px solid #e5e7eb; background-color: #f3f4f6;"><input type="number" class="form-control" style="width: 100%; font-size: 11px; padding: 4px;" disabled></td>';
+        var prefecturesRegion = [];
+        for (var p = 0; p < prefecturesData.length; p++) {
+            if (prefecturesData[p].region_id == region.id) {
+                prefecturesRegion.push(prefecturesData[p]);
+            }
+        }
+        
+        for (var p = 0; p < prefecturesRegion.length; p++) {
+            var prefecture = prefecturesRegion[p];
             
-            html += '</tr>';
-            rowIndex++;
+            for (var z = 0; z < zones.length; z++) {
+                var zone = zones[z];
+                
+                for (var n = 0; n < niveaux.length; n++) {
+                    var niveau = niveaux[n];
+                    var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
+                    
+                    html += '<tr class="stat-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + niveau + '</td>';
+                    
+                    // Taux abandon (T/F)
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    
+                    // Taux scolarisation (T/F)
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    
+                    // Ratios et distance
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_classe" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="distance" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    
+                    html += '</tr>';
+                    rowIndex++;
+                }
+            }
         }
     }
-}
-
+    
     html += '</tbody></table></div>';
-        // ========== BOUTONS D'ACTION ==========
-  html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
-html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
-html += '<div style="display: flex; gap: 10px;">';
-html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)">💾 Enregistrer nouvelles</button>';
-html += '<button class="btn btn-warning" onclick="submitStatistiquesTableau(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
-html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
-html += '</div>';
-html += '</div>';
-
+    
+    // ========== BOUTONS D'ACTION ==========
+    html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
+    html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
+    html += '<div style="display: flex; gap: 10px;">';
+    html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)">💾 Enregistrer nouvelles</button>';
+    html += '<button class="btn btn-warning" onclick="submitStatistiquesTableau(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
+    html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+    html += '</div></div>';
+    
     html += '</div></div>';
     modalContainer.innerHTML = html;
   // ========== CHARGER LES DONNÉES EXISTANTES ==========
@@ -2344,6 +2348,7 @@ setTimeout(async function() {
                                 continue;
                             }
                             
+                            if (stat.niveau && stat.niveau !== 'Alphabétisation') {
                                 // Données par niveau
                                 var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
                                 for (var n = 0; n < niveaux.length; n++) {
@@ -2369,7 +2374,29 @@ setTimeout(async function() {
 
                                                 loaded++;
                                             }
-                                        }                                        
+                                        }
+                                        
+                                        // Taux réussite
+                                        if (stat.taux_reussite_examens !== null) {
+                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="reussite_' + suffix + '"][data-type="niveau"]');
+                                            if (input) {
+                                                input.value = stat.taux_reussite_examens;
+                                                input.style.background = '#e8f5e9';
+                                                input.style.borderColor = '#4caf50';
+                                                input.disabled = true;
+                                                input.setAttribute('data-saved', 'true');
+                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
+                                                loaded++;
+                                            }
+                                        }
+                                        
                                         // Taux scolarisation
                                         if (stat.taux_scolarisation !== null) {
                                             var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_' + suffix + '"][data-type="niveau"]');
@@ -2459,7 +2486,39 @@ setTimeout(async function() {
                                     }
                                     rowIndex++;
                                 }
-                                     
+                            } else {
+                                // Données par zone (alphabétisation)
+                                rowIndex += 3; // Sauter les 3 niveaux
+                                
+                                var suffix = stat.genre === 'Total' ? 'total' : 'filles';
+                                if (stat.taux_alphabetisation !== null) {
+                                    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation_' + suffix + '"][data-type="zone"]');
+                                    if (input) {
+                                        input.value = stat.taux_alphabetisation;
+                                        input.style.background = '#e8f5e9';
+                                        input.style.borderColor = '#4caf50';
+                                        input.disabled = true;
+                                        input.setAttribute('data-saved', 'true');
+                                        input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
+    
+    // Ajouter la période sur la ligne entière
+    var row = input.closest('tr');
+    if (row && !row.getAttribute('data-periode')) {
+        row.setAttribute('data-periode', stat.periode);
+    }
+
+                                        loaded++;
+                                    }
+                                }
+                                
+                                found = true;
+                                rowIndex++;
+                            }
+                        }
+                    }
+                }
+            }
+            
             // Mettre à jour la progression
             updateProgression();
             
@@ -4515,7 +4574,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
 
 
 
