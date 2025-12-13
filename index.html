@@ -2135,13 +2135,20 @@ function updateFormFilters() {
     filterTableRows();
 }
 
+Ensuite, remplace toute la fonction filterTableRows() par celle-ci :
 function filterTableRows() {
     var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var prefectureNom = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
+    var zoneFilter = document.getElementById('filter-zone') ? document.getElementById('filter-zone').value : '';
+    var niveauFilter = document.getElementById('filter-niveau') ? document.getElementById('filter-niveau').value : '';
+    var genreFilter = document.getElementById('filter-genre') ? document.getElementById('filter-genre').value : '';
     
     console.log('=== FILTRAGE ===');
-    console.log('Région ID sélectionnée:', regionId);
-    console.log('Préfecture sélectionnée:', prefectureNom);
+    console.log('Région ID:', regionId);
+    console.log('Préfecture:', prefectureNom);
+    console.log('Zone:', zoneFilter);
+    console.log('Niveau:', niveauFilter);
+    console.log('Genre:', genreFilter);
     
     var rows = document.querySelectorAll('.stat-row');
     console.log('Nombre de lignes trouvées:', rows.length);
@@ -2152,6 +2159,8 @@ function filterTableRows() {
         var row = rows[i];
         var rowRegion = row.getAttribute('data-region');
         var rowPrefecture = row.getAttribute('data-prefecture');
+        var rowZone = row.getAttribute('data-zone');
+        var rowNiveau = row.getAttribute('data-niveau');
         
         var showRow = true;
         
@@ -2163,6 +2172,37 @@ function filterTableRows() {
         // Filtre par préfecture
         if (prefectureNom && prefectureNom !== '' && rowPrefecture != prefectureNom) {
             showRow = false;
+        }
+        
+        // Filtre par zone
+        if (zoneFilter && zoneFilter !== '' && rowZone != zoneFilter) {
+            showRow = false;
+        }
+        
+        // Filtre par niveau
+        if (niveauFilter && niveauFilter !== '' && rowNiveau != niveauFilter) {
+            showRow = false;
+        }
+        
+        // Filtre par genre (on cache/affiche les colonnes concernées)
+        if (genreFilter === 'Total') {
+            // Masquer colonnes Filles
+            var inputsFilles = row.querySelectorAll('input[data-field$="_filles"]');
+            for (var j = 0; j < inputsFilles.length; j++) {
+                inputsFilles[j].closest('td').style.display = 'none';
+            }
+        } else if (genreFilter === 'Filles') {
+            // Masquer colonnes Total
+            var inputsTotal = row.querySelectorAll('input[data-field$="_total"]');
+            for (var j = 0; j < inputsTotal.length; j++) {
+                inputsTotal[j].closest('td').style.display = 'none';
+            }
+        } else {
+            // Afficher toutes les colonnes
+            var allInputs = row.querySelectorAll('input');
+            for (var j = 0; j < allInputs.length; j++) {
+                allInputs[j].closest('td').style.display = '';
+            }
         }
         
         row.style.display = showRow ? '' : 'none';
@@ -4574,6 +4614,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
