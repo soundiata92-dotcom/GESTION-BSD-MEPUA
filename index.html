@@ -4321,7 +4321,120 @@ function showReussiteExamensModal() {
     
     html += '</div></div>';
     modalContainer.innerHTML = html;
+    // ========== CHARGER LES DONNÉES EXISTANTES ==========
+    setTimeout(async function() {
+        var annee = document.getElementById('examens-annee').value;
+        
+        if (!annee) return;
+        
+        try {
+            const { data: existingData, error } = await supabase
+                .from('statistiques_educatives')
+                .select('*')
+                .eq('annee_scolaire', annee)
+                .eq('periode', 'Annuel')
+                .in('niveau', ['Primaire', 'Secondaire']);
+            
+            if (error) throw error;
+            
+            if (existingData && existingData.length > 0) {
+                console.log('📥 Chargement de ' + existingData.length + ' données existantes...');
+                
+                var loaded = 0;
+                
+                // Pour chaque donnée existante
+                for (var i = 0; i < existingData.length; i++) {
+                    var stat = existingData[i];
+                    
+                    // Trouver l'index de ligne correspondant
+                    var rowIndex = 0;
+                    var found = false;
+                    
+                    for (var r = 0; r < regionsData.length && !found; r++) {
+                        var region = regionsData[r];
+                        
+                        var prefecturesRegion = [];
+                        for (var p = 0; p < prefecturesData.length; p++) {
+                            if (prefecturesData[p].region_id == region.id) {
+                                prefecturesRegion.push(prefecturesData[p]);
+                            }
+                        }
+                        
+                        for (var p = 0; p < prefecturesRegion.length && !found; p++) {
+                            var prefecture = prefecturesRegion[p];
+                            
+                            if (prefecture.nom !== stat.prefecture) {
+                                rowIndex += 2; // 2 zones par préfecture
+                                continue;
+                            }
+                            
+                            var zones = ['Urbaine', 'Rurale'];
+                            for (var z = 0; z < zones.length && !found; z++) {
+                                var zone = zones[z];
+                                
+                                if (zone !== stat.zone) {
+                                    rowIndex++;
+                                    continue;
+                                }
+                                
+                                // On a trouvé la bonne ligne !
+                                var suffix = stat.genre === 'Total' ? 'total' : 'filles';
+                                
+                                // Charger CEE (Primaire)
+                                if (stat.niveau === 'Primaire' && stat.taux_reussite_cee !== null) {
+                                    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_' + suffix + '"]');
+                                    if (input) {
+                                        input.value = stat.taux_reussite_cee;
+                                        input.style.background = '#e8f5e9';
+                                        input.style.borderColor = '#4caf50';
+                                        input.disabled = true;
+                                        input.setAttribute('data-saved', 'true');
+                                        loaded++;
+                                    }
+                                }
+                                
+                                // Charger BEPC (Secondaire)
+                                if (stat.niveau === 'Secondaire' && stat.taux_reussite_bepc !== null) {
+                                    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_' + suffix + '"]');
+                                    if (input) {
+                                        input.value = stat.taux_reussite_bepc;
+                                        input.style.background = '#e8f5e9';
+                                        input.style.borderColor = '#4caf50';
+                                        input.disabled = true;
+                                        input.setAttribute('data-saved', 'true');
+                                        loaded++;
+                                    }
+                                }
+                                
+                                // Charger BAC (Secondaire)
+                                if (stat.niveau === 'Secondaire' && stat.taux_reussite_bac !== null) {
+                                    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_' + suffix + '"]');
+                                    if (input) {
+                                        input.value = stat.taux_reussite_bac;
+                                        input.style.background = '#e8f5e9';
+                                        input.style.borderColor = '#4caf50';
+                                        input.disabled = true;
+                                        input.setAttribute('data-saved', 'true');
+                                        loaded++;
+                                    }
+                                }
+                                
+                                found = true;
+                            }
+                        }
+                    }
+                }
+                
+                if (loaded > 0) {
+                    alert('📥 ' + loaded + ' champs déjà enregistrés ont été chargés (en vert).\n\nVous pouvez continuer la saisie des autres lignes.');
+                }
+            }
+        } catch (error) {
+            console.error('Erreur chargement:', error);
+        }
+    }, 500);
 }
+
 function updateExamensFilters() {
     var regionSelect = document.getElementById('filter-examens-region');
     var prefectureSelect = document.getElementById('filter-examens-prefecture');
@@ -4996,6 +5109,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
