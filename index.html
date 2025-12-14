@@ -4154,39 +4154,61 @@ html += '<div class="card" style="background-color: #fef3c7; border-left: 4px so
 
 html += '</div>';
 
-                // Tableau des données
-                html += '<div class="table-container"><table><thead class="blue"><tr><th>Région</th><th>Préfecture</th><th>Niveau</th><th>Genre</th><th>Taux abandon (%)</th><th>Taux réussite (%)</th><th>Taux scolarisation (%)</th>';
-                
-                if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-                    html += '<th style="text-align: center;">Actions</th>';
-                }
-                
-                html += '</tr></thead><tbody>';
-                
-                if (statistiquesData.length > 0) {
-                    for (var i = 0; i < statistiquesData.length; i++) {
-                        var stat = statistiquesData[i];
-                        html += '<tr>';
-                        html += '<td>' + stat.region + '</td>';
-                        html += '<td>' + stat.prefecture + '</td>';
-                        html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
-                        html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
-                        html += '<td>' + (stat.taux_abandon || '-') + '</td>';
-                        html += '<td>' + (stat.taux_reussite_examens || '-') + '</td>';
-                        html += '<td>' + (stat.taux_scolarisation || '-') + '</td>';
-                        
-                        if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-                            html += '<td style="text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + stat.id + ')">Supprimer</button></td>';
-                        }
-                        
-                        html += '</tr>';
-                    }
-                } else {
-                    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '8' : '7';
-                    html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
-                }
-                
-                html += '</tbody></table></div>';
+               // Tableau des données
+html += '<div class="table-container"><table><thead class="blue"><tr>';
+html += '<th>Région</th>';
+html += '<th>Préfecture</th>';
+html += '<th>Zone</th>';
+html += '<th>Niveau</th>';
+html += '<th>Genre</th>';
+html += '<th>Taux scolarisation (%)</th>';
+html += '<th>Taux abandon (%)</th>';
+html += '<th>Taux réussite CEE (%)</th>';
+html += '<th>Taux réussite BEPC (%)</th>';
+html += '<th>Taux réussite BAC (%)</th>';
+html += '<th>Taux alphabétisation (%)</th>';
+html += '<th>Ratio élèves/enseignant</th>';
+html += '<th>Ratio élèves/classe</th>';
+html += '<th>Distance (km)</th>';
+
+if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+    html += '<th style="text-align: center;">Actions</th>';
+}
+
+html += '</tr></thead><tbody>';
+
+if (statistiquesData.length > 0) {
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        html += '<tr>';
+        html += '<td>' + stat.region + '</td>';
+        html += '<td>' + stat.prefecture + '</td>';
+        html += '<td>' + stat.zone + '</td>';
+        html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
+        html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
+        html += '<td>' + (stat.taux_scolarisation !== null && stat.taux_scolarisation !== undefined ? stat.taux_scolarisation : '-') + '</td>';
+        html += '<td>' + (stat.taux_abandon !== null && stat.taux_abandon !== undefined ? stat.taux_abandon : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.taux_reussite_cee : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_bepc !== null && stat.taux_reussite_bepc !== undefined ? stat.taux_reussite_bepc : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_bac !== null && stat.taux_reussite_bac !== undefined ? stat.taux_reussite_bac : '-') + '</td>';
+        html += '<td>' + (stat.taux_alphabetisation !== null && stat.taux_alphabetisation !== undefined ? stat.taux_alphabetisation : '-') + '</td>';
+        html += '<td>' + (stat.ratio_eleves_enseignant !== null && stat.ratio_eleves_enseignant !== undefined ? stat.ratio_eleves_enseignant : '-') + '</td>';
+        html += '<td>' + (stat.ratio_eleves_classe !== null && stat.ratio_eleves_classe !== undefined ? stat.ratio_eleves_classe : '-') + '</td>';
+        html += '<td>' + (stat.distance_moyenne_ecole_domicile !== null && stat.distance_moyenne_ecole_domicile !== undefined ? stat.distance_moyenne_ecole_domicile : '-') + '</td>';
+        
+        if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+            html += '<td style="text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + stat.id + ')">Supprimer</button></td>';
+        }
+        
+        html += '</tr>';
+    }
+} else {
+    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '15' : '14';
+    html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
+}
+
+html += '</tbody></table></div>';
+
             }
 
             html += '</div><div id="modal-container"></div>';
@@ -4546,6 +4568,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
