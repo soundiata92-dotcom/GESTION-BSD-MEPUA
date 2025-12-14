@@ -21,6 +21,19 @@
         .nav button.active { border-bottom-color: #2563eb; color: #2563eb; }
         .main { max-width: 1280px; margin: 0 auto; padding: 32px 16px; }
         .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; margin-top: 32px; }
+        .cards-fixed {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(120px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cards-fixed .card {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
         .card { padding: 24px; border-radius: 8px; border-left: 4px solid; }
         .card-blue { background-color: #dbeafe; border-color: #2563eb; }
         .card-yellow { background-color: #fef3c7; border-color: #d97706; }
@@ -3072,9 +3085,11 @@ function appliquerFiltresStatistiques() {
     console.log('Données filtrées - Ratios:', dataFiltreeRatios.length);
     
     // Calculer les moyennes POUR LES TAUX
-    var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
-    var moyenneReussite = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_examens');
     var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation');
+    var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
+    var moyenneReussiteCEE = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_cee');
+    var moyenneReussiteBEPC = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_bepc');
+    var moyenneReussiteBAC = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_bac');
     var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
     
     // Calculer les moyennes POUR LES RATIOS/DISTANCE
@@ -3082,36 +3097,44 @@ function appliquerFiltresStatistiques() {
     var moyenneRatioClasse = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_classe');
     var moyenneDistance = calculerMoyenne(dataFiltreeRatios, 'distance_moyenne_ecole_domicile');
     
-    // Mettre à jour l'affichage des cartes
-    var cards = document.querySelectorAll('.card');
-    if (cards.length >= 7) {
-        // Carte 1 : Taux abandon
-        var value = cards[0].querySelector('.card-value');
-        if (value) value.textContent = moyenneAbandon + '%';
+    // Mettre à jour l'affichage des cartes SANS RECRÉER LE HTML
+    var cards = document.querySelectorAll('.cards-fixed .card');
+    if (cards.length >= 9) {
+        // Carte 1 : Scolarisation
+        var value1 = cards[0].querySelector('.card-value');
+        if (value1) value1.textContent = moyenneScolarisation + '%';
         
-        // Carte 2 : Taux réussite
-        value = cards[1].querySelector('.card-value');
-        if (value) value.textContent = moyenneReussite + '%';
+        // Carte 2 : Abandon
+        var value2 = cards[1].querySelector('.card-value');
+        if (value2) value2.textContent = moyenneAbandon + '%';
         
-        // Carte 3 : Taux scolarisation
-        value = cards[2].querySelector('.card-value');
-        if (value) value.textContent = moyenneScolarisation + '%';
+        // Carte 3 : Réussite CEE
+        var value3 = cards[2].querySelector('.card-value');
+        if (value3) value3.textContent = moyenneReussiteCEE + '%';
         
-        // Carte 4 : Taux alphabétisation
-        value = cards[3].querySelector('.card-value');
-        if (value) value.textContent = moyenneAlphabetisation + '%';
+        // Carte 4 : Réussite BEPC
+        var value4 = cards[3].querySelector('.card-value');
+        if (value4) value4.textContent = moyenneReussiteBEPC + '%';
         
-        // Carte 5 : Ratio enseignant (Genre ignoré)
-        value = cards[4].querySelector('.card-value');
-        if (value) value.textContent = moyenneRatioEnseignant;
+        // Carte 5 : Réussite BAC
+        var value5 = cards[4].querySelector('.card-value');
+        if (value5) value5.textContent = moyenneReussiteBAC + '%';
         
-        // Carte 6 : Ratio classe (Genre ignoré)
-        value = cards[5].querySelector('.card-value');
-        if (value) value.textContent = moyenneRatioClasse;
+        // Carte 6 : Alphabétisation
+        var value6 = cards[5].querySelector('.card-value');
+        if (value6) value6.textContent = moyenneAlphabetisation + '%';
         
-        // Carte 7 : Distance (Genre ignoré)
-        value = cards[6].querySelector('.card-value');
-        if (value) value.textContent = moyenneDistance;
+        // Carte 7 : Ratio enseignant
+        var value7 = cards[6].querySelector('.card-value');
+        if (value7) value7.textContent = moyenneRatioEnseignant;
+        
+        // Carte 8 : Ratio classe
+        var value8 = cards[7].querySelector('.card-value');
+        if (value8) value8.textContent = moyenneRatioClasse;
+        
+        // Carte 9 : Distance
+        var value9 = cards[8].querySelector('.card-value');
+        if (value9) value9.textContent = moyenneDistance;
     }
     
     console.log('Cartes mises à jour');
@@ -4098,7 +4121,7 @@ html += '</select></div>';
 html += '</div></div>';
                 
              // Cartes d'indicateurs (9 cartes au total)
-html += '<div class="cards" style="grid-template-columns: repeat(9, 1fr); margin-bottom: 24px;">';
+html += '<div class="cards-fixed">';
 
 // Calculer les moyennes
 var moyenneScolarisation = calculerMoyenne(statistiquesData, 'taux_scolarisation');
@@ -4523,6 +4546,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
