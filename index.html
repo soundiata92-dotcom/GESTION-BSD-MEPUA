@@ -4529,7 +4529,7 @@ async function submitExamensData(forcerMiseAJour) {
                     });
                 }
                 
-                // BEPC Total → Secondaire
+               // BEPC Total → Niveau spécifique
                 if (bepcT !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
@@ -4540,10 +4540,101 @@ async function submitExamensData(forcerMiseAJour) {
                         niveau: 'Secondaire',
                         genre: 'Total',
                         taux_reussite_bepc: bepcT,
+                        taux_reussite_cee: null,
+                        taux_reussite_bac: null,
                         saisi_par: currentUser.nom
                     });
                 }
                 
+                // BEPC Filles → Niveau spécifique
+                if (bepcF !== null) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: 'Annuel',
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: 'Secondaire',
+                        genre: 'Filles',
+                        taux_reussite_bepc: bepcF,
+                        taux_reussite_cee: null,
+                        taux_reussite_bac: null,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                // BAC Total → MÊME enregistrement que BEPC si les deux existent
+                if (bacT !== null) {
+                    // Chercher si BEPC Total existe déjà pour cette ligne
+                    var foundBepcT = false;
+                    for (var idx = dataToInsert.length - 1; idx >= 0; idx--) {
+                        if (dataToInsert[idx].region === region.nom &&
+                            dataToInsert[idx].prefecture === prefecture.nom &&
+                            dataToInsert[idx].zone === zone &&
+                            dataToInsert[idx].niveau === 'Secondaire' &&
+                            dataToInsert[idx].genre === 'Total' &&
+                            dataToInsert[idx].taux_reussite_bepc !== null) {
+                            // Ajouter BAC à l'enregistrement existant
+                            dataToInsert[idx].taux_reussite_bac = bacT;
+                            foundBepcT = true;
+                            break;
+                        }
+                    }
+                    
+                    // Si BEPC Total n'existe pas, créer un nouvel enregistrement
+                    if (!foundBepcT) {
+                        dataToInsert.push({
+                            annee_scolaire: annee,
+                            periode: 'Annuel',
+                            region: region.nom,
+                            prefecture: prefecture.nom,
+                            zone: zone,
+                            niveau: 'Secondaire',
+                            genre: 'Total',
+                            taux_reussite_bepc: null,
+                            taux_reussite_cee: null,
+                            taux_reussite_bac: bacT,
+                            saisi_par: currentUser.nom
+                        });
+                    }
+                }
+                
+                // BAC Filles → MÊME enregistrement que BEPC Filles si les deux existent
+                if (bacF !== null) {
+                    // Chercher si BEPC Filles existe déjà pour cette ligne
+                    var foundBepcF = false;
+                    for (var idx = dataToInsert.length - 1; idx >= 0; idx--) {
+                        if (dataToInsert[idx].region === region.nom &&
+                            dataToInsert[idx].prefecture === prefecture.nom &&
+                            dataToInsert[idx].zone === zone &&
+                            dataToInsert[idx].niveau === 'Secondaire' &&
+                            dataToInsert[idx].genre === 'Filles' &&
+                            dataToInsert[idx].taux_reussite_bepc !== null) {
+                            // Ajouter BAC à l'enregistrement existant
+                            dataToInsert[idx].taux_reussite_bac = bacF;
+                            foundBepcF = true;
+                            break;
+                        }
+                    }
+                    
+                    // Si BEPC Filles n'existe pas, créer un nouvel enregistrement
+                    if (!foundBepcF) {
+                        dataToInsert.push({
+                            annee_scolaire: annee,
+                            periode: 'Annuel',
+                            region: region.nom,
+                            prefecture: prefecture.nom,
+                            zone: zone,
+                            niveau: 'Secondaire',
+                            genre: 'Filles',
+                            taux_reussite_bepc: null,
+                            taux_reussite_cee: null,
+                            taux_reussite_bac: bacF,
+                            saisi_par: currentUser.nom
+                        });
+                    }
+                }
+
                 // BEPC Filles → Secondaire
                 if (bepcF !== null) {
                     dataToInsert.push({
@@ -5013,6 +5104,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
