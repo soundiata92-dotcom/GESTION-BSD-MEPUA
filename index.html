@@ -4215,13 +4215,458 @@ html += '</tbody></table></div>';
             app.innerHTML = html;
         }
 function showReussiteExamensModal() {
-    alert('📊 Formulaire "Réussite Examens (DGECS)" en cours de développement...');
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">✅ Saisir les taux de réussite aux examens</h2>';
+    
+    // ========== EN-TÊTE avec Année scolaire ==========
+    html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
+    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
+    html += '<select id="examens-annee" class="form-control" style="font-size: 14px; padding: 10px;">';
+    html += '<option value="2025-2026">2025-2026 (année en cours)</option>';
+    html += '<option value="2024-2025">2024-2025 (année précédente)</option>';
+    html += '<option value="2023-2024">2023-2024 (il y a 2 ans)</option>';
+    html += '</select></div>';
+    html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Saisissez les données pour les 3 dernières années pour l\'analyse comparative.</p>';
+    html += '</div>';
+    
+    // ========== FILTRES (4 filtres : Région, Préfecture, Zone, Genre) ==========
+    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
+    html += '<h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+    
+    // Filtre 1 : Région
+    html += '<div class="form-group"><label>Région</label><select id="filter-examens-region" class="form-control" onchange="updateExamensFilters()"><option value="">Toutes les régions</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
+    
+    // Filtre 2 : Préfecture
+    html += '<div class="form-group"><label>Préfecture</label><select id="filter-examens-prefecture" class="form-control" onchange="filterExamensRows()"><option value="">Toutes les préfectures</option></select></div>';
+    
+    // Filtre 3 : Zone
+    html += '<div class="form-group"><label>Zone</label><select id="filter-examens-zone" class="form-control" onchange="filterExamensRows()"><option value="">Toutes les zones</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+    
+    // Filtre 4 : Genre
+    html += '<div class="form-group"><label>Genre</label><select id="filter-examens-genre" class="form-control" onchange="filterExamensRows()"><option value="">Total et Filles</option><option value="Total">Total uniquement</option><option value="Filles">Filles uniquement</option></select></div>';
+    
+    html += '</div></div>';
+    
+    // ========== TABLEAU DE SAISIE ==========
+    html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
+    html += '<table id="examens-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #059669; color: white; z-index: 10;"><tr>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Région</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Préfecture</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Zone</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #10b981; color: white; font-weight: bold;">CEE T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #db2777; color: white; font-weight: bold;">CEE F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #10b981; color: white; font-weight: bold;">BEPC T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #db2777; color: white; font-weight: bold;">BEPC F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #10b981; color: white; font-weight: bold;">BAC T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #db2777; color: white; font-weight: bold;">BAC F (%)</th>';
+    html += '</tr></thead><tbody>';
+    
+    var rowIndex = 0;
+    var zones = ['Urbaine', 'Rurale'];
+    
+    // Générer les lignes
+    for (var r = 0; r < regionsData.length; r++) {
+        var region = regionsData[r];
+        
+        var prefecturesRegion = [];
+        for (var p = 0; p < prefecturesData.length; p++) {
+            if (prefecturesData[p].region_id == region.id) {
+                prefecturesRegion.push(prefecturesData[p]);
+            }
+        }
+        
+        for (var p = 0; p < prefecturesRegion.length; p++) {
+            var prefecture = prefecturesRegion[p];
+            
+            for (var z = 0; z < zones.length; z++) {
+                var zone = zones[z];
+                var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
+                
+                html += '<tr class="examens-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" style="background-color: ' + bgColor + ';">';
+                html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
+                html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
+                html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
+                
+                // CEE (T/F)
+                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                
+                // BEPC (T/F)
+                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                
+                // BAC (T/F)
+                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                
+                html += '</tr>';
+                rowIndex++;
+            }
+        }
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // ========== BOUTONS D'ACTION ==========
+    html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
+    html += '<button class="btn btn-primary" onclick="submitExamensData(false)">💾 Enregistrer nouvelles</button>';
+    html += '<button class="btn btn-warning" onclick="submitExamensData(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
+    html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+    html += '</div>';
+    
+    html += '</div></div>';
+    modalContainer.innerHTML = html;
 }
-
-function showAlphabetisationModal() {
-    alert('✍️ Formulaire "Alphabétisation (DNAENFP-LN)" en cours de développement...');
+function updateExamensFilters() {
+    var regionSelect = document.getElementById('filter-examens-region');
+    var prefectureSelect = document.getElementById('filter-examens-prefecture');
+    
+    if (!regionSelect || !prefectureSelect) {
+        console.log('❌ Sélecteurs examens non trouvés');
+        return;
+    }
+    
+    var regionId = regionSelect.value;
+    
+    console.log('=== UPDATE EXAMENS FILTERS ===');
+    console.log('Région sélectionnée:', regionId);
+    
+    // Vider les options
+    prefectureSelect.innerHTML = '<option value="">Toutes les préfectures</option>';
+    
+    if (regionId && regionId !== '') {
+        var count = 0;
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+                count++;
+            }
+        }
+        console.log('✅ Préfectures ajoutées:', count);
+    }
+    
+    // Appliquer le filtrage
+    filterExamensRows();
 }
-
+function filterExamensRows() {
+    var regionId = document.getElementById('filter-examens-region') ? document.getElementById('filter-examens-region').value : '';
+    var prefectureNom = document.getElementById('filter-examens-prefecture') ? document.getElementById('filter-examens-prefecture').value : '';
+    var zoneFilter = document.getElementById('filter-examens-zone') ? document.getElementById('filter-examens-zone').value : '';
+    var genreFilter = document.getElementById('filter-examens-genre') ? document.getElementById('filter-examens-genre').value : '';
+    
+    console.log('=== FILTRAGE EXAMENS ===');
+    console.log('Région ID:', regionId);
+    console.log('Préfecture:', prefectureNom);
+    console.log('Zone:', zoneFilter);
+    console.log('Genre:', genreFilter);
+    
+    var rows = document.querySelectorAll('.examens-row');
+    console.log('Nombre de lignes trouvées:', rows.length);
+    
+    var visibleCount = 0;
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var rowRegion = row.getAttribute('data-region');
+        var rowPrefecture = row.getAttribute('data-prefecture');
+        var rowZone = row.getAttribute('data-zone');
+        
+        var showRow = true;
+        
+        // Filtre par région
+        if (regionId && regionId !== '' && rowRegion != regionId) {
+            showRow = false;
+        }
+        
+        // Filtre par préfecture
+        if (prefectureNom && prefectureNom !== '' && rowPrefecture != prefectureNom) {
+            showRow = false;
+        }
+        
+        // Filtre par zone
+        if (zoneFilter && zoneFilter !== '' && rowZone != zoneFilter) {
+            showRow = false;
+        }
+        
+        // Filtre par genre (masquer/afficher colonnes)
+        if (genreFilter === 'Total') {
+            // Masquer colonnes Filles (colonnes 5, 7, 9)
+            var cells = row.querySelectorAll('td');
+            if (cells.length >= 9) {
+                cells[4].style.display = 'none'; // CEE F
+                cells[6].style.display = 'none'; // BEPC F
+                cells[8].style.display = 'none'; // BAC F
+            }
+        } else if (genreFilter === 'Filles') {
+            // Masquer colonnes Total (colonnes 4, 6, 8)
+            var cells = row.querySelectorAll('td');
+            if (cells.length >= 9) {
+                cells[3].style.display = 'none'; // CEE T
+                cells[5].style.display = 'none'; // BEPC T
+                cells[7].style.display = 'none'; // BAC T
+            }
+        } else {
+            // Afficher toutes les colonnes
+            var cells = row.querySelectorAll('td');
+            for (var j = 0; j < cells.length; j++) {
+                cells[j].style.display = '';
+            }
+        }
+        
+        row.style.display = showRow ? '' : 'none';
+        
+        if (showRow) {
+            visibleCount++;
+        }
+    }
+    
+    // Gérer aussi les en-têtes du tableau
+    var table = document.getElementById('examens-table');
+    if (table) {
+        var headers = table.querySelectorAll('thead th');
+        if (genreFilter === 'Total' && headers.length >= 9) {
+            headers[4].style.display = 'none'; // CEE F
+            headers[6].style.display = 'none'; // BEPC F
+            headers[8].style.display = 'none'; // BAC F
+        } else if (genreFilter === 'Filles' && headers.length >= 9) {
+            headers[3].style.display = 'none'; // CEE T
+            headers[5].style.display = 'none'; // BEPC T
+            headers[7].style.display = 'none'; // BAC T
+        } else {
+            for (var j = 0; j < headers.length; j++) {
+                headers[j].style.display = '';
+            }
+        }
+    }
+    
+    console.log('Lignes visibles:', visibleCount);
+    console.log('================');
+}
+async function submitExamensData(forcerMiseAJour) {
+    forcerMiseAJour = forcerMiseAJour || false;
+    
+    var annee = document.getElementById('examens-annee').value;
+    
+    if (!annee) {
+        alert('⚠️ Veuillez sélectionner une année');
+        return;
+    }
+    
+    var zones = ['Urbaine', 'Rurale'];
+    var dataToInsert = [];
+    var rowIndex = 0;
+    
+    console.log('📊 Collecte des données examens pour l\'année:', annee);
+    
+    // Parcourir toutes les lignes
+    for (var r = 0; r < regionsData.length; r++) {
+        var region = regionsData[r];
+        var prefecturesRegion = [];
+        
+        for (var p = 0; p < prefecturesData.length; p++) {
+            if (prefecturesData[p].region_id == region.id) {
+                prefecturesRegion.push(prefecturesData[p]);
+            }
+        }
+        
+        for (var p = 0; p < prefecturesRegion.length; p++) {
+            var prefecture = prefecturesRegion[p];
+            
+            for (var z = 0; z < zones.length; z++) {
+                var zone = zones[z];
+                
+                // Récupérer les inputs
+                var inputCeeT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_total"]');
+                var inputCeeF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_filles"]');
+                var inputBepcT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_total"]');
+                var inputBepcF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_filles"]');
+                var inputBacT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_total"]');
+                var inputBacF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_filles"]');
+                
+                // Collecter les valeurs
+                var ceeT = inputCeeT && inputCeeT.value ? parseFloat(inputCeeT.value) : null;
+                var ceeF = inputCeeF && inputCeeF.value ? parseFloat(inputCeeF.value) : null;
+                var bepcT = inputBepcT && inputBepcT.value ? parseFloat(inputBepcT.value) : null;
+                var bepcF = inputBepcF && inputBepcF.value ? parseFloat(inputBepcF.value) : null;
+                var bacT = inputBacT && inputBacT.value ? parseFloat(inputBacT.value) : null;
+                var bacF = inputBacF && inputBacF.value ? parseFloat(inputBacF.value) : null;
+                
+                // CEE Total → Primaire
+                if (ceeT !== null) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: 'Annuel',
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: 'Primaire',
+                        genre: 'Total',
+                        taux_reussite_cee: ceeT,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                // CEE Filles → Primaire
+                if (ceeF !== null) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: 'Annuel',
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: 'Primaire',
+                        genre: 'Filles',
+                        taux_reussite_cee: ceeF,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                // BEPC Total → Secondaire
+                if (bepcT !== null) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: 'Annuel',
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: 'Secondaire',
+                        genre: 'Total',
+                        taux_reussite_bepc: bepcT,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                // BEPC Filles → Secondaire
+                if (bepcF !== null) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: 'Annuel',
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: 'Secondaire',
+                        genre: 'Filles',
+                        taux_reussite_bepc: bepcF,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                // BAC Total → Secondaire
+                if (bacT !== null) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: 'Annuel',
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: 'Secondaire',
+                        genre: 'Total',
+                        taux_reussite_bac: bacT,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                // BAC Filles → Secondaire
+                if (bacF !== null) {
+                    dataToInsert.push({
+                        annee_scolaire: annee,
+                        periode: 'Annuel',
+                        region: region.nom,
+                        prefecture: prefecture.nom,
+                        zone: zone,
+                        niveau: 'Secondaire',
+                        genre: 'Filles',
+                        taux_reussite_bac: bacF,
+                        saisi_par: currentUser.nom
+                    });
+                }
+                
+                rowIndex++;
+            }
+        }
+    }
+    
+    if (dataToInsert.length === 0) {
+        alert('⚠️ Aucune donnée à enregistrer.\n\nRemplissez au moins un champ.');
+        return;
+    }
+    
+    var message = forcerMiseAJour 
+        ? '🔄 Vous allez mettre à jour ' + dataToInsert.length + ' lignes.\n\nContinuer ?' 
+        : '💾 Vous allez enregistrer ' + dataToInsert.length + ' nouvelles lignes.\n\nContinuer ?';
+    
+    if (!confirm(message)) {
+        return;
+    }
+    
+    try {
+        console.log('📤 Envoi de', dataToInsert.length, 'lignes vers Supabase...');
+        
+        // Insérer par lots de 50
+        var batchSize = 50;
+        var totalProcessed = 0;
+        
+        for (var i = 0; i < dataToInsert.length; i += batchSize) {
+            var batch = dataToInsert.slice(i, i + batchSize);
+            
+            console.log('📦 Envoi du lot', Math.floor(i/batchSize) + 1, ':', batch.length, 'lignes');
+            
+            const { data: processedData, error } = await supabase
+                .from('statistiques_educatives')
+                .upsert(batch, { 
+                    onConflict: 'annee_scolaire,periode,region,prefecture,zone,niveau,genre',
+                    ignoreDuplicates: false 
+                })
+                .select();
+            
+            if (error) {
+                console.error('❌ Erreur Supabase:', error);
+                throw error;
+            }
+            
+            console.log('✅ Lot traité avec succès');
+            
+            if (processedData) {
+                totalProcessed += processedData.length;
+                
+                // Mettre à jour le tableau local
+                for (var j = 0; j < processedData.length; j++) {
+                    var found = false;
+                    for (var k = 0; k < statistiquesData.length; k++) {
+                        if (statistiquesData[k].id === processedData[j].id) {
+                            statistiquesData[k] = processedData[j];
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        statistiquesData.unshift(processedData[j]);
+                    }
+                }
+            }
+        }
+        
+        var successMessage = forcerMiseAJour 
+            ? '✅ ' + totalProcessed + ' données mises à jour avec succès !'
+            : '✅ ' + totalProcessed + ' données enregistrées avec succès !';
+        
+        alert(successMessage);
+        closeModal();
+        render();
+        
+    } catch (error) {
+        console.error('❌ Erreur complète:', error);
+        alert('❌ Erreur : ' + error.message);
+    }
+}
         // ========== INITIALISATION ==========
 async function init() {
     await loadData();
@@ -4568,6 +5013,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
