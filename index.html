@@ -4163,9 +4163,9 @@ html += '<th>Niveau</th>';
 html += '<th>Genre</th>';
 html += '<th>Taux scolarisation (%)</th>';
 html += '<th>Taux abandon (%)</th>';
-html += '<th>Taux réussite CEE (%)</th>';
-html += '<th>Taux réussite BEPC (%)</th>';
-html += '<th>Taux réussite BAC (%)</th>';
+html += '<th>Réussite CEE (%)</th>';
+html += '<th>Réussite BEPC (%)</th>';
+html += '<th>Réussite BAC (%)</th>';
 html += '<th>Taux alphabétisation (%)</th>';
 html += '<th>Ratio élèves/enseignant</th>';
 html += '<th>Ratio élèves/classe</th>';
@@ -4188,7 +4188,7 @@ if (statistiquesData.length > 0) {
         html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
         html += '<td>' + (stat.taux_scolarisation !== null && stat.taux_scolarisation !== undefined ? stat.taux_scolarisation : '-') + '</td>';
         html += '<td>' + (stat.taux_abandon !== null && stat.taux_abandon !== undefined ? stat.taux_abandon : '-') + '</td>';
-        html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.reussite_cee : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.taux_reussite_cee : '-') + '</td>';
         html += '<td>' + (stat.taux_reussite_bepc !== null && stat.taux_reussite_bepc !== undefined ? stat.taux_reussite_bepc : '-') + '</td>';
         html += '<td>' + (stat.taux_reussite_bac !== null && stat.taux_reussite_bac !== undefined ? stat.taux_reussite_bac : '-') + '</td>';
         html += '<td>' + (stat.taux_alphabetisation !== null && stat.taux_alphabetisation !== undefined ? stat.taux_alphabetisation : '-') + '</td>';
@@ -4568,6 +4568,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
