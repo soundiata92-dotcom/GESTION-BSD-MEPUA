@@ -2895,6 +2895,11 @@ var periode = 'Annuel'; // Toujours "Annuel" pour Stats Générales
             : '✅ ' + totalProcessed + ' statistiques enregistrées avec succès !';
         
         alert(successMessage);
+        // Recharger les données depuis Supabase
+await loadData();
+closeModal();
+render();
+
         closeModal();
         render();
         
@@ -4852,6 +4857,11 @@ async function submitExamensData(forcerMiseAJour) {
             : '✅ ' + totalProcessed + ' données enregistrées avec succès !';
         
         alert(successMessage);
+        // Recharger les données depuis Supabase
+await loadData();
+
+closeModal();
+render();
         closeModal();
         render();
         
@@ -5207,6 +5217,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
