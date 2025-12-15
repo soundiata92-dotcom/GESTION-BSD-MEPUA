@@ -3155,25 +3155,44 @@ function appliquerFiltresStatistiques() {
     
     console.log('Données filtrées - Taux:', dataFiltreeTaux.length);
     console.log('Données filtrées - Ratios:', dataFiltreeRatios.length);
-   // Calculer les moyennes POUR LES TAUX (sauf réussite examens)
+ // Calculer les moyennes POUR LES TAUX (sauf réussite examens)
 var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation');
 var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
 var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
 
 // 🔥 CORRECTION : Réussite examens = année la plus récente uniquement
-var anneesExamens = {};
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    var exam = reussiteExamensData[i];
+console.log('=== CALCUL RÉUSSITE EXAMENS ===');
+console.log('Total statistiquesData:', statistiquesData.length);
+
+// Filtrer les données d'examens avec les mêmes critères que dataFiltreeTaux
+var dataExamensFiltrees = [];
+for (var i = 0; i < statistiquesData.length; i++) {
+    var stat = statistiquesData[i];
+    
+    // Vérifier qu'il y a au moins une donnée d'examen
+    if (stat.taux_reussite_cee === null && stat.taux_reussite_bepc === null && stat.taux_reussite_bac === null) {
+        continue;
+    }
     
     // Appliquer les mêmes filtres que dataFiltreeTaux
-    if (regionNom && exam.region !== regionNom) continue;
-    if (prefecture && exam.prefecture !== prefecture) continue;
-    if (zone && exam.zone !== zone) continue;
-    if (niveau && exam.niveau !== niveau) continue;
-    if (genre && exam.genre !== genre) continue;
+    if (periodesIncluses.indexOf(stat.periode) === -1) continue;
+    if (regionNom && stat.region !== regionNom) continue;
+    if (prefecture && stat.prefecture !== prefecture) continue;
+    if (zone && stat.zone !== zone) continue;
+    if (niveau && stat.niveau !== niveau) continue;
+    if (genre && stat.genre !== genre) continue;
     
-    // Stocker par année (garder la plus récente)
+    dataExamensFiltrees.push(stat);
+}
+
+console.log('Données examens filtrées:', dataExamensFiltrees.length);
+
+// Grouper par année et trouver la plus récente
+var anneesExamens = {};
+for (var i = 0; i < dataExamensFiltrees.length; i++) {
+    var exam = dataExamensFiltrees[i];
     var annee = exam.annee_scolaire;
+    
     if (!anneesExamens[annee]) {
         anneesExamens[annee] = [];
     }
@@ -3188,15 +3207,19 @@ for (var annee in anneesExamens) {
     }
 }
 
+console.log('Année la plus récente:', anneeMax);
+
 // Calculer les moyennes UNIQUEMENT sur l'année la plus récente
 var dataExamensRecente = anneeMax ? anneesExamens[anneeMax] : [];
+console.log('Nombre de données pour année', anneeMax, ':', dataExamensRecente.length);
+
 var moyenneReussiteCEE = calculerMoyenne(dataExamensRecente, 'taux_reussite_cee');
 var moyenneReussiteBEPC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bepc');
 var moyenneReussiteBAC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bac');
 
-console.log('📅 Année la plus récente pour examens:', anneeMax);
-console.log('📊 Nombre de données examens utilisées:', dataExamensRecente.length);
-    
+console.log('Moyennes calculées - CEE:', moyenneReussiteCEE, 'BEPC:', moyenneReussiteBEPC, 'BAC:', moyenneReussiteBAC);
+console.log('====================================');
+  
     // Calculer les moyennes POUR LES RATIOS/DISTANCE
     var moyenneRatioEnseignant = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_enseignant');
     var moyenneRatioClasse = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_classe');
@@ -4251,7 +4274,10 @@ html += '<div class="card card-yellow"><div class="card-title" style="color: #d9
 html += '<div class="card" style="background-color: #fce7f3; border-left: 4px solid #db2777;"><div class="card-title" style="color: #db2777;">Ratio élèves/enseignant</div><div class="card-value">' + moyenneRatioEnseignant + '</div></div>';
 html += '<div class="card" style="background-color: #e0e7ff; border-left: 4px solid #6366f1;"><div class="card-title" style="color: #6366f1;">Ratio élèves/classe</div><div class="card-value">' + moyenneRatioClasse + '</div></div>';
 html += '<div class="card" style="background-color: #fef3c7; border-left: 4px solid #f59e0b;"><div class="card-title" style="color: #f59e0b;">Distance moy/km</div><div class="card-value">' + moyenneDistance + '</div></div>';
-
+// 🔥 APPELER LES FILTRES AU CHARGEMENT
+setTimeout(function() {
+    appliquerFiltresStatistiques();
+}, 100);
 html += '</div>';
 
                // Tableau des données
@@ -5250,6 +5276,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
