@@ -2194,11 +2194,13 @@ var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">📊 Saisir les statistiques nationales</h2>';
     
     // ========== EN-TÊTE avec Année et Période ==========
-    html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; background-color: #f9fafb; padding: 16px; border-radius: 8px;">';
-    html += '<div class="form-group"><label>Année scolaire *</label><input type="text" id="global-annee" class="form-control" value="2025-2026" onchange="rechargerFormulaireStatistiques()"></div>';
-    html += '<div class="form-group"><label>Période *</label><select id="global-periode" class="form-control" onchange="rechargerFormulaireStatistiques()"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Annuel</option></select></div>';
-    html += '</div>';
-    
+   html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
+html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
+html += '<input type="text" id="global-annee" class="form-control" value="2025-2026" readonly style="background-color: #f9fafb; font-weight: bold;">';
+html += '</div>';
+html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Les statistiques générales sont saisies pour l\'année en cours uniquement.</p>';
+html += '</div>';
+
     // ========== FILTRES COMPLETS (5 filtres) ==========
     html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
     html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
@@ -2658,9 +2660,8 @@ function updatePreuveActivites() {
 
 async function submitStatistiquesTableau(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
-    
     var annee = document.getElementById('global-annee').value.trim();
-    var periode = document.getElementById('global-periode').value;
+var periode = 'Annuel'; // Toujours "Annuel" pour Stats Générales
     
     if (!annee || !periode) {
         alert('⚠️ Veuillez remplir année et période');
@@ -4060,23 +4061,10 @@ if (canSaisirAlphabetisation() || currentUser.role === 'chefdept') {
 }
 
 html += '</div></div>';
-    
-    // Filtres
-    // Filtres
+// Filtres
 html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
 html += '<h3 style="margin-bottom: 12px;">Filtres</h3>';
-html += '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;">';
-
-// 1️⃣ AFFICHER JUSQU'À (Période)
-html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Afficher jusqu\'à</label>';
-html += '<select id="filter-stats-periode" class="form-control" onchange="appliquerFiltresStatistiques()">';
-html += '<option value="TOUS">Toutes les périodes</option>';
-html += '<option value="T1">Jusqu\'à T1</option>';
-html += '<option value="T2">Jusqu\'à T2</option>';
-html += '<option value="T3">Jusqu\'à T3</option>';
-html += '<option value="T4">Jusqu\'à T4</option>';
-html += '<option value="Annuel">Année complète</option>';
-html += '</select></div>';
+html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
 
 // 2️⃣ RÉGION
 html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
@@ -4123,16 +4111,24 @@ html += '</div></div>';
              // Cartes d'indicateurs (9 cartes au total)
 html += '<div class="cards-fixed">';
 
-// Calculer les moyennes
-var moyenneScolarisation = calculerMoyenne(statistiquesData, 'taux_scolarisation');
-var moyenneAbandon = calculerMoyenne(statistiquesData, 'taux_abandon');
-var moyenneReussiteCEE = calculerMoyenne(statistiquesData, 'reussite_cee');
-var moyenneReussiteBEPC = calculerMoyenne(statistiquesData, 'reussite_bepc');
-var moyenneReussiteBAC = calculerMoyenne(statistiquesData, 'reussite_bac');
-var moyenneAlphabetisation = calculerMoyenne(statistiquesData, 'taux_alphabetisation');
-var moyenneRatioEnseignant = calculerMoyenne(statistiquesData, 'ratio_eleves_enseignant');
-var moyenneRatioClasse = calculerMoyenne(statistiquesData, 'ratio_eleves_classe');
-var moyenneDistance = calculerMoyenne(statistiquesData, 'distance_moyenne_ecole_domicile');
+// Filtrer SEULEMENT la session récente (2024-2025 = Session 2025) pour l'onglet Statistiques
+var dataSessionRecente = [];
+for (var i = 0; i < statistiquesData.length; i++) {
+    if (statistiquesData[i].annee_scolaire === '2024-2025') {
+        dataSessionRecente.push(statistiquesData[i]);
+    }
+}
+
+// Calculer les moyennes avec les données filtrées
+var moyenneScolarisation = calculerMoyenne(dataSessionRecente, 'taux_scolarisation');
+var moyenneReussiteCEE = calculerMoyenne(dataSessionRecente, 'taux_reussite_cee');
+var moyenneReussiteBEPC = calculerMoyenne(dataSessionRecente, 'taux_reussite_bepc');
+var moyenneReussiteBAC = calculerMoyenne(dataSessionRecente, 'taux_reussite_bac');
+var moyenneAbandon = calculerMoyenne(dataSessionRecente, 'taux_abandon');
+var moyenneAlphabetisation = calculerMoyenne(dataSessionRecente, 'taux_alphabetisation');
+var moyenneRatioEnseignant = calculerMoyenne(dataSessionRecente, 'ratio_eleves_enseignant');
+var moyenneRatioClasse = calculerMoyenne(dataSessionRecente, 'ratio_eleves_classe');
+var moyenneDistance = calculerMoyenne(dataSessionRecente, 'distance_moyenne_ecole_domicile');
 
 // 1. Taux de scolarisation (bleu)
 html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
@@ -4177,9 +4173,10 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 
 html += '</tr></thead><tbody>';
 
-if (statistiquesData.length > 0) {
-    for (var i = 0; i < statistiquesData.length; i++) {
-        var stat = statistiquesData[i];
+// Utiliser les données déjà filtrées (session 2025 uniquement)
+if (dataSessionRecente.length > 0) {
+    for (var i = 0; i < dataSessionRecente.length; i++) {
+        var stat = dataSessionRecente[i];
         html += '<tr>';
         html += '<td>' + stat.region + '</td>';
         html += '<td>' + stat.prefecture + '</td>';
@@ -4218,17 +4215,19 @@ function showReussiteExamensModal() {
     var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">✅ Saisir les taux de réussite aux examens</h2>';
     
-    // ========== EN-TÊTE avec Année scolaire ==========
-    html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
-    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
-    html += '<select id="examens-annee" class="form-control" style="font-size: 14px; padding: 10px;">';
-    html += '<option value="2025-2026">2025-2026 (année en cours)</option>';
-    html += '<option value="2024-2025">2024-2025 (année précédente)</option>';
-    html += '<option value="2023-2024">2023-2024 (il y a 2 ans)</option>';
-    html += '</select></div>';
-    html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Saisissez les données pour les 3 dernières années pour l\'analyse comparative.</p>';
-    html += '</div>';
-    
+    // ========== FILTRE SESSION (au lieu de Année scolaire) ==========
+html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
+html += '<div style="display: grid; grid-template-columns: 1fr; gap: 12px;">';
+html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Session des examens *</label>';
+html += '<select id="examens-session" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireExamens()">';
+html += '<option value="2024-2025">Session 2025 (année scolaire 2024-2025) - Récente</option>';
+html += '<option value="2023-2024">Session 2024 (année scolaire 2023-2024)</option>';
+html += '<option value="2022-2023">Session 2023 (année scolaire 2022-2023)</option>';
+html += '</select></div>';
+html += '</div>';
+html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Sélectionnez la session pour charger ou saisir les résultats. Les 3 sessions seront utilisées dans l\'onglet Analyse, mais seule la session récente (2025) apparaîtra dans l\'onglet Statistiques.</p>';
+html += '</div>';
+
     // ========== FILTRES (4 filtres : Région, Préfecture, Zone, Genre) ==========
     html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
     html += '<h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
@@ -4323,7 +4322,7 @@ function showReussiteExamensModal() {
     modalContainer.innerHTML = html;
     // ========== CHARGER LES DONNÉES EXISTANTES ==========
     setTimeout(async function() {
-        var annee = document.getElementById('examens-annee').value;
+        var annee = document.getElementById('examens-session').value;
         
         if (!annee) return;
         
@@ -4433,6 +4432,42 @@ function showReussiteExamensModal() {
             console.error('Erreur chargement:', error);
         }
     }, 500);
+}
+function rechargerFormulaireExamens() {
+    console.log('🔄 Rechargement du formulaire examens...');
+    
+    // Récupérer la session sélectionnée
+    var session = document.getElementById('examens-session') ? document.getElementById('examens-session').value : '2024-2025';
+    
+    // Récupérer les valeurs des filtres actuels
+    var filterRegion = document.getElementById('filter-examens-region') ? document.getElementById('filter-examens-region').value : '';
+    var filterPrefecture = document.getElementById('filter-examens-prefecture') ? document.getElementById('filter-examens-prefecture').value : '';
+    var filterZone = document.getElementById('filter-examens-zone') ? document.getElementById('filter-examens-zone').value : '';
+    var filterGenre = document.getElementById('filter-examens-genre') ? document.getElementById('filter-examens-genre').value : '';
+    
+    // Fermer et rouvrir le modal
+    showReussiteExamensModal();
+    
+    // Restaurer les valeurs après rechargement
+    setTimeout(function() {
+        if (document.getElementById('examens-session')) {
+            document.getElementById('examens-session').value = session;
+        }
+        if (document.getElementById('filter-examens-region')) {
+            document.getElementById('filter-examens-region').value = filterRegion;
+            updateExamensFilters();
+        }
+        if (document.getElementById('filter-examens-prefecture')) {
+            document.getElementById('filter-examens-prefecture').value = filterPrefecture;
+        }
+        if (document.getElementById('filter-examens-zone')) {
+            document.getElementById('filter-examens-zone').value = filterZone;
+        }
+        if (document.getElementById('filter-examens-genre')) {
+            document.getElementById('filter-examens-genre').value = filterGenre;
+            filterExamensRows();
+        }
+    }, 100);
 }
 
 function updateExamensFilters() {
@@ -4566,7 +4601,7 @@ function filterExamensRows() {
 async function submitExamensData(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
-    var annee = document.getElementById('examens-annee').value;
+   var annee = document.getElementById('examens-session').value;
     
     if (!annee) {
         alert('⚠️ Veuillez sélectionner une année');
@@ -5109,6 +5144,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
