@@ -4177,10 +4177,10 @@ html += '</div></div>';
              // Cartes d'indicateurs (9 cartes au total)
 html += '<div class="cards-fixed">';
 
-// Filtrer SEULEMENT la session récente (2024-2025 = Session 2025) pour l'onglet Statistiques
+// Filtrer pour inclure Stats Générales (2025-2026) ET Réussite Examens Session 2025 (2024-2025)
 var dataSessionRecente = [];
 for (var i = 0; i < statistiquesData.length; i++) {
-    if (statistiquesData[i].annee_scolaire === '2024-2025') {
+    if (statistiquesData[i].annee_scolaire === '2025-2026' || statistiquesData[i].annee_scolaire === '2024-2025') {
         dataSessionRecente.push(statistiquesData[i]);
     }
 }
@@ -5207,6 +5207,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
