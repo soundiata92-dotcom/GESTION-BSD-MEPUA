@@ -2379,12 +2379,13 @@ html += '</div>';
 setTimeout(async function() {
     var annee = document.getElementById('global-annee').value.trim();
     if (!annee) return;
+    
     try {
         const { data: existingData, error } = await supabase
             .from('statistiques_educatives')
             .select('*')
             .eq('annee_scolaire', annee)
-            .eq('periode', periode);
+            .eq('periode', 'Annuel');
         
         if (error) throw error;
         
@@ -5206,6 +5207,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
