@@ -3155,43 +3155,40 @@ function appliquerFiltresStatistiques() {
     
     console.log('Données filtrées - Taux:', dataFiltreeTaux.length);
     console.log('Données filtrées - Ratios:', dataFiltreeRatios.length);
- // Calculer les moyennes POUR LES TAUX (sauf réussite examens)
+// Calculer les moyennes POUR LES TAUX (sauf réussite examens)
 var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation');
 var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
 var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
 
-// 🔥 CORRECTION : Réussite examens = année la plus récente uniquement
-console.log('=== CALCUL RÉUSSITE EXAMENS ===');
-console.log('Total statistiquesData:', statistiquesData.length);
+// 🔥 CORRECTION : Réussite examens depuis la table dédiée reussite_examens
+console.log('=== CALCUL REUSSITE EXAMENS ===');
+console.log('Total reussiteExamensData:', reussiteExamensData.length);
 
-// Filtrer les données d'examens avec les mêmes critères que dataFiltreeTaux
+// Filtrer les données d'examens
 var dataExamensFiltrees = [];
-for (var i = 0; i < statistiquesData.length; i++) {
-    var stat = statistiquesData[i];
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    var exam = reussiteExamensData[i];
     
-    // Vérifier qu'il y a au moins une donnée d'examen
-    if (stat.taux_reussite_cee === null && stat.taux_reussite_bepc === null && stat.taux_reussite_bac === null) {
-        continue;
-    }
+    // Appliquer les mêmes filtres
+    if (regionNom && exam.region !== regionNom) continue;
+    if (prefecture && exam.prefecture !== prefecture) continue;
+    if (zone && exam.zone !== zone) continue;
+    if (niveau && exam.niveau !== niveau) continue;
+    if (genre && exam.genre !== genre) continue;
     
-    // Appliquer les mêmes filtres que dataFiltreeTaux
-    if (periodesIncluses.indexOf(stat.periode) === -1) continue;
-    if (regionNom && stat.region !== regionNom) continue;
-    if (prefecture && stat.prefecture !== prefecture) continue;
-    if (zone && stat.zone !== zone) continue;
-    if (niveau && stat.niveau !== niveau) continue;
-    if (genre && stat.genre !== genre) continue;
-    
-    dataExamensFiltrees.push(stat);
+    dataExamensFiltrees.push(exam);
 }
 
 console.log('Données examens filtrées:', dataExamensFiltrees.length);
 
-// Grouper par année et trouver la plus récente
+// Grouper par année de saisie (date_saisie) et trouver la plus récente
 var anneesExamens = {};
 for (var i = 0; i < dataExamensFiltrees.length; i++) {
     var exam = dataExamensFiltrees[i];
-    var annee = exam.annee_scolaire;
+    // Extraire l'année de la date_saisie (ex: "2025-12-15" -> 2025)
+    var annee = exam.date_saisie ? exam.date_saisie.substring(0, 4) : null;
+    
+    if (!annee) continue;
     
     if (!anneesExamens[annee]) {
         anneesExamens[annee] = [];
@@ -3202,7 +3199,7 @@ for (var i = 0; i < dataExamensFiltrees.length; i++) {
 // Trouver l'année la plus récente
 var anneeMax = null;
 for (var annee in anneesExamens) {
-    if (!anneeMax || annee > anneeMax) {
+    if (!anneeMax || parseInt(annee) > parseInt(anneeMax)) {
         anneeMax = annee;
     }
 }
@@ -3219,6 +3216,7 @@ var moyenneReussiteBAC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bac'
 
 console.log('Moyennes calculées - CEE:', moyenneReussiteCEE, 'BEPC:', moyenneReussiteBEPC, 'BAC:', moyenneReussiteBAC);
 console.log('====================================');
+
   
     // Calculer les moyennes POUR LES RATIOS/DISTANCE
     var moyenneRatioEnseignant = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_enseignant');
@@ -5276,6 +5274,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
