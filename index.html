@@ -2378,10 +2378,7 @@ html += '</div>';
   // ========== CHARGER LES DONNÉES EXISTANTES ==========
 setTimeout(async function() {
     var annee = document.getElementById('global-annee').value.trim();
-    var periode = document.getElementById('global-periode').value;
-    
-    if (!annee || !periode) return;
-    
+    if (!annee) return;
     try {
         const { data: existingData, error } = await supabase
             .from('statistiques_educatives')
@@ -5209,6 +5206,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
