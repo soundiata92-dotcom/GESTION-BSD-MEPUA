@@ -2151,10 +2151,16 @@ function updateFormFilters() {
 function filterTableRows() {
     var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var prefectureNom = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
+    var zoneFilter = document.getElementById('filter-zone') ? document.getElementById('filter-zone').value : '';
+    var niveauFilter = document.getElementById('filter-niveau') ? document.getElementById('filter-niveau').value : '';
+    var genreFilter = document.getElementById('filter-genre') ? document.getElementById('filter-genre').value : '';
     
     console.log('=== FILTRAGE ===');
-    console.log('Région ID sélectionnée:', regionId);
-    console.log('Préfecture sélectionnée:', prefectureNom);
+    console.log('Région ID:', regionId);
+    console.log('Préfecture:', prefectureNom);
+    console.log('Zone:', zoneFilter);
+    console.log('Niveau:', niveauFilter);
+    console.log('Genre:', genreFilter);
     
     var rows = document.querySelectorAll('.stat-row');
     console.log('Nombre de lignes trouvées:', rows.length);
@@ -2165,6 +2171,8 @@ function filterTableRows() {
         var row = rows[i];
         var rowRegion = row.getAttribute('data-region');
         var rowPrefecture = row.getAttribute('data-prefecture');
+        var rowZone = row.getAttribute('data-zone');
+        var rowNiveau = row.getAttribute('data-niveau');
         
         var showRow = true;
         
@@ -2178,10 +2186,70 @@ function filterTableRows() {
             showRow = false;
         }
         
+        // Filtre par zone
+        if (zoneFilter && zoneFilter !== '' && rowZone != zoneFilter) {
+            showRow = false;
+        }
+        
+        // Filtre par niveau
+        if (niveauFilter && niveauFilter !== '' && rowNiveau != niveauFilter) {
+            showRow = false;
+        }
+        
+        // Afficher/masquer la ligne
         row.style.display = showRow ? '' : 'none';
         
         if (showRow) {
             visibleCount++;
+        }
+    }
+    
+    // Gérer le filtre Genre (masquer/afficher colonnes)
+    var table = document.getElementById('stats-table');
+    if (table) {
+        var headers = table.querySelectorAll('thead th');
+        var allRows = table.querySelectorAll('tbody tr');
+        
+        if (genreFilter === 'Total') {
+            // Masquer colonnes Filles (indices peuvent varier, adapte si besoin)
+            for (var i = 0; i < allRows.length; i++) {
+                var cells = allRows[i].querySelectorAll('td');
+                // Colonnes Filles : abandon_filles, scolarisation_filles
+                if (cells.length >= 8) {
+                    cells[5].style.display = 'none'; // Abandon F
+                    cells[7].style.display = 'none'; // Scolarisation F
+                }
+            }
+            // Masquer en-têtes correspondants
+            if (headers.length >= 8) {
+                headers[5].style.display = 'none'; // Abandon F (%)
+                headers[7].style.display = 'none'; // Scolarisa. F (%)
+            }
+        } else if (genreFilter === 'Filles') {
+            // Masquer colonnes Total
+            for (var i = 0; i < allRows.length; i++) {
+                var cells = allRows[i].querySelectorAll('td');
+                if (cells.length >= 8) {
+                    cells[4].style.display = 'none'; // Abandon T
+                    cells[6].style.display = 'none'; // Scolarisation T
+                }
+            }
+            // Masquer en-têtes
+            if (headers.length >= 8) {
+                headers[4].style.display = 'none'; // Abandon T (%)
+                headers[6].style.display = 'none'; // Scolarisa. T (%)
+            }
+        } else {
+            // Afficher toutes les colonnes
+            for (var i = 0; i < allRows.length; i++) {
+                var cells = allRows[i].querySelectorAll('td');
+                for (var j = 0; j < cells.length; j++) {
+                    cells[j].style.display = '';
+                }
+            }
+            for (var j = 0; j < headers.length; j++) {
+                headers[j].style.display = '';
+            }
         }
     }
     
@@ -2196,7 +2264,7 @@ var modalContainer = document.getElementById('modal-container');
     // ========== EN-TÊTE avec Année et Période ==========
    html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
 html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
-html += '<input type="text" id="global-annee" class="form-control" value="2025-2026" readonly style="background-color: #f9fafb; font-weight: bold;">';
+html += '<input type="text" id="global-annee" class="form-control" value="2025-2026" style="font-weight: bold;">';
 html += '</div>';
 html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Les statistiques générales sont saisies pour l\'année en cours uniquement.</p>';
 html += '</div>';
@@ -4217,15 +4285,12 @@ function showReussiteExamensModal() {
     
     // ========== FILTRE SESSION (au lieu de Année scolaire) ==========
 html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
-html += '<div style="display: grid; grid-template-columns: 1fr; gap: 12px;">';
 html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Session des examens *</label>';
 html += '<select id="examens-session" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireExamens()">';
-html += '<option value="2024-2025">Session 2025 (année scolaire 2024-2025) - Récente</option>';
-html += '<option value="2023-2024">Session 2024 (année scolaire 2023-2024)</option>';
-html += '<option value="2022-2023">Session 2023 (année scolaire 2022-2023)</option>';
+html += '<option value="2024-2025">Session 2025</option>';
+html += '<option value="2023-2024">Session 2024</option>';
+html += '<option value="2022-2023">Session 2023</option>';
 html += '</select></div>';
-html += '</div>';
-html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Sélectionnez la session pour charger ou saisir les résultats. Les 3 sessions seront utilisées dans l\'onglet Analyse, mais seule la session récente (2025) apparaîtra dans l\'onglet Statistiques.</p>';
 html += '</div>';
 
     // ========== FILTRES (4 filtres : Région, Préfecture, Zone, Genre) ==========
@@ -5144,6 +5209,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
