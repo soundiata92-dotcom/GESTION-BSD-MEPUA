@@ -3155,14 +3155,47 @@ function appliquerFiltresStatistiques() {
     
     console.log('Données filtrées - Taux:', dataFiltreeTaux.length);
     console.log('Données filtrées - Ratios:', dataFiltreeRatios.length);
+   // Calculer les moyennes POUR LES TAUX (sauf réussite examens)
+var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation');
+var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
+var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
+
+// 🔥 CORRECTION : Réussite examens = année la plus récente uniquement
+var anneesExamens = {};
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    var exam = reussiteExamensData[i];
     
-    // Calculer les moyennes POUR LES TAUX
-    var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation');
-    var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
-    var moyenneReussiteCEE = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_cee');
-    var moyenneReussiteBEPC = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_bepc');
-    var moyenneReussiteBAC = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_bac');
-    var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
+    // Appliquer les mêmes filtres que dataFiltreeTaux
+    if (regionNom && exam.region !== regionNom) continue;
+    if (prefecture && exam.prefecture !== prefecture) continue;
+    if (zone && exam.zone !== zone) continue;
+    if (niveau && exam.niveau !== niveau) continue;
+    if (genre && exam.genre !== genre) continue;
+    
+    // Stocker par année (garder la plus récente)
+    var annee = exam.annee_scolaire;
+    if (!anneesExamens[annee]) {
+        anneesExamens[annee] = [];
+    }
+    anneesExamens[annee].push(exam);
+}
+
+// Trouver l'année la plus récente
+var anneeMax = null;
+for (var annee in anneesExamens) {
+    if (!anneeMax || annee > anneeMax) {
+        anneeMax = annee;
+    }
+}
+
+// Calculer les moyennes UNIQUEMENT sur l'année la plus récente
+var dataExamensRecente = anneeMax ? anneesExamens[anneeMax] : [];
+var moyenneReussiteCEE = calculerMoyenne(dataExamensRecente, 'taux_reussite_cee');
+var moyenneReussiteBEPC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bepc');
+var moyenneReussiteBAC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bac');
+
+console.log('📅 Année la plus récente pour examens:', anneeMax);
+console.log('📊 Nombre de données examens utilisées:', dataExamensRecente.length);
     
     // Calculer les moyennes POUR LES RATIOS/DISTANCE
     var moyenneRatioEnseignant = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_enseignant');
@@ -5217,6 +5250,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
