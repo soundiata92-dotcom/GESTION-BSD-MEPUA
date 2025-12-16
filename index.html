@@ -4298,26 +4298,6 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 html += '</tr></thead><tbody>';
 
 // Utiliser les données déjà filtrées (session 2025 uniquement)
-// 🔥 Créer un dictionnaire pour matcher les données examens (session la plus récente uniquement)
-var sessionMax = null;
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    if (!sessionMax || reussiteExamensData[i].session > sessionMax) {
-        sessionMax = reussiteExamensData[i].session;
-    }
-}
-
-var examensDict = {};
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    var exam = reussiteExamensData[i];
-    
-    // Filtrer uniquement la session la plus récente
-    if (exam.session !== sessionMax) continue;
-    
-    var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau + '|' + exam.genre;
-    examensDict[key] = exam;
-}
-
-console.log('📊 Dictionnaire examens (session ' + sessionMax + '):', Object.keys(examensDict).length, 'entrées');
 if (dataSessionRecente.length > 0) {
     for (var i = 0; i < dataSessionRecente.length; i++) {
         var stat = dataSessionRecente[i];
@@ -4329,13 +4309,9 @@ if (dataSessionRecente.length > 0) {
         html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
         html += '<td>' + (stat.taux_scolarisation !== null && stat.taux_scolarisation !== undefined ? stat.taux_scolarisation : '-') + '</td>';
         html += '<td>' + (stat.taux_abandon !== null && stat.taux_abandon !== undefined ? stat.taux_abandon : '-') + '</td>';
-        // 🔥 NOUVEAU : Chercher les données examens dans le dictionnaire
-var keyExamen = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau + '|' + stat.genre;
-var examen = examensDict[keyExamen];
-
-html += '<td>' + (examen && examen.taux_reussite_cee !== null && examen.taux_reussite_cee !== undefined ? examen.taux_reussite_cee + '%' : '-') + '</td>';
-html += '<td>' + (examen && examen.taux_reussite_bepc !== null && examen.taux_reussite_bepc !== undefined ? examen.taux_reussite_bepc + '%' : '-') + '</td>';
-html += '<td>' + (examen && examen.taux_reussite_bac !== null && examen.taux_reussite_bac !== undefined ? examen.taux_reussite_bac + '%' : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.taux_reussite_cee : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_bepc !== null && stat.taux_reussite_bepc !== undefined ? stat.taux_reussite_bepc : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_bac !== null && stat.taux_reussite_bac !== undefined ? stat.taux_reussite_bac : '-') + '</td>';
         html += '<td>' + (stat.taux_alphabetisation !== null && stat.taux_alphabetisation !== undefined ? stat.taux_alphabetisation : '-') + '</td>';
         html += '<td>' + (stat.ratio_eleves_enseignant !== null && stat.ratio_eleves_enseignant !== undefined ? stat.ratio_eleves_enseignant : '-') + '</td>';
         html += '<td>' + (stat.ratio_eleves_classe !== null && stat.ratio_eleves_classe !== undefined ? stat.ratio_eleves_classe : '-') + '</td>';
@@ -5139,8 +5115,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
-
 
 
 
