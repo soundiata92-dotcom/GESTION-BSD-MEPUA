@@ -4355,7 +4355,7 @@ function showReussiteExamensModal() {
     
     // Session
     html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📝 Session *</label>';
-    html += '<select id="examens-session" class="form-control" style="font-weight: bold;">';
+   html += '<select id="examens-session" class="form-control" style="font-weight: bold;" onchange="rechargerFormulaireExamens()">';
     html += '<option value="2023">Session 2023</option>';
     html += '<option value="2024">Session 2024</option>';
     html += '<option value="2025" selected>Session 2025</option>';
@@ -4546,6 +4546,8 @@ async function loadExistingExamensData() {
     
     if (!annee || !session) return;
     
+    console.log('📥 Chargement des données pour', annee, 'Session', session);
+    
     try {
         const { data: existingData, error } = await supabase
             .from('reussite_examens')
@@ -4555,9 +4557,9 @@ async function loadExistingExamensData() {
         
         if (error) throw error;
         
+        console.log('Données trouvées:', existingData ? existingData.length : 0);
+        
         if (existingData && existingData.length > 0) {
-            console.log('📥 Chargement de ' + existingData.length + ' données examens existantes...');
-            
             // Remplir les champs
             for (var i = 0; i < existingData.length; i++) {
                 var stat = existingData[i];
@@ -4588,7 +4590,9 @@ async function loadExistingExamensData() {
                             if (input) {
                                 input.value = stat.taux_reussite_cee;
                                 input.style.background = '#e8f5e9';
+                                input.style.borderColor = '#4caf50';
                                 input.disabled = true;
+                                input.setAttribute('data-saved', 'true');
                             }
                         }
                         
@@ -4597,7 +4601,9 @@ async function loadExistingExamensData() {
                             if (input) {
                                 input.value = stat.taux_reussite_bepc;
                                 input.style.background = '#e8f5e9';
+                                input.style.borderColor = '#4caf50';
                                 input.disabled = true;
+                                input.setAttribute('data-saved', 'true');
                             }
                         }
                         
@@ -4606,16 +4612,37 @@ async function loadExistingExamensData() {
                             if (input) {
                                 input.value = stat.taux_reussite_bac;
                                 input.style.background = '#e8f5e9';
+                                input.style.borderColor = '#4caf50';
                                 input.disabled = true;
+                                input.setAttribute('data-saved', 'true');
                             }
                         }
                     }
                 }
             }
+            
+            alert('📥 ' + existingData.length + ' données chargées pour Session ' + session);
+        } else {
+            alert('ℹ️ Aucune donnée existante pour Session ' + session);
         }
     } catch (error) {
         console.error('Erreur chargement examens:', error);
     }
+}
+
+function rechargerFormulaireExamens() {
+    console.log('🔄 Rechargement du formulaire examens...');
+    
+    // Réinitialiser tous les champs
+    var inputs = document.querySelectorAll('#examens-table input[type="number"]');
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].value = '';
+        inputs[i].style.background = '';
+        inputs[i].disabled = false;
+    }
+    
+    // Recharger les données de la nouvelle session
+    loadExistingExamensData();
 }
 
 // Soumettre les données
@@ -5092,6 +5119,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
