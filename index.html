@@ -3160,16 +3160,16 @@ var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation'
 var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
 var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
 
-// 🔥 CORRECTION : Réussite examens depuis la table dédiée reussite_examens
+// 🔥 CORRECTION : Réussite examens depuis reussiteExamensData - SESSION LA PLUS RÉCENTE
 console.log('=== CALCUL REUSSITE EXAMENS ===');
 console.log('Total reussiteExamensData:', reussiteExamensData.length);
 
-// Filtrer les données d'examens
+// Filtrer les données d'examens avec les mêmes critères
 var dataExamensFiltrees = [];
 for (var i = 0; i < reussiteExamensData.length; i++) {
     var exam = reussiteExamensData[i];
     
-    // Appliquer les mêmes filtres
+    // Appliquer les filtres
     if (regionNom && exam.region !== regionNom) continue;
     if (prefecture && exam.prefecture !== prefecture) continue;
     if (zone && exam.zone !== zone) continue;
@@ -3181,34 +3181,31 @@ for (var i = 0; i < reussiteExamensData.length; i++) {
 
 console.log('Données examens filtrées:', dataExamensFiltrees.length);
 
-// Grouper par année de saisie (date_saisie) et trouver la plus récente
-var anneesExamens = {};
+// Grouper par session et trouver la plus récente
+var sessions = {};
 for (var i = 0; i < dataExamensFiltrees.length; i++) {
     var exam = dataExamensFiltrees[i];
-    // Extraire l'année de la date_saisie (ex: "2025-12-15" -> 2025)
-    var annee = exam.date_saisie ? exam.date_saisie.substring(0, 4) : null;
+    var sessionNum = exam.session;
     
-    if (!annee) continue;
-    
-    if (!anneesExamens[annee]) {
-        anneesExamens[annee] = [];
+    if (!sessions[sessionNum]) {
+        sessions[sessionNum] = [];
     }
-    anneesExamens[annee].push(exam);
+    sessions[sessionNum].push(exam);
 }
 
-// Trouver l'année la plus récente
-var anneeMax = null;
-for (var annee in anneesExamens) {
-    if (!anneeMax || parseInt(annee) > parseInt(anneeMax)) {
-        anneeMax = annee;
+// Trouver la session la plus récente
+var sessionMax = null;
+for (var session in sessions) {
+    if (!sessionMax || parseInt(session) > parseInt(sessionMax)) {
+        sessionMax = session;
     }
 }
 
-console.log('Année la plus récente:', anneeMax);
+console.log('Session la plus récente:', sessionMax);
 
-// Calculer les moyennes UNIQUEMENT sur l'année la plus récente
-var dataExamensRecente = anneeMax ? anneesExamens[anneeMax] : [];
-console.log('Nombre de données pour année', anneeMax, ':', dataExamensRecente.length);
+// Calculer les moyennes UNIQUEMENT sur la session la plus récente
+var dataExamensRecente = sessionMax ? sessions[sessionMax] : [];
+console.log('Nombre de données pour session', sessionMax, ':', dataExamensRecente.length);
 
 var moyenneReussiteCEE = calculerMoyenne(dataExamensRecente, 'taux_reussite_cee');
 var moyenneReussiteBEPC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bepc');
@@ -3217,7 +3214,6 @@ var moyenneReussiteBAC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bac'
 console.log('Moyennes calculées - CEE:', moyenneReussiteCEE, 'BEPC:', moyenneReussiteBEPC, 'BAC:', moyenneReussiteBAC);
 console.log('====================================');
 
-  
     // Calculer les moyennes POUR LES RATIOS/DISTANCE
     var moyenneRatioEnseignant = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_enseignant');
     var moyenneRatioClasse = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_classe');
@@ -5119,6 +5115,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
