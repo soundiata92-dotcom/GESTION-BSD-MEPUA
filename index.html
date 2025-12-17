@@ -93,7 +93,7 @@
     </style>
     <!-- ========== CONNEXION SUPABASE ========== -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-      <script>
+    <script>
         const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -4299,48 +4299,8 @@ html += '</tr></thead><tbody>';
 
 // Utiliser les données déjà filtrées (session 2025 uniquement)
 if (dataSessionRecente.length > 0) {
-   // 🔥 Trouver la session la plus récente
-var sessionMax = null;
-for (var j = 0; j < reussiteExamensData.length; j++) {
-    if (!sessionMax || reussiteExamensData[j].session > sessionMax) {
-        sessionMax = reussiteExamensData[j].session;
-    }
-}
-
-console.log('📊 Session max:', sessionMax);
-
-// Créer un dictionnaire pour la session max uniquement
-var examensDict = {};
-for (var j = 0; j < reussiteExamensData.length; j++) {
-    var exam = reussiteExamensData[j];
-    if (exam.session !== sessionMax) continue;
-    
-    // 🔥 MAPPER : College/Lycee → Secondaire
-    var niveauMapped = exam.niveau;
-    if (exam.niveau === 'College' || exam.niveau === 'Lycee') {
-        niveauMapped = 'Secondaire';
-    }
-    
-    var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + niveauMapped + '|' + exam.genre;
-    
-    // Stocker les 3 examens dans la même clé "Secondaire"
-    if (!examensDict[key]) {
-        examensDict[key] = {};
-    }
-    
-    // Garder les valeurs CEE, BEPC, BAC séparément
-    if (exam.taux_reussite_cee !== null) examensDict[key].taux_reussite_cee = exam.taux_reussite_cee;
-    if (exam.taux_reussite_bepc !== null) examensDict[key].taux_reussite_bepc = exam.taux_reussite_bepc;
-    if (exam.taux_reussite_bac !== null) examensDict[key].taux_reussite_bac = exam.taux_reussite_bac;
-}
-
-// Boucle d'affichage
-for (var i = 0; i < dataSessionRecente.length; i++) {
-    var stat = dataSessionRecente[i];
-    
-    // Chercher l'examen correspondant
-    var keyExamen = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau + '|' + stat.genre;
-    var examen = examensDict[keyExamen];
+    for (var i = 0; i < dataSessionRecente.length; i++) {
+        var stat = dataSessionRecente[i];
         html += '<tr>';
         html += '<td>' + stat.region + '</td>';
         html += '<td>' + stat.prefecture + '</td>';
@@ -4349,9 +4309,9 @@ for (var i = 0; i < dataSessionRecente.length; i++) {
         html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
         html += '<td>' + (stat.taux_scolarisation !== null && stat.taux_scolarisation !== undefined ? stat.taux_scolarisation : '-') + '</td>';
         html += '<td>' + (stat.taux_abandon !== null && stat.taux_abandon !== undefined ? stat.taux_abandon : '-') + '</td>';
-        html += '<td>' + (examen && examen.taux_reussite_cee !== null ? examen.taux_reussite_cee + '%' : '-') + '</td>';
-        html += '<td>' + (examen && examen.taux_reussite_bepc !== null ? examen.taux_reussite_bepc + '%' : '-') + '</td>';
-        html += '<td>' + (examen && examen.taux_reussite_bac !== null ? examen.taux_reussite_bac + '%' : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.taux_reussite_cee : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_bepc !== null && stat.taux_reussite_bepc !== undefined ? stat.taux_reussite_bepc : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_bac !== null && stat.taux_reussite_bac !== undefined ? stat.taux_reussite_bac : '-') + '</td>';
         html += '<td>' + (stat.taux_alphabetisation !== null && stat.taux_alphabetisation !== undefined ? stat.taux_alphabetisation : '-') + '</td>';
         html += '<td>' + (stat.ratio_eleves_enseignant !== null && stat.ratio_eleves_enseignant !== undefined ? stat.ratio_eleves_enseignant : '-') + '</td>';
         html += '<td>' + (stat.ratio_eleves_classe !== null && stat.ratio_eleves_classe !== undefined ? stat.ratio_eleves_classe : '-') + '</td>';
@@ -5155,10 +5115,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
-
-
-
 
 
 
