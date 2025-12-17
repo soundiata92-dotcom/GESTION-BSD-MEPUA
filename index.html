@@ -91,35 +91,18 @@
         .fichier-item { padding: 8px; background-color: #f3f4f6; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .fichier-item:hover { background-color: #e5e7eb; }
     </style>
-   <!-- ========== CONNEXION SUPABASE ========== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    // Configuration Supabase
-    const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
-    
-    // Initialisation Supabase (UNE SEULE FOIS)
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    // Debug
-    console.log('✅ Supabase initialisé');
-    console.log('Type de supabase.from:', typeof supabase.from);
-    
-    // Test de connexion
-    supabase.from('activites').select('*').limit(1).then(res => {
-        if (res.error) {
-            console.error('❌ Erreur connexion:', res.error.message);
-        } else {
-            console.log('✅ Connexion OK -', res.data.length, 'ligne(s) trouvée(s)');
-        }
-    });
-    
-    // ================================================
-    // SYSTÈME DE PERMISSIONS FLEXIBLE
-    // ================================================
-    
-    // Cache des permissions (évite de recharger à chaque fois)
-    var permissionsCache = {};
+    <!-- ========== CONNEXION SUPABASE ========== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ================================================
+// SYSTÈME DE PERMISSIONS FLEXIBLE
+// ================================================
+
+// Cache des permissions (évite de recharger à chaque fois)
+var permissionsCache = {};
 
 // Charger les permissions depuis Supabase
 async function loadPermissions() {
@@ -3172,69 +3155,15 @@ function appliquerFiltresStatistiques() {
     
     console.log('Données filtrées - Taux:', dataFiltreeTaux.length);
     console.log('Données filtrées - Ratios:', dataFiltreeRatios.length);
-// Calculer les moyennes POUR LES TAUX (sauf réussite examens)
-var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation');
-var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
-var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
-
-// 🔥 CORRECTION : Réussite examens depuis la table dédiée reussite_examens
-console.log('=== CALCUL REUSSITE EXAMENS ===');
-console.log('Total reussiteExamensData:', reussiteExamensData.length);
-
-// Filtrer les données d'examens
-var dataExamensFiltrees = [];
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    var exam = reussiteExamensData[i];
     
-    // Appliquer les mêmes filtres
-    if (regionNom && exam.region !== regionNom) continue;
-    if (prefecture && exam.prefecture !== prefecture) continue;
-    if (zone && exam.zone !== zone) continue;
-    if (niveau && exam.niveau !== niveau) continue;
-    if (genre && exam.genre !== genre) continue;
+    // Calculer les moyennes POUR LES TAUX
+    var moyenneScolarisation = calculerMoyenne(dataFiltreeTaux, 'taux_scolarisation');
+    var moyenneAbandon = calculerMoyenne(dataFiltreeTaux, 'taux_abandon');
+    var moyenneReussiteCEE = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_cee');
+    var moyenneReussiteBEPC = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_bepc');
+    var moyenneReussiteBAC = calculerMoyenne(dataFiltreeTaux, 'taux_reussite_bac');
+    var moyenneAlphabetisation = calculerMoyenne(dataFiltreeTaux, 'taux_alphabetisation');
     
-    dataExamensFiltrees.push(exam);
-}
-
-console.log('Données examens filtrées:', dataExamensFiltrees.length);
-
-// Grouper par année de saisie (date_saisie) et trouver la plus récente
-var anneesExamens = {};
-for (var i = 0; i < dataExamensFiltrees.length; i++) {
-    var exam = dataExamensFiltrees[i];
-    // Extraire l'année de la date_saisie (ex: "2025-12-15" -> 2025)
-    var annee = exam.date_saisie ? exam.date_saisie.substring(0, 4) : null;
-    
-    if (!annee) continue;
-    
-    if (!anneesExamens[annee]) {
-        anneesExamens[annee] = [];
-    }
-    anneesExamens[annee].push(exam);
-}
-
-// Trouver l'année la plus récente
-var anneeMax = null;
-for (var annee in anneesExamens) {
-    if (!anneeMax || parseInt(annee) > parseInt(anneeMax)) {
-        anneeMax = annee;
-    }
-}
-
-console.log('Année la plus récente:', anneeMax);
-
-// Calculer les moyennes UNIQUEMENT sur l'année la plus récente
-var dataExamensRecente = anneeMax ? anneesExamens[anneeMax] : [];
-console.log('Nombre de données pour année', anneeMax, ':', dataExamensRecente.length);
-
-var moyenneReussiteCEE = calculerMoyenne(dataExamensRecente, 'taux_reussite_cee');
-var moyenneReussiteBEPC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bepc');
-var moyenneReussiteBAC = calculerMoyenne(dataExamensRecente, 'taux_reussite_bac');
-
-console.log('Moyennes calculées - CEE:', moyenneReussiteCEE, 'BEPC:', moyenneReussiteBEPC, 'BAC:', moyenneReussiteBAC);
-console.log('====================================');
-
-  
     // Calculer les moyennes POUR LES RATIOS/DISTANCE
     var moyenneRatioEnseignant = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_enseignant');
     var moyenneRatioClasse = calculerMoyenne(dataFiltreeRatios, 'ratio_eleves_classe');
@@ -4289,10 +4218,7 @@ html += '<div class="card card-yellow"><div class="card-title" style="color: #d9
 html += '<div class="card" style="background-color: #fce7f3; border-left: 4px solid #db2777;"><div class="card-title" style="color: #db2777;">Ratio élèves/enseignant</div><div class="card-value">' + moyenneRatioEnseignant + '</div></div>';
 html += '<div class="card" style="background-color: #e0e7ff; border-left: 4px solid #6366f1;"><div class="card-title" style="color: #6366f1;">Ratio élèves/classe</div><div class="card-value">' + moyenneRatioClasse + '</div></div>';
 html += '<div class="card" style="background-color: #fef3c7; border-left: 4px solid #f59e0b;"><div class="card-title" style="color: #f59e0b;">Distance moy/km</div><div class="card-value">' + moyenneDistance + '</div></div>';
-// 🔥 APPELER LES FILTRES AU CHARGEMENT
-setTimeout(function() {
-    appliquerFiltresStatistiques();
-}, 100);
+
 html += '</div>';
 
                // Tableau des données
@@ -5291,10 +5217,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
-
-
-
 
 
 
