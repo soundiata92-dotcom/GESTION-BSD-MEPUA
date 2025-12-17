@@ -91,26 +91,35 @@
         .fichier-item { padding: 8px; background-color: #f3f4f6; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .fichier-item:hover { background-color: #e5e7eb; }
     </style>
-    <!-- ========== CONNEXION SUPABASE ========== -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        // 🔥 DEBUG
-console.log('===== SUPABASE INIT =====');
-console.log('URL:', SUPABASE_URL);
-console.log('KEY définie:', SUPABASE_KEY ? 'OUI (' + SUPABASE_KEY.length + ' chars)' : 'NON');
-console.log('window.supabase:', typeof window.supabase);
-console.log('supabase.from:', typeof supabase.from);
-console.log('========================');
-
-        // ================================================
-// SYSTÈME DE PERMISSIONS FLEXIBLE
-// ================================================
-
-// Cache des permissions (évite de recharger à chaque fois)
-var permissionsCache = {};
+   <!-- ========== CONNEXION SUPABASE ========== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // Configuration Supabase
+    const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
+    
+    // Initialisation Supabase (UNE SEULE FOIS)
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Debug
+    console.log('✅ Supabase initialisé');
+    console.log('Type de supabase.from:', typeof supabase.from);
+    
+    // Test de connexion
+    supabase.from('activites').select('*').limit(1).then(res => {
+        if (res.error) {
+            console.error('❌ Erreur connexion:', res.error.message);
+        } else {
+            console.log('✅ Connexion OK -', res.data.length, 'ligne(s) trouvée(s)');
+        }
+    });
+    
+    // ================================================
+    // SYSTÈME DE PERMISSIONS FLEXIBLE
+    // ================================================
+    
+    // Cache des permissions (évite de recharger à chaque fois)
+    var permissionsCache = {};
 
 // Charger les permissions depuis Supabase
 async function loadPermissions() {
@@ -5282,6 +5291,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
