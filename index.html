@@ -4313,10 +4313,25 @@ console.log('📊 Session max:', sessionMax);
 var examensDict = {};
 for (var j = 0; j < reussiteExamensData.length; j++) {
     var exam = reussiteExamensData[j];
-    if (exam.session !== sessionMax) continue; // Ignorer les anciennes sessions
+    if (exam.session !== sessionMax) continue;
     
-    var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau + '|' + exam.genre;
-    examensDict[key] = exam;
+    // 🔥 MAPPER : College/Lycee → Secondaire
+    var niveauMapped = exam.niveau;
+    if (exam.niveau === 'College' || exam.niveau === 'Lycee') {
+        niveauMapped = 'Secondaire';
+    }
+    
+    var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + niveauMapped + '|' + exam.genre;
+    
+    // Stocker les 3 examens dans la même clé "Secondaire"
+    if (!examensDict[key]) {
+        examensDict[key] = {};
+    }
+    
+    // Garder les valeurs CEE, BEPC, BAC séparément
+    if (exam.taux_reussite_cee !== null) examensDict[key].taux_reussite_cee = exam.taux_reussite_cee;
+    if (exam.taux_reussite_bepc !== null) examensDict[key].taux_reussite_bepc = exam.taux_reussite_bepc;
+    if (exam.taux_reussite_bac !== null) examensDict[key].taux_reussite_bac = exam.taux_reussite_bac;
 }
 
 // Boucle d'affichage
@@ -5140,6 +5155,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
