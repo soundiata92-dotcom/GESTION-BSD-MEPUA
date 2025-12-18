@@ -126,82 +126,6 @@
             }
         });
 </script>
-
-
-        // ================================================
-// SYSTÈME DE PERMISSIONS FLEXIBLE
-// ================================================
-
-// Cache des permissions (évite de recharger à chaque fois)
-var permissionsCache = {};
-
-// Charger les permissions depuis Supabase
-async function loadPermissions() {
-    try {
-        const { data, error } = await supabase
-            .from('permissions_config')
-            .select('*')
-            .eq('enabled', true);
-        
-        if (error) throw error;
-        
-        // Organiser par rôle/resource/action
-        permissionsCache = {};
-        for (var i = 0; i < data.length; i++) {
-            var perm = data[i];
-            var key = perm.role + ':' + perm.resource + ':' + perm.action;
-            permissionsCache[key] = {
-                enabled: perm.enabled,
-                condition: perm.condition ? JSON.parse(perm.condition) : null
-            };
-        }
-        
-        console.log('✅ Permissions chargées:', Object.keys(permissionsCache).length);
-        
-    } catch (error) {
-        console.error('❌ Erreur chargement permissions:', error);
-    }
-}
-
-// Vérifier si l'utilisateur a une permission
-function hasPermission(resource, action, context) {
-    if (!currentUser) return false;
-    
-    var key = currentUser.role + ':' + resource + ':' + action;
-    var perm = permissionsCache[key];
-    
-    if (!perm || !perm.enabled) {
-        return false;
-    }
-    
-    // Vérifier les conditions supplémentaires
-    if (perm.condition && context) {
-        if (perm.condition.service === 'own' && context.service !== currentUser.service) {
-            return false;
-        }
-        if (perm.condition.valide === false && context.valide === true) {
-            return false;
-        }
-    }
-    
-    return true;
-}
-
-// Obtenir un message d'erreur personnalisé
-function getPermissionErrorMessage(resource, action) {
-    var messages = {
-        'activites:create': 'Vous n\'avez pas le droit d\'ajouter des activités',
-        'activites:update': 'Vous ne pouvez pas modifier cette activité',
-        'activites:delete': 'Vous ne pouvez pas supprimer cette activité',
-        'commentaires:create': 'Vous ne pouvez pas ajouter de commentaires',
-        'commentaires:update': 'Vous ne pouvez pas modifier ce commentaire',
-        'commentaires:delete': 'Vous ne pouvez pas supprimer ce commentaire'
-    };
-    
-    return messages[resource + ':' + action] || 'Action non autorisée';
-}
-
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
@@ -5284,6 +5208,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
