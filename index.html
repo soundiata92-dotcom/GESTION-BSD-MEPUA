@@ -415,13 +415,6 @@ async function toggle(activityId, field) {
     }
 }
 
-        async function saveData() {
-    // CETTE FONCTION NE DEVRAIT PLUS ÊTRE UTILISÉE
-    // Les mises à jour se font directement dans toggle(), validateActivity(), etc.
-    console.warn('⚠️ saveData() appelée - cette fonction est obsolète');
-}
-
-
         async function saveCommentairesEtPreuves() {
             try {
                 // Supprimer tous les commentaires existants
@@ -5256,6 +5249,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
