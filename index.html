@@ -92,11 +92,26 @@
         .fichier-item:hover { background-color: #e5e7eb; }
     </style>
     <!-- ========== CONNEXION SUPABASE ========== -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
+    
+    // ✅ VÉRIFIER QUE SUPABASE EST CHARGÉ
+    if (typeof window.supabase === 'undefined') {
+        console.error('❌ ERREUR CRITIQUE : La bibliothèque Supabase n\'est pas chargée !');
+        alert('❌ Erreur : Impossible de charger Supabase. Vérifiez votre connexion internet.');
+    } else {
+        console.log('✅ Bibliothèque Supabase chargée');
+    }
+    
+    // ✅ CRÉER LE CLIENT SUPABASE
+    const { createClient } = window.supabase;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    console.log('✅ Client Supabase initialisé');
+    console.log('🔗 URL:', SUPABASE_URL);
+
         // ================================================
 // SYSTÈME DE PERMISSIONS FLEXIBLE
 // ================================================
@@ -5253,6 +5268,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
