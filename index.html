@@ -285,107 +285,143 @@ async function toggle(activityId, field) {
     }
 }
         // ========== FONCTIONS DE STOCKAGE SUPABASE ==========
-        async function loadData() {
-            try {
-                // Charger les utilisateurs
-                const { data: usersData, error: usersError } = await supabase
-                    .from('users')
-                    .select('*');
-                
-                if (usersError) throw usersError;
-                
-                if (usersData && usersData.length > 0) {
-                    users = usersData.map(u => ({
-                        id: u.id,
-                        user: u.username,
-                        pass: u.password,
-                        role: u.role,
-                        nom: u.nom,
-                        service: u.service,
-                        actif: u.actif !== false
-                    }));
-                }
-                
-                // Charger les activités
-                const { data: DataTemp, error: activitesError } = await supabase
-                    .from('activites')
-                    .select('*');
-                
-                if (activitesError) throw activitesError;
-                
-if (DataTemp && DataTemp.length > 0) {
-    data = DataTemp;
-                } else {
-                    data = initialData;
-                    await saveData();
-                }
-                
-                // Charger commentaires et preuves
-                const { data: commentairesData, error: commentairesError } = await supabase
-                    .from('commentaires_preuves')
-                    .select('*');
-                
-                if (commentairesError) throw commentairesError;
-                
-   if (commentairesData) {
-    commentairesEtPreuves = commentairesData.map(c => ({
-        id: c.id,
-        type: c.type,
-        objectif: c.objectif,
-        activite: c.activite,
-        service: c.service,
-        commentaire: c.commentaire,
-        nomFichier: c.nom_fichier,
-        nomFichierStorage: c.nom_fichier_storage,
-        fileUrl: c.file_url,
-        // ...
-    }));
-}
-
-             // Charger les régions
-                const { data: regionsDataRaw, error: regionsError } = await supabase
-                    .from('regions')
-                    .select('*')
-                    .order('nom');
-                
-                if (regionsError) throw regionsError;
-                if (regionsDataRaw) regionsData = regionsDataRaw;
-                
-                // Charger les préfectures
-                const { data: prefecturesDataRaw, error: prefecturesError } = await supabase
-                    .from('prefectures')
-                    .select('*, regions(nom)')
-                    .order('nom');
-                
-                if (prefecturesError) throw prefecturesError;
-                if (prefecturesDataRaw) prefecturesData = prefecturesDataRaw;
-                
-                // Charger les statistiques
-                const { data: statistiquesDataRaw, error: statistiquesError } = await supabase
-                    .from('statistiques_educatives')
-                    .select('*')
-                    .order('date_saisie', { ascending: false });
-                
-                if (statistiquesError) throw statistiquesError;
-                if (statistiquesDataRaw) statistiquesData = statistiquesDataRaw;
-   const { data: examensDataRaw, error: examensError } = await supabase
-.from('reussite_examens')
-.select('*')
-.order('date_saisie', { ascending: false });
-if (examensError) throw examensError;
-if (examensDataRaw) reussiteExamensData = examensDataRaw;
-const { data: alphaDataRaw, error: alphaError } = await supabase
-.from('alphabetisation')
-.select('*')
-.order('date_saisie', { ascending: false });
-if (alphaError) throw alphaError;
-if (alphaDataRaw) alphabetisationData = alphaDataRaw;
-
-            } catch (error) {
-                console.error('Erreur lors du chargement:', error);
-                alert('Erreur de connexion à la base de données');
-            }
+       async function loadData() {
+    try {
+        console.log('📥 Chargement des données depuis Supabase...');
+        
+        // 🔥 Charger les utilisateurs
+        const { data: usersData, error: usersError } = await supabase
+            .from('users')
+            .select('*');
+        
+        if (usersError) throw usersError;
+        
+        if (usersData && usersData.length > 0) {
+            users = usersData.map(u => ({
+                id: u.id,
+                user: u.username,
+                pass: u.password,
+                role: u.role,
+                nom: u.nom,
+                service: u.service,
+                actif: u.actif !== false
+            }));
+            console.log('✅ Utilisateurs chargés:', users.length);
         }
+        
+        // 🔥 Charger les activités (CORRECTION CRITIQUE)
+        const { data: activitesData, error: activitesError } = await supabase
+            .from('activites')
+            .select('*')
+            .order('id', { ascending: true });
+        
+        if (activitesError) throw activitesError;
+        
+        if (activitesData && activitesData.length > 0) {
+            data = activitesData; // ✅ Utiliser directement les données Supabase
+            console.log('✅ Activités chargées:', data.length);
+        } else {
+            data = []; // ✅ Tableau vide si aucune donnée
+            console.warn('⚠️ Aucune activité trouvée dans Supabase');
+        }
+        
+        // 🔥 Charger commentaires et preuves (CORRECTION MAPPING)
+        const { data: commentairesData, error: commentairesError } = await supabase
+            .from('commentaires_preuves')
+            .select('*')
+            .order('date_creation', { ascending: false });
+        
+        if (commentairesError) throw commentairesError;
+        
+        if (commentairesData && commentairesData.length > 0) {
+            commentairesEtPreuves = commentairesData.map(c => ({
+                id: c.id,
+                type: c.type,
+                objectif: c.objectif,
+                activite: c.activite,
+                service: c.service,
+                commentaire: c.commentaire || null,
+                nomFichier: c.nom_fichier || null,
+                nomFichierStorage: c.nom_fichier_storage || null,
+                fileUrl: c.file_url || null,
+                tailleFichier: c.taille_fichier || null,
+                creePar: c.cree_par,
+                dateCreation: c.date_creation,
+                deposePar: c.depose_par || null,
+                dateDepot: c.date_depot || null,
+                modifiePar: c.modifie_par || null,
+                dateModification: c.date_modification || null
+            }));
+            console.log('✅ Commentaires/preuves chargés:', commentairesEtPreuves.length);
+        }
+        
+        // 🔥 Charger les régions
+        const { data: regionsDataRaw, error: regionsError } = await supabase
+            .from('regions')
+            .select('*')
+            .order('nom');
+        
+        if (regionsError) throw regionsError;
+        if (regionsDataRaw) {
+            regionsData = regionsDataRaw;
+            console.log('✅ Régions chargées:', regionsData.length);
+        }
+        
+        // 🔥 Charger les préfectures
+        const { data: prefecturesDataRaw, error: prefecturesError } = await supabase
+            .from('prefectures')
+            .select('*, regions(nom)')
+            .order('nom');
+        
+        if (prefecturesError) throw prefecturesError;
+        if (prefecturesDataRaw) {
+            prefecturesData = prefecturesDataRaw;
+            console.log('✅ Préfectures chargées:', prefecturesData.length);
+        }
+        
+        // 🔥 Charger les statistiques
+        const { data: statistiquesDataRaw, error: statistiquesError } = await supabase
+            .from('statistiques_educatives')
+            .select('*')
+            .order('date_saisie', { ascending: false });
+        
+        if (statistiquesError) throw statistiquesError;
+        if (statistiquesDataRaw) {
+            statistiquesData = statistiquesDataRaw;
+            console.log('✅ Statistiques chargées:', statistiquesData.length);
+        }
+        
+        // 🔥 Charger réussite examens
+        const { data: examensDataRaw, error: examensError } = await supabase
+            .from('reussite_examens')
+            .select('*')
+            .order('date_saisie', { ascending: false });
+        
+        if (examensError) throw examensError;
+        if (examensDataRaw) {
+            reussiteExamensData = examensDataRaw;
+            console.log('✅ Examens chargés:', reussiteExamensData.length);
+        }
+        
+        // 🔥 Charger alphabétisation
+        const { data: alphaDataRaw, error: alphaError } = await supabase
+            .from('alphabetisation')
+            .select('*')
+            .order('date_saisie', { ascending: false });
+        
+        if (alphaError) throw alphaError;
+        if (alphaDataRaw) {
+            alphabetisationData = alphaDataRaw;
+            console.log('✅ Alphabétisation chargée:', alphabetisationData.length);
+        }
+        
+        console.log('✅ Toutes les données chargées avec succès !');
+        
+    } catch (error) {
+        console.error('❌ ERREUR CRITIQUE lors du chargement:', error);
+        alert('❌ Erreur de connexion à la base de données : ' + error.message);
+    }
+}
 
         async function saveData() {
     // CETTE FONCTION NE DEVRAIT PLUS ÊTRE UTILISÉE
@@ -5217,6 +5253,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
