@@ -91,26 +91,42 @@
         .fichier-item { padding: 8px; background-color: #f3f4f6; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .fichier-item:hover { background-color: #e5e7eb; }
     </style>
-    <!-- ========== CONNEXION SUPABASE ========== -->
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <!-- ========== CONNEXION SUPABASE ========== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    console.log('🚀 Initialisation de l\'application...');
+    
+    // ========== CONFIGURATION SUPABASE ==========
     const SUPABASE_URL = 'https://kosqzeueikyehkblqosq.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvc3F6ZXVlaWt5ZWhrYmxxb3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDU0MTUsImV4cCI6MjA3ODYyMTQxNX0.oGGDuOSb4M-NkJILVSDKfjXyTVqBvnJmWuR46YEEVyQ';
     
-    // ✅ VÉRIFIER QUE SUPABASE EST CHARGÉ
+    // Vérifier que Supabase est chargé
     if (typeof window.supabase === 'undefined') {
-        console.error('❌ ERREUR CRITIQUE : La bibliothèque Supabase n\'est pas chargée !');
-        alert('❌ Erreur : Impossible de charger Supabase. Vérifiez votre connexion internet.');
-    } else {
-        console.log('✅ Bibliothèque Supabase chargée');
+        console.error('❌ ERREUR : Supabase non chargé');
+        alert('❌ Erreur critique : Impossible de charger Supabase. Rechargez la page.');
+        throw new Error('Supabase library not loaded');
     }
     
-    // ✅ CRÉER LE CLIENT SUPABASE
-    const { createClient } = window.supabase;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Bibliothèque Supabase détectée');
     
-    console.log('✅ Client Supabase initialisé');
+    // Créer le client Supabase
+    const { createClient } = window.supabase;
+    var supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    console.log('✅ Client Supabase créé');
     console.log('🔗 URL:', SUPABASE_URL);
+    
+    // Tester la connexion
+    supabase.from('users').select('count', { count: 'exact', head: true })
+        .then(function(response) {
+            if (response.error) {
+                console.error('❌ Erreur de connexion Supabase:', response.error);
+            } else {
+                console.log('✅ Connexion Supabase OK');
+            }
+        });
+</script>
+
 
         // ================================================
 // SYSTÈME DE PERMISSIONS FLEXIBLE
@@ -5268,6 +5284,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
