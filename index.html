@@ -4202,24 +4202,42 @@ html += '</div></div>';
              // Cartes d'indicateurs (9 cartes au total)
 html += '<div class="cards-fixed">';
 
-// Filtrer pour inclure Stats Générales (2025-2026) ET Réussite Examens Session 2025 (2024-2025)
-var dataSessionRecente = [];
+// 🔥 SÉPARER : Stats générales (2025-2026) + Examens (Session 2025)
+console.log('📊 Calcul des indicateurs pour les cartes...');
+
+// Stats générales depuis statistiques_educatives (année 2025-2026)
+var dataStatsGenerales = [];
 for (var i = 0; i < statistiquesData.length; i++) {
-    if (statistiquesData[i].annee_scolaire === '2025-2026' || statistiquesData[i].annee_scolaire === '2024-2025') {
-        dataSessionRecente.push(statistiquesData[i]);
+    if (statistiquesData[i].annee_scolaire === '2025-2026') {
+        dataStatsGenerales.push(statistiquesData[i]);
     }
 }
 
-// Calculer les moyennes avec les données filtrées
-var moyenneScolarisation = calculerMoyenne(dataSessionRecente, 'taux_scolarisation');
-var moyenneReussiteCEE = calculerMoyenne(dataSessionRecente, 'taux_reussite_cee');
-var moyenneReussiteBEPC = calculerMoyenne(dataSessionRecente, 'taux_reussite_bepc');
-var moyenneReussiteBAC = calculerMoyenne(dataSessionRecente, 'taux_reussite_bac');
-var moyenneAbandon = calculerMoyenne(dataSessionRecente, 'taux_abandon');
-var moyenneAlphabetisation = calculerMoyenne(dataSessionRecente, 'taux_alphabetisation');
-var moyenneRatioEnseignant = calculerMoyenne(dataSessionRecente, 'ratio_eleves_enseignant');
-var moyenneRatioClasse = calculerMoyenne(dataSessionRecente, 'ratio_eleves_classe');
-var moyenneDistance = calculerMoyenne(dataSessionRecente, 'distance_moyenne_ecole_domicile');
+// Examens depuis reussiteExamensData (Session 2025 uniquement)
+var dataExamens2025 = [];
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    if (reussiteExamensData[i].annee_scolaire === '2024-2025') {
+        dataExamens2025.push(reussiteExamensData[i]);
+    }
+}
+
+console.log('✅ Stats générales:', dataStatsGenerales.length);
+console.log('✅ Examens 2025:', dataExamens2025.length);
+
+// Calculer les moyennes
+var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation');
+var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon');
+var moyenneAlphabetisation = calculerMoyenne(dataStatsGenerales, 'taux_alphabetisation');
+var moyenneRatioEnseignant = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_enseignant');
+var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_classe');
+var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile');
+
+// 🔥 Examens depuis reussiteExamensData
+var moyenneReussiteCEE = calculerMoyenne(dataExamens2025, 'taux_reussite_cee');
+var moyenneReussiteBEPC = calculerMoyenne(dataExamens2025, 'taux_reussite_bepc');
+var moyenneReussiteBAC = calculerMoyenne(dataExamens2025, 'taux_reussite_bac');
+
+console.log('📊 CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');
 
 // 1. Taux de scolarisation (bleu)
 html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
@@ -4264,10 +4282,25 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 
 html += '</tr></thead><tbody>';
 
-// Utiliser les données déjà filtrées (session 2025 uniquement)
-if (dataSessionRecente.length > 0) {
-    for (var i = 0; i < dataSessionRecente.length; i++) {
-        var stat = dataSessionRecente[i];
+// 🔥 COMBINER Stats générales + Examens pour le tableau
+var dataTableau = [];
+
+// Ajouter stats générales 2025-2026
+for (var i = 0; i < dataStatsGenerales.length; i++) {
+    dataTableau.push(dataStatsGenerales[i]);
+}
+
+// Ajouter examens session 2025
+for (var i = 0; i < dataExamens2025.length; i++) {
+    dataTableau.push(dataExamens2025[i]);
+}
+
+console.log('📋 Tableau combiné:', dataTableau.length, 'lignes');
+
+if (dataTableau.length > 0) {
+    for (var i = 0; i < dataTableau.length; i++) {
+        var stat = dataTableau[i];
+
         html += '<tr>';
         html += '<td>' + stat.region + '</td>';
         html += '<td>' + stat.prefecture + '</td>';
@@ -4416,7 +4449,7 @@ html += '</div>';
         
         try {
             const { data: existingData, error } = await supabase
-                .from('statistiques_educatives')
+                .from('reussite_examens')
                 .select('*')
                 .eq('annee_scolaire', annee)
                 .eq('periode', 'Annuel')
@@ -4838,7 +4871,7 @@ async function submitExamensData(forcerMiseAJour) {
             console.log('📦 Envoi du lot', Math.floor(i/batchSize) + 1, ':', batch.length, 'lignes');
             
             const { data: processedData, error } = await supabase
-                .from('statistiques_educatives')
+                .from('reussite_examens')
                 .upsert(batch, { 
                     onConflict: 'annee_scolaire,periode,region,prefecture,zone,niveau,genre',
                     ignoreDuplicates: false 
@@ -4853,20 +4886,20 @@ async function submitExamensData(forcerMiseAJour) {
             console.log('✅ Lot traité avec succès');
             
             if (processedData) {
-                totalProcessed += processedData.length;
-                
-                // Mettre à jour le tableau local
-                for (var j = 0; j < processedData.length; j++) {
-                    var found = false;
-                    for (var k = 0; k < statistiquesData.length; k++) {
-                        if (statistiquesData[k].id === processedData[j].id) {
-                            statistiquesData[k] = processedData[j];
+    totalProcessed += processedData.length;
+    
+    // 🔥 Mettre à jour reussiteExamensData (pas statistiquesData)
+    for (var j = 0; j < processedData.length; j++) {
+        var found = false;
+        for (var k = 0; k < reussiteExamensData.length; k++) {
+            if (reussiteExamensData[k].id === processedData[j].id) {
+                reussiteExamensData[k] = processedData[j];
                             found = true;
                             break;
                         }
                     }
                     if (!found) {
-                        statistiquesData.unshift(processedData[j]);
+                       reussiteExamensData.unshift(processedData[j]);
                     }
                 }
             }
@@ -5248,6 +5281,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
