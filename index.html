@@ -413,6 +413,14 @@ async function toggle(activityId, field) {
         alert('❌ Erreur de connexion à la base de données : ' + error.message);
     }
 }
+async function supprimerSessionExamens() {
+    var annee = document.getElementById('examens-annee').value.trim();
+    var session = parseInt(document.getElementById('examens-session').value);
+    
+    if (!annee || !session) {
+        alert('⚠️ Sélectionnez une année et session');
+        return;
+    }
 
         async function saveCommentairesEtPreuves() {
             try {
@@ -4202,24 +4210,40 @@ html += '</div></div>';
              // Cartes d'indicateurs (9 cartes au total)
 html += '<div class="cards-fixed">';
 
-// Filtrer pour inclure Stats Générales (2025-2026) ET Réussite Examens Session 2025 (2024-2025)
-var dataSessionRecente = [];
+// 🔥 CORRECTION : Séparer Stats Générales et Examens
+var dataStatsGenerales = [];
 for (var i = 0; i < statistiquesData.length; i++) {
-    if (statistiquesData[i].annee_scolaire === '2025-2026' || statistiquesData[i].annee_scolaire === '2024-2025') {
-        dataSessionRecente.push(statistiquesData[i]);
+    if (statistiquesData[i].annee_scolaire === '2025-2026') {
+        dataStatsGenerales.push(statistiquesData[i]);
     }
 }
 
-// Calculer les moyennes avec les données filtrées
-var moyenneScolarisation = calculerMoyenne(dataSessionRecente, 'taux_scolarisation');
-var moyenneReussiteCEE = calculerMoyenne(dataSessionRecente, 'taux_reussite_cee');
-var moyenneReussiteBEPC = calculerMoyenne(dataSessionRecente, 'taux_reussite_bepc');
-var moyenneReussiteBAC = calculerMoyenne(dataSessionRecente, 'taux_reussite_bac');
-var moyenneAbandon = calculerMoyenne(dataSessionRecente, 'taux_abandon');
-var moyenneAlphabetisation = calculerMoyenne(dataSessionRecente, 'taux_alphabetisation');
-var moyenneRatioEnseignant = calculerMoyenne(dataSessionRecente, 'ratio_eleves_enseignant');
-var moyenneRatioClasse = calculerMoyenne(dataSessionRecente, 'ratio_eleves_classe');
-var moyenneDistance = calculerMoyenne(dataSessionRecente, 'distance_moyenne_ecole_domicile');
+// 🔥 Examens : Session 2025 UNIQUEMENT
+var dataExamens2025 = [];
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    if (reussiteExamensData[i].session === 2025) {
+        dataExamens2025.push(reussiteExamensData[i]);
+    }
+}
+
+console.log('📊 Stats générales 2025-2026:', dataStatsGenerales.length);
+console.log('📊 Examens session 2025:', dataExamens2025.length);
+
+// Calculer les moyennes
+var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation');
+var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon');
+var moyenneAlphabetisation = calculerMoyenne(dataStatsGenerales, 'taux_alphabetisation');
+var moyenneRatioEnseignant = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_enseignant');
+var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_classe');
+var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile');
+
+// 🔥 Réussite examens depuis reussiteExamensData (Session 2025)
+var moyenneReussiteCEE = calculerMoyenne(dataExamens2025, 'taux_reussite_cee');
+var moyenneReussiteBEPC = calculerMoyenne(dataExamens2025, 'taux_reussite_bepc');
+var moyenneReussiteBAC = calculerMoyenne(dataExamens2025, 'taux_reussite_bac');
+
+console.log('✅ CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');
+
 
 // 1. Taux de scolarisation (bleu)
 html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
@@ -4264,8 +4288,25 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 
 html += '</tr></thead><tbody>';
 
-// Utiliser les données déjà filtrées (session 2025 uniquement)
-if (dataSessionRecente.length > 0) {
+// 🔥 COMBINER pour affichage dans le tableau
+var dataTableau = [];
+
+// Ajouter stats générales 2025-2026
+for (var i = 0; i < dataStatsGenerales.length; i++) {
+    dataTableau.push(dataStatsGenerales[i]);
+}
+
+// Ajouter examens session 2025
+for (var i = 0; i < dataExamens2025.length; i++) {
+    dataTableau.push(dataExamens2025[i]);
+}
+
+console.log('📋 Tableau combiné:', dataTableau.length, 'lignes');
+
+if (dataTableau.length > 0) {
+    for (var i = 0; i < dataTableau.length; i++) {
+        var stat = dataTableau[i];
+
     for (var i = 0; i < dataSessionRecente.length; i++) {
         var stat = dataSessionRecente[i];
         html += '<tr>';
@@ -4686,202 +4727,165 @@ function filterExamensRows() {
     console.log('Lignes visibles:', visibleCount);
     console.log('================');
 }
-async function submitExamensData(forcerMiseAJour) {
+async function submitReussiteExamens(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
-   var annee = document.getElementById('examens-session').value;
+    var annee = document.getElementById('examens-annee').value.trim();
+    var session = parseInt(document.getElementById('examens-session').value);
     
-    if (!annee) {
-        alert('⚠️ Veuillez sélectionner une année');
+    if (!annee || !session) {
+        alert('⚠️ Veuillez remplir année et session');
         return;
     }
     
-    var zones = ['Urbaine', 'Rurale'];
     var dataToInsert = [];
-    var rowIndex = 0;
+    var rows = document.querySelectorAll('.examens-row');
     
-    console.log('📊 Collecte des données examens pour l\'année:', annee);
+    console.log('📊 Traitement de', rows.length, 'lignes pour session', session);
     
-    // Parcourir toutes les lignes
-    for (var r = 0; r < regionsData.length; r++) {
-        var region = regionsData[r];
-        var prefecturesRegion = [];
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
         
-        for (var p = 0; p < prefecturesData.length; p++) {
-            if (prefecturesData[p].region_id == region.id) {
-                prefecturesRegion.push(prefecturesData[p]);
+        var regionId = row.getAttribute('data-region');
+        var regionName = '';
+        for (var j = 0; j < regionsData.length; j++) {
+            if (regionsData[j].id == regionId) {
+                regionName = regionsData[j].nom;
+                break;
             }
         }
         
-        for (var p = 0; p < prefecturesRegion.length; p++) {
-            var prefecture = prefecturesRegion[p];
-            
-            for (var z = 0; z < zones.length; z++) {
-                var zone = zones[z];
-                
-                // Récupérer les inputs
-                var inputCeeT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_total"]');
-                var inputCeeF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_filles"]');
-                var inputBepcT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_total"]');
-                var inputBepcF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_filles"]');
-                var inputBacT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_total"]');
-                var inputBacF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_filles"]');
-                
-                // Collecter les valeurs
-                var ceeT = inputCeeT && inputCeeT.value ? parseFloat(inputCeeT.value) : null;
-                var ceeF = inputCeeF && inputCeeF.value ? parseFloat(inputCeeF.value) : null;
-                var bepcT = inputBepcT && inputBepcT.value ? parseFloat(inputBepcT.value) : null;
-                var bepcF = inputBepcF && inputBepcF.value ? parseFloat(inputBepcF.value) : null;
-                var bacT = inputBacT && inputBacT.value ? parseFloat(inputBacT.value) : null;
-                var bacF = inputBacF && inputBacF.value ? parseFloat(inputBacF.value) : null;
-                
-                // ========== CEE (Primaire) ==========
-                
-                // CEE Total
-                if (ceeT !== null) {
-                    dataToInsert.push({
-                        annee_scolaire: annee,
-                        periode: 'Annuel',
-                        region: region.nom,
-                        prefecture: prefecture.nom,
-                        zone: zone,
-                        niveau: 'Primaire',
-                        genre: 'Total',
-                        taux_reussite_cee: ceeT,
-                        taux_reussite_bepc: null,
-                        taux_reussite_bac: null,
-                        saisi_par: currentUser.nom
-                    });
-                }
-                
-                // CEE Filles
-                if (ceeF !== null) {
-                    dataToInsert.push({
-                        annee_scolaire: annee,
-                        periode: 'Annuel',
-                        region: region.nom,
-                        prefecture: prefecture.nom,
-                        zone: zone,
-                        niveau: 'Primaire',
-                        genre: 'Filles',
-                        taux_reussite_cee: ceeF,
-                        taux_reussite_bepc: null,
-                        taux_reussite_bac: null,
-                        saisi_par: currentUser.nom
-                    });
-                }
-                
-                // ========== BEPC + BAC (Secondaire) - UN SEUL enregistrement ==========
-                
-                // Total (BEPC + BAC ensemble)
-                if (bepcT !== null || bacT !== null) {
-                    dataToInsert.push({
-                        annee_scolaire: annee,
-                        periode: 'Annuel',
-                        region: region.nom,
-                        prefecture: prefecture.nom,
-                        zone: zone,
-                        niveau: 'Secondaire',
-                        genre: 'Total',
-                        taux_reussite_cee: null,
-                        taux_reussite_bepc: bepcT,
-                        taux_reussite_bac: bacT,
-                        saisi_par: currentUser.nom
-                    });
-                }
-                
-                // Filles (BEPC + BAC ensemble)
-                if (bepcF !== null || bacF !== null) {
-                    dataToInsert.push({
-                        annee_scolaire: annee,
-                        periode: 'Annuel',
-                        region: region.nom,
-                        prefecture: prefecture.nom,
-                        zone: zone,
-                        niveau: 'Secondaire',
-                        genre: 'Filles',
-                        taux_reussite_cee: null,
-                        taux_reussite_bepc: bepcF,
-                        taux_reussite_bac: bacF,
-                        saisi_par: currentUser.nom
-                    });
-                }
-                
-                rowIndex++;
-            }
+        var prefecture = row.getAttribute('data-prefecture');
+        var zone = row.getAttribute('data-zone');
+        var niveau = row.getAttribute('data-niveau');
+        
+        // Récupérer les inputs
+        var ceeTotal = row.querySelector('input[data-field="cee_total"]');
+        var ceeFilles = row.querySelector('input[data-field="cee_filles"]');
+        var bepcTotal = row.querySelector('input[data-field="bepc_total"]');
+        var bepcFilles = row.querySelector('input[data-field="bepc_filles"]');
+        var bacTotal = row.querySelector('input[data-field="bac_total"]');
+        var bacFilles = row.querySelector('input[data-field="bac_filles"]');
+        
+        // Vérifier si déjà sauvegardé
+        var alreadySavedT = (ceeTotal && ceeTotal.getAttribute('data-saved') === 'true') ||
+                           (bepcTotal && bepcTotal.getAttribute('data-saved') === 'true') ||
+                           (bacTotal && bacTotal.getAttribute('data-saved') === 'true');
+        
+        var alreadySavedF = (ceeFilles && ceeFilles.getAttribute('data-saved') === 'true') ||
+                           (bepcFilles && bepcFilles.getAttribute('data-saved') === 'true') ||
+                           (bacFilles && bacFilles.getAttribute('data-saved') === 'true');
+        
+        // Extraire valeur Total
+        var valeurTotal = null;
+        if (niveau === 'Primaire' && ceeTotal && ceeTotal.value && (!alreadySavedT || forcerMiseAJour)) {
+            valeurTotal = parseFloat(ceeTotal.value);
+        } else if (niveau === 'College' && bepcTotal && bepcTotal.value && (!alreadySavedT || forcerMiseAJour)) {
+            valeurTotal = parseFloat(bepcTotal.value);
+        } else if (niveau === 'Lycee' && bacTotal && bacTotal.value && (!alreadySavedT || forcerMiseAJour)) {
+            valeurTotal = parseFloat(bacTotal.value);
+        }
+        
+        if (valeurTotal !== null && !isNaN(valeurTotal)) {
+            dataToInsert.push({
+                annee_scolaire: annee,
+                session: session,
+                region: regionName,
+                prefecture: prefecture,
+                zone: zone,
+                niveau: niveau,
+                genre: 'Total',
+                taux_reussite_cee: niveau === 'Primaire' ? valeurTotal : null,
+                taux_reussite_bepc: niveau === 'College' ? valeurTotal : null,
+                taux_reussite_bac: niveau === 'Lycee' ? valeurTotal : null,
+                saisi_par: currentUser.nom,
+                date_saisie: new Date().toISOString()
+            });
+        }
+        
+        // Extraire valeur Filles
+        var valeurFilles = null;
+        if (niveau === 'Primaire' && ceeFilles && ceeFilles.value && (!alreadySavedF || forcerMiseAJour)) {
+            valeurFilles = parseFloat(ceeFilles.value);
+        } else if (niveau === 'College' && bepcFilles && bepcFilles.value && (!alreadySavedF || forcerMiseAJour)) {
+            valeurFilles = parseFloat(bepcFilles.value);
+        } else if (niveau === 'Lycee' && bacFilles && bacFilles.value && (!alreadySavedF || forcerMiseAJour)) {
+            valeurFilles = parseFloat(bacFilles.value);
+        }
+        
+        if (valeurFilles !== null && !isNaN(valeurFilles)) {
+            dataToInsert.push({
+                annee_scolaire: annee,
+                session: session,
+                region: regionName,
+                prefecture: prefecture,
+                zone: zone,
+                niveau: niveau,
+                genre: 'Filles',
+                taux_reussite_cee: niveau === 'Primaire' ? valeurFilles : null,
+                taux_reussite_bepc: niveau === 'College' ? valeurFilles : null,
+                taux_reussite_bac: niveau === 'Lycee' ? valeurFilles : null,
+                saisi_par: currentUser.nom,
+                date_saisie: new Date().toISOString()
+            });
         }
     }
     
     if (dataToInsert.length === 0) {
-        alert('⚠️ Aucune donnée à enregistrer.\n\nRemplissez au moins un champ.');
+        alert(forcerMiseAJour ? '⚠️ Aucune donnée à mettre à jour' : '⚠️ Aucune donnée à enregistrer');
         return;
     }
     
+    console.log('📤 Préparation de', dataToInsert.length, 'enregistrements');
+    
     var message = forcerMiseAJour 
-        ? '🔄 Vous allez mettre à jour ' + dataToInsert.length + ' lignes.\n\nContinuer ?' 
-        : '💾 Vous allez enregistrer ' + dataToInsert.length + ' nouvelles lignes.\n\nContinuer ?';
+        ? '🔄 Mettre à jour ' + dataToInsert.length + ' lignes ?\n\nCela écrasera les données existantes.'
+        : '💾 Enregistrer ' + dataToInsert.length + ' nouvelles lignes ?';
     
     if (!confirm(message)) {
         return;
     }
     
     try {
-        console.log('📤 Envoi de', dataToInsert.length, 'lignes vers Supabase...');
+        console.log('📤 Envoi vers table reussite_examens...');
         
-        // Insérer par lots de 50
-        var batchSize = 50;
-        var totalProcessed = 0;
+        // 🔥 CORRECTION CRITIQUE : Utiliser la table reussite_examens
+        const { data: insertedData, error } = await supabase
+            .from('reussite_examens')
+            .upsert(dataToInsert, {
+                onConflict: 'annee_scolaire,session,region,prefecture,zone,niveau,genre',
+                ignoreDuplicates: false
+            })
+            .select();
         
-        for (var i = 0; i < dataToInsert.length; i += batchSize) {
-            var batch = dataToInsert.slice(i, i + batchSize);
-            
-            console.log('📦 Envoi du lot', Math.floor(i/batchSize) + 1, ':', batch.length, 'lignes');
-            
-            const { data: processedData, error } = await supabase
-                .from('statistiques_educatives')
-                .upsert(batch, { 
-                    onConflict: 'annee_scolaire,periode,region,prefecture,zone,niveau,genre',
-                    ignoreDuplicates: false 
-                })
-                .select();
-            
-            if (error) {
-                console.error('❌ Erreur Supabase:', error);
-                throw error;
-            }
-            
-            console.log('✅ Lot traité avec succès');
-            
-            if (processedData) {
-                totalProcessed += processedData.length;
-                
-                // Mettre à jour le tableau local
-                for (var j = 0; j < processedData.length; j++) {
-                    var found = false;
-                    for (var k = 0; k < statistiquesData.length; k++) {
-                        if (statistiquesData[k].id === processedData[j].id) {
-                            statistiquesData[k] = processedData[j];
-                            found = true;
-                            break;
-                        }
+        if (error) {
+            console.error('❌ Erreur Supabase:', error);
+            throw error;
+        }
+        
+        console.log('✅ Données enregistrées:', insertedData ? insertedData.length : 0);
+        
+        // Mettre à jour le tableau local
+        if (insertedData) {
+            for (var i = 0; i < insertedData.length; i++) {
+                var found = false;
+                for (var j = 0; j < reussiteExamensData.length; j++) {
+                    if (reussiteExamensData[j].id === insertedData[i].id) {
+                        reussiteExamensData[j] = insertedData[i];
+                        found = true;
+                        break;
                     }
-                    if (!found) {
-                        statistiquesData.unshift(processedData[j]);
-                    }
+                }
+                if (!found) {
+                    reussiteExamensData.unshift(insertedData[i]);
                 }
             }
         }
         
-        var successMessage = forcerMiseAJour 
-            ? '✅ ' + totalProcessed + ' données mises à jour avec succès !'
-            : '✅ ' + totalProcessed + ' données enregistrées avec succès !';
+        alert('✅ ' + (insertedData ? insertedData.length : dataToInsert.length) + ' données enregistrées avec succès !');
         
-        alert(successMessage);
-        // Recharger les données depuis Supabase
-await loadData();
-
-closeModal();
-render();
+        // Recharger
+        await loadData();
         closeModal();
         render();
         
@@ -5248,6 +5252,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
