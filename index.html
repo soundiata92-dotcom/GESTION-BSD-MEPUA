@@ -154,6 +154,7 @@ var users = [];
         var data = [];
         var commentairesEtPreuves = [];
         var notifications = [];
+        var permissionsCache = {}; 
         var activeTab = 'dashboard';
         var selectedServiceFilter = 'TOUS';
         var activeAnalyseTab = 'acces'; // 'acces' | 'qualite' | 'alphabetisation' | 'decisions'
@@ -240,6 +241,42 @@ async function toggle(activityId, field) {
     }
 }
         // ========== FONCTIONS DE STOCKAGE SUPABASE ==========
+        async function loadPermissions() {
+    try {
+        console.log('🔐 Chargement des permissions...');
+        
+        const { data: permissionsData, error } = await supabase
+            .from('permissions_config')
+            .select('*')
+            .eq('enabled', true);
+        
+        if (error) {
+            console.error('❌ Erreur permissions:', error);
+            throw error;
+        }
+        
+        // Organiser par rôle/resource/action
+        permissionsCache = {};
+        if (permissionsData) {
+            for (var i = 0; i < permissionsData.length; i++) {
+                var perm = permissionsData[i];
+                var key = perm.role + ':' + perm.resource + ':' + perm.action;
+                permissionsCache[key] = {
+                    enabled: perm.enabled,
+                    condition: perm.condition ? JSON.parse(perm.condition) : null
+                };
+            }
+        }
+        
+        console.log('✅ Permissions chargées:', Object.keys(permissionsCache).length);
+        
+    } catch (error) {
+        console.error('❌ Erreur chargement permissions:', error);
+        permissionsCache = {};
+        console.warn('⚠️ Application démarrée sans système de permissions');
+    }
+}
+
        async function loadData() {
     try {
         console.log('📥 Chargement des données depuis Supabase...');
@@ -4864,34 +4901,45 @@ render();
 
         // ========== INITIALISATION ==========
 async function init() {
-    await loadData();
-    await loadPermissions(); 
-    await checkInvitationToken(); // NOUVELLE LIGNE 
-    var saved = localStorage.getItem('currentUser');
-    if (saved) {
-        currentUser = JSON.parse(saved);
-        await loadRapportTextes();
+    try {
+        console.log('🎬 Initialisation de l\'application...');
         
-        var alreadyConnected = false;
-        for (var i = 0; i < connectedUsers.length; i++) {
-            if (connectedUsers[i].user === currentUser.user) {
-                alreadyConnected = true;
-                break;
+        await loadData();
+        await loadPermissions();
+        await checkInvitationToken();
+        
+        var saved = localStorage.getItem('currentUser');
+        if (saved) {
+            currentUser = JSON.parse(saved);
+            await loadRapportTextes();
+            
+            var alreadyConnected = false;
+            for (var i = 0; i < connectedUsers.length; i++) {
+                if (connectedUsers[i].user === currentUser.user) {
+                    alreadyConnected = true;
+                    break;
+                }
+            }
+            if (!alreadyConnected) {
+                connectedUsers.push({
+                    user: currentUser.user,
+                    nom: currentUser.nom,
+                    service: currentUser.service,
+                    connectedAt: new Date().toLocaleString('fr-FR')
+                });
+                localStorage.setItem('connectedUsers', JSON.stringify(connectedUsers));
             }
         }
-        if (!alreadyConnected) {
-            connectedUsers.push({
-                user: currentUser.user,
-                nom: currentUser.nom,
-                service: currentUser.service,
-                connectedAt: new Date().toLocaleString('fr-FR')
-            });
-            localStorage.setItem('connectedUsers', JSON.stringify(connectedUsers));
-        }
+        
+        console.log('✅ Initialisation terminée');
+        render();
+        
+    } catch (error) {
+        console.error('❌ ERREUR CRITIQUE lors de l\'initialisation:', error);
+        alert('❌ Erreur lors du démarrage de l\'application : ' + error.message);
     }
-    
-    render();
 }
+
         // ========== PERMISSIONS ONGLET STATISTIQUES ==========
 function canAccessStatistiques() {
 if (!currentUser) return false;
@@ -5208,6 +5256,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
