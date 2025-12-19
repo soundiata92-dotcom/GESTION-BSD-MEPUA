@@ -4774,6 +4774,7 @@ async function submitExamensData(forcerMiseAJour) {
                 if (ceeT !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
+                        session: parseInt(annee.split('-')[0]),  
                         periode: 'Annuel',
                         region: region.nom,
                         prefecture: prefecture.nom,
@@ -4791,6 +4792,7 @@ async function submitExamensData(forcerMiseAJour) {
                 if (ceeF !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
+                        session: parseInt(annee.split('-')[0]),  
                         periode: 'Annuel',
                         region: region.nom,
                         prefecture: prefecture.nom,
@@ -4810,6 +4812,7 @@ async function submitExamensData(forcerMiseAJour) {
                 if (bepcT !== null || bacT !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
+                        session: parseInt(annee.split('-')[0]),  
                         periode: 'Annuel',
                         region: region.nom,
                         prefecture: prefecture.nom,
@@ -4827,6 +4830,7 @@ async function submitExamensData(forcerMiseAJour) {
                 if (bepcF !== null || bacF !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
+                        session: parseInt(annee.split('-')[0]),  
                         periode: 'Annuel',
                         region: region.nom,
                         prefecture: prefecture.nom,
@@ -5281,6 +5285,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
