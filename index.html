@@ -3247,11 +3247,7 @@ function appliquerFiltresStatistiques() {
         var value9 = cards[8].querySelector('.card-value');
         if (value9) value9.textContent = moyenneDistance;
     }
-    
-    console.log('Cartes mises à jour');
-    console.log('========================================');
-}
-// 🔥 APPLIQUER AUSSI AUX LIGNES DU TABLEAU
+    // 🔥 APPLIQUER AUSSI AUX LIGNES DU TABLEAU
     var tableRows = document.querySelectorAll('#stats-table tbody tr');
     
     for (var i = 0; i < tableRows.length; i++) {
@@ -3273,6 +3269,9 @@ function appliquerFiltresStatistiques() {
         row.style.display = showRow ? '' : 'none';
     }
 
+    console.log('Cartes mises à jour');
+    console.log('========================================');
+}
         // ========== FONCTION RENDER PRINCIPALE 
 function render() {
             var app = document.getElementById('app');
@@ -5325,6 +5324,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
