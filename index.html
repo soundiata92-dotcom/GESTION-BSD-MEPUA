@@ -4238,11 +4238,19 @@ console.log('📊 Calcul des indicateurs pour les cartes...');
 
 // Stats générales depuis statistiques_educatives (année 2025-2026)
 var dataStatsGenerales = [];
+console.log('🔍 Filtrage stats générales 2025-2026...');
+console.log('   Total statistiquesData:', statistiquesData.length);
+
 for (var i = 0; i < statistiquesData.length; i++) {
-    if (statistiquesData[i].annee_scolaire === '2025-2026') {
-        dataStatsGenerales.push(statistiquesData[i]);
+    var stat = statistiquesData[i];
+    if (stat.annee_scolaire === '2025-2026') {
+        dataStatsGenerales.push(stat);
+        console.log('   ✓ Ajouté:', stat.region, '/', stat.prefecture, '/', stat.zone, '/', stat.niveau, '/', stat.genre, '| Scolarisation:', stat.taux_scolarisation);
     }
 }
+
+console.log('✅ Stats 2025-2026 filtrées:', dataStatsGenerales.length);
+console.log('');
 
 // Examens depuis reussiteExamensData (Session 2025 uniquement)
 var dataExamens2025 = [];
@@ -4963,20 +4971,40 @@ render();
 }
 // ========== FONCTIONS DE CALCUL DE MOYENNES ==========
 function calculerMoyenne(dataArray, field) {
-    if (!dataArray || dataArray.length === 0) return 0;
+    if (!dataArray || dataArray.length === 0) {
+        console.warn('⚠️ calculerMoyenne: tableau vide pour', field);
+        return 0;
+    }
+    
+    console.log('📊 Calcul moyenne pour:', field);
+    console.log('   Nombre de lignes reçues:', dataArray.length);
     
     var sum = 0;
     var count = 0;
+    var valeurs = [];
     
     for (var i = 0; i < dataArray.length; i++) {
-        var value = dataArray[i][field];
+        var ligne = dataArray[i];
+        var value = ligne[field];
+        
         if (value !== null && value !== undefined && !isNaN(value)) {
             sum += parseFloat(value);
             count++;
+            valeurs.push(value);
+            console.log('   ✓ Ligne', i + 1, ':', value, '| Région:', ligne.region, '| Préf:', ligne.prefecture, '| Genre:', ligne.genre);
+        } else {
+            console.log('   ✗ Ligne', i + 1, ': valeur ignorée (null/undefined/NaN)');
         }
     }
     
-    return count > 0 ? Math.round((sum / count) * 100) / 100 : 0;
+    var moyenne = count > 0 ? Math.round((sum / count) * 100) / 100 : 0;
+    
+    console.log('   📈 Valeurs utilisées:', valeurs.join(', '));
+    console.log('   🧮 Somme:', sum, '/ Nombre:', count);
+    console.log('   ➜ MOYENNE FINALE:', moyenne);
+    console.log('');
+    
+    return moyenne;
 }
 
 function calculerMoyenneParGenre(dataArray, field, genre) {
@@ -5364,6 +5392,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
