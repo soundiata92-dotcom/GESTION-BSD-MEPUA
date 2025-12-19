@@ -2131,6 +2131,25 @@ function calculerMoyenne(data, field) {
     }
     return count > 0 ? Math.round(total / count * 10) / 10 : 0;
 }
+function calculerMoyenneParGenre(data, field, genre) {
+    if (data.length === 0) return 0;
+    
+    var total = 0;
+    var count = 0;
+    
+    for (var i = 0; i < data.length; i++) {
+        // Filtrer par genre si spécifié
+        if (genre && data[i].genre !== genre) continue;
+        
+        if (data[i][field] !== null && data[i][field] !== undefined) {
+            total += parseFloat(data[i][field]);
+            count++;
+        }
+    }
+    
+    return count > 0 ? Math.round(total / count * 10) / 10 : 0;
+}
+        
 function updateFormFilters() {
     var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var prefectureSelect = document.getElementById('filter-prefecture');
@@ -3232,6 +3251,28 @@ function appliquerFiltresStatistiques() {
     console.log('Cartes mises à jour');
     console.log('========================================');
 }
+// 🔥 APPLIQUER AUSSI AUX LIGNES DU TABLEAU
+    var tableRows = document.querySelectorAll('#stats-table tbody tr');
+    
+    for (var i = 0; i < tableRows.length; i++) {
+        var row = tableRows[i];
+        var rowRegion = row.getAttribute('data-region');
+        var rowPrefecture = row.getAttribute('data-prefecture');
+        var rowZone = row.getAttribute('data-zone');
+        var rowNiveau = row.getAttribute('data-niveau');
+        var rowGenre = row.getAttribute('data-genre');
+        
+        var showRow = true;
+        
+        if (regionId && rowRegion != regionId) showRow = false;
+        if (prefecture && rowPrefecture != prefecture) showRow = false;
+        if (zone && rowZone != zone) showRow = false;
+        if (niveau && rowNiveau != niveau) showRow = false;
+        if (genre && rowGenre != genre) showRow = false;
+        
+        row.style.display = showRow ? '' : 'none';
+    }
+}
 
         // ========== FONCTION RENDER PRINCIPALE 
 function render() {
@@ -4233,12 +4274,12 @@ var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_class
 var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile');
 
 // 🔥 Examens depuis reussiteExamensData
-var moyenneReussiteCEE = calculerMoyenne(dataExamens2025, 'taux_reussite_cee');
-var moyenneReussiteBEPC = calculerMoyenne(dataExamens2025, 'taux_reussite_bepc');
-var moyenneReussiteBAC = calculerMoyenne(dataExamens2025, 'taux_reussite_bac');
-
+var genreFilter = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
+var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_cee', genreFilter);
+var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bepc', genreFilter);
+var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bac', genreFilter);
 console.log('📊 CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');
-
+    
 // 1. Taux de scolarisation (bleu)
 html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
 // 2. Taux d'abandon (orange)
@@ -4301,7 +4342,7 @@ if (dataTableau.length > 0) {
     for (var i = 0; i < dataTableau.length; i++) {
         var stat = dataTableau[i];
 
-        html += '<tr>';
+        html += '<tr data-region="' + stat.region + '" data-prefecture="' + stat.prefecture + '" data-zone="' + stat.zone + '" data-niveau="' + stat.niveau + '" data-genre="' + stat.genre + '">';
         html += '<td>' + stat.region + '</td>';
         html += '<td>' + stat.prefecture + '</td>';
         html += '<td>' + stat.zone + '</td>';
@@ -5285,6 +5326,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
