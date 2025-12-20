@@ -3083,7 +3083,16 @@ function appliquerFiltresStatistiques() {
         if (filterRegion && regionId != filterRegion) continue;
         if (filterPrefecture && stat.prefecture != filterPrefecture) continue;
         if (filterZone && stat.zone != filterZone) continue;
-        if (filterNiveau && stat.niveau != filterNiveau) continue;
+        // Gestion Collège/Lycée (mapper vers Secondaire)
+var niveauStat = stat.niveau;
+var niveauFiltre = filterNiveau;
+
+if (niveauFiltre === 'Collège' || niveauFiltre === 'Lycée') {
+    // Si on filtre sur Collège ou Lycée, on cherche les données "Secondaire"
+    if (niveauStat !== 'Secondaire') continue;
+} else {
+    if (filterNiveau && niveauStat != filterNiveau) continue;
+}
         if (filterGenre && filterGenre !== 'Total' && stat.genre != filterGenre) continue;
         
         dataStatsGeneralesFiltrees.push(stat);
@@ -3107,7 +3116,15 @@ function appliquerFiltresStatistiques() {
         if (filterRegion && regionId != filterRegion) continue;
         if (filterPrefecture && exam.prefecture != filterPrefecture) continue;
         if (filterZone && exam.zone != filterZone) continue;
-        if (filterNiveau && exam.niveau != filterNiveau) continue;
+// Gestion Collège/Lycée (mapper vers Secondaire)
+var niveauExam = exam.niveau;
+var niveauFiltre = filterNiveau;
+
+if (niveauFiltre === 'Collège' || niveauFiltre === 'Lycée') {
+    if (niveauExam !== 'Secondaire') continue;
+} else {
+    if (filterNiveau && niveauExam != filterNiveau) continue;
+}
         if (filterGenre && filterGenre !== 'Total' && exam.genre != filterGenre) continue;
         
         dataExamens2025Filtrees.push(exam);
@@ -3118,13 +3135,14 @@ function appliquerFiltresStatistiques() {
     
     // ========== RECALCULER LES MOYENNES DES CARTES ==========
     
-    var moyenneScolarisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_scolarisation');
-    var moyenneAbandon = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_abandon');
-    var moyenneAlphabetisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_alphabetisation');
-    var moyenneRatioEnseignant = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_enseignant');
-    var moyenneRatioClasse = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_classe');
-    var moyenneDistance = calculerMoyenne(dataStatsGeneralesFiltrees, 'distance_moyenne_ecole_domicile');
-    
+var moyenneScolarisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_scolarisation', filterGenre || 'Total');
+var moyenneAbandon = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_abandon', filterGenre || 'Total');
+var moyenneAlphabetisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_alphabetisation', filterGenre || 'Total');
+
+// Ratios toujours en Total
+var moyenneRatioEnseignant = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_enseignant', 'Total');
+var moyenneRatioClasse = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_classe', 'Total');
+var moyenneDistance = calculerMoyenne(dataStatsGeneralesFiltrees, 'distance_moyenne_ecole_domicile', 'Total');    
     var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_cee', filterGenre || 'Total');
     var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_bepc', filterGenre || 'Total');
     var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_bac', filterGenre || 'Total');
@@ -3175,7 +3193,14 @@ function appliquerFiltresStatistiques() {
         if (filterRegion && rowRegionId != filterRegion) showRow = false;
         if (filterPrefecture && rowPrefecture != filterPrefecture) showRow = false;
         if (filterZone && rowZone != filterZone) showRow = false;
-        if (filterNiveau && rowNiveau != filterNiveau) showRow = false;
+        // Gestion Collège/Lycée
+if (filterNiveau) {
+    if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+        if (rowNiveau !== 'Secondaire') showRow = false;
+    } else {
+        if (rowNiveau != filterNiveau) showRow = false;
+    }
+}
         if (filterGenre && filterGenre !== 'Total' && rowGenre != filterGenre) showRow = false;
         
         row.style.display = showRow ? '' : 'none';
@@ -4156,14 +4181,13 @@ html += '<option value="">Toutes</option>';
 html += '<option value="Urbaine">Urbaine</option>';
 html += '<option value="Rurale">Rurale</option>';
 html += '</select></div>';
-
 // 5️⃣ NIVEAU
 html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
 html += '<select id="filter-stats-niveau" class="form-control" onchange="appliquerFiltresStatistiques()">';
-html += '<option value="">Tous</option>';
 html += '<option value="Préscolaire">Préscolaire</option>';
 html += '<option value="Primaire">Primaire</option>';
-html += '<option value="Secondaire">Secondaire</option>';
+html += '<option value="Collège">Collège</option>';
+html += '<option value="Lycée">Lycée</option>';
 html += '<option value="Alphabétisation">Alphabétisation</option>';
 html += '</select></div>';
 
@@ -4172,8 +4196,8 @@ html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4p
 html += '<select id="filter-stats-genre" class="form-control" onchange="appliquerFiltresStatistiques()">';
 html += '<option value="Total">Total</option>';
 html += '<option value="Filles">Filles</option>';
+html += '<option value="Garcons">Garçons</option>';
 html += '</select></div>';
-
 html += '</div></div>';
                 
              // Cartes d'indicateurs (9 cartes au total)
@@ -4208,25 +4232,30 @@ for (var i = 0; i < reussiteExamensData.length; i++) {
 
 console.log('✅ Stats générales:', dataStatsGenerales.length);
 console.log('✅ Examens 2025:', dataExamens2025.length);
-
-// Calculer les moyennes
-var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation');
-var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon');
-var moyenneAlphabetisation = calculerMoyenne(dataStatsGenerales, 'taux_alphabetisation');
-var moyenneRatioEnseignant = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_enseignant');
-var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_classe');
-var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile');
-
-// 🔥 Examens depuis reussiteExamensData (TOUJOURS recalculer avec filtre actuel)
+// 🎯 RÉCUPÉRER LE FILTRE GENRE ACTUEL
 var genreFilterActuel = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
 
-console.log('🎯 Genre sélectionné pour examens:', genreFilterActuel);
+console.log('🎯 Calcul des moyennes avec genre:', genreFilterActuel);
 
+// Calculer les moyennes selon le genre sélectionné
+var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation', genreFilterActuel);
+var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon', genreFilterActuel);
+var moyenneAlphabetisation = calculerMoyenne(dataStatsGenerales, 'taux_alphabetisation', genreFilterActuel);
+
+// Ratios et distance (toujours Total - pas de distinction F/G)
+var moyenneRatioEnseignant = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_enseignant', 'Total');
+var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_classe', 'Total');
+var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile', 'Total');
+
+// 🔥 Examens depuis reussiteExamensData
 var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_cee', genreFilterActuel);
 var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bepc', genreFilterActuel);
 var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bac', genreFilterActuel);
 
-console.log('📊 Moyennes calculées - CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');    
+console.log('📊 Moyennes calculées:');
+console.log('  Scolarisation:', moyenneScolarisation, '%');
+console.log('  Abandon:', moyenneAbandon, '%');
+console.log('  CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');
 // 1. Taux de scolarisation (bleu)
 html += '<div class="card card-blue"><div class="card-title" style="color: #2563eb;">Taux de scolarisation</div><div class="card-value">' + moyenneScolarisation + '%</div></div>';
 // 2. Taux d'abandon (orange)
@@ -4254,8 +4283,12 @@ html += '<th>Préfecture</th>';
 html += '<th>Zone</th>';
 html += '<th>Niveau</th>';
 html += '<th>Genre</th>';
-html += '<th>Taux scolarisation (%)</th>';
-html += '<th>Taux abandon (%)</th>';
+html += '<th>Scol. F (%)</th>';
+html += '<th>Scol. G (%)</th>';
+html += '<th>Scol. T (%)</th>';
+html += '<th>Aban. F (%)</th>';
+html += '<th>Aban. G (%)</th>';
+html += '<th>Aban. T (%)</th>';
 html += '<th>Réussite CEE (%)</th>';
 html += '<th>Réussite BEPC(%)</th>';
 html += '<th>Réussite BAC (%)</th>';
@@ -4295,8 +4328,12 @@ if (dataTableau.length > 0) {
         html += '<td>' + stat.zone + '</td>';
         html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
         html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
-        html += '<td>' + (stat.taux_scolarisation !== null && stat.taux_scolarisation !== undefined ? stat.taux_scolarisation : '-') + '</td>';
-        html += '<td>' + (stat.taux_abandon !== null && stat.taux_abandon !== undefined ? stat.taux_abandon : '-') + '</td>';
+html += '<td>' + (stat.taux_scolarisation_filles !== null && stat.taux_scolarisation_filles !== undefined ? stat.taux_scolarisation_filles : '-') + '</td>';
+html += '<td>' + (stat.taux_scolarisation_garcons !== null && stat.taux_scolarisation_garcons !== undefined ? stat.taux_scolarisation_garcons : '-') + '</td>';
+html += '<td>' + (stat.taux_scolarisation_total !== null && stat.taux_scolarisation_total !== undefined ? stat.taux_scolarisation_total : '-') + '</td>';
+html += '<td>' + (stat.taux_abandon_filles !== null && stat.taux_abandon_filles !== undefined ? stat.taux_abandon_filles : '-') + '</td>';
+html += '<td>' + (stat.taux_abandon_garcons !== null && stat.taux_abandon_garcons !== undefined ? stat.taux_abandon_garcons : '-') + '</td>';
+html += '<td>' + (stat.taux_abandon_total !== null && stat.taux_abandon_total !== undefined ? stat.taux_abandon_total : '-') + '</td>';
         html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.taux_reussite_cee : '-') + '</td>';
         html += '<td>' + (stat.taux_reussite_bepc !== null && stat.taux_reussite_bepc !== undefined ? stat.taux_reussite_bepc : '-') + '</td>';
         html += '<td>' + (stat.taux_reussite_bac !== null && stat.taux_reussite_bac !== undefined ? stat.taux_reussite_bac : '-') + '</td>';
@@ -4916,11 +4953,15 @@ render();
     }
 }
 // ========== FONCTIONS DE CALCUL DE MOYENNES ==========
-function calculerMoyenne(dataArray, field) {
+function calculerMoyenne(dataArray, fieldBase, genre) {
     if (!dataArray || dataArray.length === 0) {
-        console.warn('⚠️ calculerMoyenne: tableau vide pour', field);
+        console.warn('⚠️ calculerMoyenne: tableau vide pour', fieldBase);
         return 0;
     }
+    
+    // Déterminer le champ exact selon le genre
+    var field = fieldBase + '_' + genre.toLowerCase();
+    if (genre === 'Garcons') field = fieldBase + '_garcons';
     
     console.log('📊 Calcul moyenne pour:', field);
     console.log('   Nombre de lignes reçues:', dataArray.length);
@@ -4937,9 +4978,7 @@ function calculerMoyenne(dataArray, field) {
             sum += parseFloat(value);
             count++;
             valeurs.push(value);
-            console.log('   ✓ Ligne', i + 1, ':', value, '| Région:', ligne.region, '| Préf:', ligne.prefecture, '| Genre:', ligne.genre);
-        } else {
-            console.log('   ✗ Ligne', i + 1, ': valeur ignorée (null/undefined/NaN)');
+            console.log('   ✓ Ligne', i + 1, ':', value, '| Région:', ligne.region, '| Préf:', ligne.prefecture);
         }
     }
     
@@ -4952,27 +4991,26 @@ function calculerMoyenne(dataArray, field) {
     
     return moyenne;
 }
-
-function calculerMoyenneParGenre(dataArray, field, genre) {
+function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
     if (!dataArray || dataArray.length === 0) return 0;
     
-    console.log('📊 Calcul moyenne', field, 'pour genre:', genre);
+    // Déterminer le champ exact selon le genre
+    var field = fieldBase + '_' + genre.toLowerCase();
+    if (genre === 'Garcons') field = fieldBase + '_garcons';
+    
+    console.log('📊 Calcul moyenne examens:', field, 'pour genre:', genre);
     
     var sum = 0;
     var count = 0;
     
     for (var i = 0; i < dataArray.length; i++) {
         var stat = dataArray[i];
-        
-        // Filtrer par genre
-        if (genre === 'Total' && stat.genre !== 'Total') continue;
-        if (genre === 'Filles' && stat.genre !== 'Filles') continue;
-        
         var value = stat[field];
+        
         if (value !== null && value !== undefined && !isNaN(value)) {
             sum += parseFloat(value);
             count++;
-            console.log('  ✓ Ajout:', value, '(genre:', stat.genre, ')');
+            console.log('  ✓ Ajout:', value);
         }
     }
     
