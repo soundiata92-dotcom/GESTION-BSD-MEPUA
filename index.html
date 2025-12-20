@@ -4959,11 +4959,29 @@ function calculerMoyenne(dataArray, fieldBase, genre) {
         return 0;
     }
     
-    // Déterminer le champ exact selon le genre
-    var field = fieldBase + '_' + genre.toLowerCase();
-    if (genre === 'Garcons') field = fieldBase + '_garcons';
+    // 🔥 Champs qui n'ont PAS de distinction F/G (toujours Total)
+    var champsTotal = [
+        'ratio_eleves_enseignant',
+        'ratio_eleves_classe',
+        'distance_moyenne_ecole_domicile',
+        'taux_alphabetisation'
+    ];
     
-    console.log('📊 Calcul moyenne pour:', field);
+    // Déterminer le champ exact
+    var field;
+    if (champsTotal.indexOf(fieldBase) !== -1) {
+        // Ces champs n'ont pas de suffixe _filles/_garcons/_total
+        field = fieldBase;
+    } else {
+        // Champs avec distinction F/G/T
+        if (genre === 'Garcons') {
+            field = fieldBase + '_garcons';
+        } else {
+            field = fieldBase + '_' + genre.toLowerCase();
+        }
+    }
+    
+    console.log('📊 Calcul moyenne pour:', field, '(genre demandé:', genre + ')');
     console.log('   Nombre de lignes reçues:', dataArray.length);
     
     var sum = 0;
