@@ -3066,72 +3066,74 @@ function appliquerFiltresStatistiques() {
     // ========== FILTRER LES DONNÉES ==========
     
     // Stats générales 2025-2026
-    var dataStatsGeneralesFiltrees = [];
-    for (var i = 0; i < statistiquesData.length; i++) {
-        var stat = statistiquesData[i];
-        if (stat.annee_scolaire !== '2025-2026') continue;
-        
-        // Trouver l'ID de la région
-        var regionId = '';
-        for (var r = 0; r < regionsData.length; r++) {
-            if (regionsData[r].nom === stat.region) {
-                regionId = regionsData[r].id;
-                break;
-            }
+var dataStatsGeneralesFiltrees = [];
+for (var i = 0; i < statistiquesData.length; i++) {
+    var stat = statistiquesData[i];
+    if (stat.annee_scolaire !== '2025-2026') continue;
+    
+    // Trouver l'ID de la région
+    var regionId = '';
+    for (var r = 0; r < regionsData.length; r++) {
+        if (regionsData[r].nom === stat.region) {
+            regionId = regionsData[r].id;
+            break;
         }
-        
-        if (filterRegion && regionId != filterRegion) continue;
-        if (filterPrefecture && stat.prefecture != filterPrefecture) continue;
-        if (filterZone && stat.zone != filterZone) continue;
-        // Gestion Collège/Lycée (mapper vers Secondaire)
-var niveauStat = stat.niveau;
-var niveauFiltre = filterNiveau;
-
-if (niveauFiltre === 'Collège' || niveauFiltre === 'Lycée') {
-    // Si on filtre sur Collège ou Lycée, on cherche les données "Secondaire"
-    if (niveauStat !== 'Secondaire') continue;
-} else {
-    if (filterNiveau && niveauStat != filterNiveau) continue;
-}
-        if (filterGenre && filterGenre !== 'Total' && stat.genre != filterGenre) continue;
-        
-        dataStatsGeneralesFiltrees.push(stat);
     }
     
-    // Examens 2024-2025
-    var dataExamens2025Filtrees = [];
-    for (var i = 0; i < reussiteExamensData.length; i++) {
-        var exam = reussiteExamensData[i];
-        if (exam.annee_scolaire !== '2024-2025') continue;
-        
-        // Trouver l'ID de la région
-        var regionId = '';
-        for (var r = 0; r < regionsData.length; r++) {
-            if (regionsData[r].nom === exam.region) {
-                regionId = regionsData[r].id;
-                break;
-            }
+    if (filterRegion && regionId != filterRegion) continue;
+    if (filterPrefecture && stat.prefecture != filterPrefecture) continue;
+    if (filterZone && stat.zone != filterZone) continue;
+    
+    // Gestion Collège/Lycée → Secondaire
+    if (filterNiveau) {
+        if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+            if (stat.niveau !== 'Secondaire') continue;
+        } else {
+            if (stat.niveau != filterNiveau) continue;
         }
-        
-        if (filterRegion && regionId != filterRegion) continue;
-        if (filterPrefecture && exam.prefecture != filterPrefecture) continue;
-        if (filterZone && exam.zone != filterZone) continue;
-// Gestion Collège/Lycée (mapper vers Secondaire)
-var niveauExam = exam.niveau;
-var niveauFiltre = filterNiveau;
-
-if (niveauFiltre === 'Collège' || niveauFiltre === 'Lycée') {
-    if (niveauExam !== 'Secondaire') continue;
-} else {
-    if (filterNiveau && niveauExam != filterNiveau) continue;
-}
-        if (filterGenre && filterGenre !== 'Total' && exam.genre != filterGenre) continue;
-        
-        dataExamens2025Filtrees.push(exam);
     }
     
-    console.log('✅ Stats filtrées:', dataStatsGeneralesFiltrees.length);
-    console.log('✅ Examens filtrés:', dataExamens2025Filtrees.length);
+    // 🔥 NE PLUS FILTRER SUR stat.genre car cette colonne n'existe plus
+    // Les données F/G/T sont maintenant dans les colonnes taux_scolarisation_filles, _garcons, _total
+    
+    dataStatsGeneralesFiltrees.push(stat);
+}
+
+console.log('✅ Stats générales filtrées:', dataStatsGeneralesFiltrees.length, 'lignes');
+// Examens 2024-2025
+var dataExamens2025Filtrees = [];
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    var exam = reussiteExamensData[i];
+    if (exam.annee_scolaire !== '2024-2025') continue;
+    
+    // Trouver l'ID de la région
+    var regionId = '';
+    for (var r = 0; r < regionsData.length; r++) {
+        if (regionsData[r].nom === exam.region) {
+            regionId = regionsData[r].id;
+            break;
+        }
+    }
+    
+    if (filterRegion && regionId != filterRegion) continue;
+    if (filterPrefecture && exam.prefecture != filterPrefecture) continue;
+    if (filterZone && exam.zone != filterZone) continue;
+    
+    // Gestion Collège/Lycée → Secondaire
+    if (filterNiveau) {
+        if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+            if (exam.niveau !== 'Secondaire') continue;
+        } else {
+            if (exam.niveau != filterNiveau) continue;
+        }
+    }
+    
+    // 🔥 NE PLUS FILTRER SUR exam.genre car cette colonne n'existe plus
+    
+    dataExamens2025Filtrees.push(exam);
+}
+
+console.log('✅ Examens filtrés:', dataExamens2025Filtrees.length, 'lignes');
     
     // ========== RECALCULER LES MOYENNES DES CARTES ==========
     
