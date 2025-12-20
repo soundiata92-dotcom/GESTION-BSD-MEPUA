@@ -3162,195 +3162,120 @@ var moyenneDistance = calculerMoyenne(dataStatsGeneralesFiltrees, 'distance_moye
         cartes[7].querySelector('.card-value').textContent = moyenneRatioClasse;
         cartes[8].querySelector('.card-value').textContent = moyenneDistance;
     }
+    
 // ========== FILTRER LES LIGNES DU TABLEAU + COLONNES SELON GENRE ==========
-function appliquerFiltresStatistiques() {
-    console.log('🎯 Début du filtrage...');
+
+var rows = document.querySelectorAll('.table-container tbody tr');
+var visibleCount = 0;
+
+// 🔥 Récupérer l'en-tête pour masquer/afficher les colonnes
+var tableHeaders = document.querySelectorAll('.table-container thead th');
+
+console.log('🎯 Filtrage tableau avec genre:', filterGenre);
+
+for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
     
-    // Récupérer les valeurs des filtres
-    var filterRegion = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
-    var filterPrefecture = document.getElementById('filter-stats-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
-    var filterZone = document.getElementById('filter-stats-zone') ? document.getElementById('filter-stats-zone').value : '';
-    var filterNiveau = document.getElementById('filter-stats-niveau') ? document.getElementById('filter-stats-niveau').value : '';
-    var filterGenre = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
+    // Ignorer la ligne "Aucune statistique"
+    if (row.querySelector('.empty-state')) continue;
     
-    console.log('📋 Filtres actifs:');
-    console.log('  - Région:', filterRegion);
-    console.log('  - Préfecture:', filterPrefecture);
-    console.log('  - Zone:', filterZone);
-    console.log('  - Niveau:', filterNiveau);
-    console.log('  - Genre:', filterGenre);
+    var rowRegion = row.getAttribute('data-region');
+    var rowPrefecture = row.getAttribute('data-prefecture');
+    var rowZone = row.getAttribute('data-zone');
+    var rowNiveau = row.getAttribute('data-niveau');
     
-    var rows = document.querySelectorAll('.table-container tbody tr');
-    var visibleCount = 0;
+    var showRow = true;
     
-    // 🔥 Récupérer l'en-tête pour masquer/afficher les colonnes
-    var tableHeaders = document.querySelectorAll('.table-container thead th');
-    
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        
-        // Ignorer la ligne "Aucune statistique"
-        if (row.querySelector('.empty-state')) {
-            row.style.display = '';
-            continue;
-        }
-        
-        var rowRegion = row.getAttribute('data-region');
-        var rowPrefecture = row.getAttribute('data-prefecture');
-        var rowZone = row.getAttribute('data-zone');
-        var rowNiveau = row.getAttribute('data-niveau');
-        
-        var showRow = true;
-        
-        // Filtre par région
-        if (filterRegion && filterRegion !== '') {
-            // Trouver l'ID de la région de la ligne
-            var rowRegionId = '';
-            for (var r = 0; r < regionsData.length; r++) {
-                if (regionsData[r].nom === rowRegion) {
-                    rowRegionId = regionsData[r].id.toString();
-                    break;
-                }
-            }
-            if (rowRegionId !== filterRegion) showRow = false;
-        }
-        
-        // Filtre par préfecture
-        if (filterPrefecture && filterPrefecture !== '' && rowPrefecture !== filterPrefecture) {
-            showRow = false;
-        }
-        
-        // Filtre par zone
-        if (filterZone && filterZone !== '' && rowZone !== filterZone) {
-            showRow = false;
-        }
-        
-        // Filtre par niveau
-        if (filterNiveau && filterNiveau !== '') {
-            if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                // Pour Collège/Lycée, on cherche "Secondaire"
-                if (rowNiveau !== 'Secondaire') showRow = false;
-            } else {
-                if (rowNiveau !== filterNiveau) showRow = false;
-            }
-        }
-        
-        // 🔥 MASQUER/AFFICHER LES COLONNES SELON LE GENRE
-        var cells = row.querySelectorAll('td');
-        
-        // Structure du tableau :
-        // 0: Région | 1: Préfecture | 2: Zone | 3: Niveau | 4: Badge Genre
-        // 5: Scol F | 6: Scol G | 7: Scol T
-        // 8: Aban F | 9: Aban G | 10: Aban T
-        // 11: CEE | 12: BEPC | 13: BAC | 14: Alpha
-        // 15: Ratio Ens | 16: Ratio Classe | 17: Distance | 18: Actions (si admin)
-        
-        if (filterGenre === 'Filles') {
-            // Afficher F, masquer G et T
-            if (cells.length >= 11) {
-                cells[5].style.display = '';    // Scol F (afficher)
-                cells[6].style.display = 'none'; // Scol G (masquer)
-                cells[7].style.display = 'none'; // Scol T (masquer)
-                cells[8].style.display = '';    // Aban F (afficher)
-                cells[9].style.display = 'none'; // Aban G (masquer)
-                cells[10].style.display = 'none'; // Aban T (masquer)
-            }
-        } else if (filterGenre === 'Garcons') {
-            // Afficher G, masquer F et T
-            if (cells.length >= 11) {
-                cells[5].style.display = 'none'; // Scol F (masquer)
-                cells[6].style.display = '';    // Scol G (afficher)
-                cells[7].style.display = 'none'; // Scol T (masquer)
-                cells[8].style.display = 'none'; // Aban F (masquer)
-                cells[9].style.display = '';    // Aban G (afficher)
-                cells[10].style.display = 'none'; // Aban T (masquer)
-            }
-        } else if (filterGenre === 'Total') {
-            // Afficher T, masquer F et G
-            if (cells.length >= 11) {
-                cells[5].style.display = 'none'; // Scol F (masquer)
-                cells[6].style.display = 'none'; // Scol G (masquer)
-                cells[7].style.display = '';    // Scol T (afficher)
-                cells[8].style.display = 'none'; // Aban F (masquer)
-                cells[9].style.display = 'none'; // Aban G (masquer)
-                cells[10].style.display = '';    // Aban T (afficher)
-            }
-        } else {
-            // Afficher toutes les colonnes
-            for (var c = 5; c <= 10 && c < cells.length; c++) {
-                cells[c].style.display = '';
-            }
-        }
-        
-        row.style.display = showRow ? '' : 'none';
-        if (showRow) visibleCount++;
-    }
-    
-    // 🔥 MASQUER/AFFICHER LES EN-TÊTES AUSSI
-    // Structure des en-têtes (même ordre que les cellules)
-    if (tableHeaders.length >= 11) {
-        if (filterGenre === 'Filles') {
-            tableHeaders[5].style.display = '';    // Scol F (afficher)
-            tableHeaders[6].style.display = 'none'; // Scol G (masquer)
-            tableHeaders[7].style.display = 'none'; // Scol T (masquer)
-            tableHeaders[8].style.display = '';    // Aban F (afficher)
-            tableHeaders[9].style.display = 'none'; // Aban G (masquer)
-            tableHeaders[10].style.display = 'none'; // Aban T (masquer)
-        } else if (filterGenre === 'Garcons') {
-            tableHeaders[5].style.display = 'none'; // Scol F (masquer)
-            tableHeaders[6].style.display = '';    // Scol G (afficher)
-            tableHeaders[7].style.display = 'none'; // Scol T (masquer)
-            tableHeaders[8].style.display = 'none'; // Aban F (masquer)
-            tableHeaders[9].style.display = '';    // Aban G (afficher)
-            tableHeaders[10].style.display = 'none'; // Aban T (masquer)
-        } else if (filterGenre === 'Total') {
-            tableHeaders[5].style.display = 'none'; // Scol F (masquer)
-            tableHeaders[6].style.display = 'none'; // Scol G (masquer)
-            tableHeaders[7].style.display = '';    // Scol T (afficher)
-            tableHeaders[8].style.display = 'none'; // Aban F (masquer)
-            tableHeaders[9].style.display = 'none'; // Aban G (masquer)
-            tableHeaders[10].style.display = '';    // Aban T (afficher)
-        } else {
-            // Afficher tous les en-têtes
-            for (var h = 5; h <= 10 && h < tableHeaders.length; h++) {
-                tableHeaders[h].style.display = '';
-            }
+    // Trouver l'ID de la région
+    var rowRegionId = '';
+    for (var r = 0; r < regionsData.length; r++) {
+        if (regionsData[r].nom === rowRegion) {
+            rowRegionId = regionsData[r].id;
+            break;
         }
     }
     
-    console.log('✅ Filtrage terminé - Lignes visibles:', visibleCount);
+    if (filterRegion && rowRegionId != filterRegion) showRow = false;
+    if (filterPrefecture && rowPrefecture != filterPrefecture) showRow = false;
+    if (filterZone && rowZone != filterZone) showRow = false;
+    
+    // Gestion Collège/Lycée
+    if (filterNiveau) {
+        if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+            if (rowNiveau !== 'Secondaire') showRow = false;
+        } else {
+            if (rowNiveau != filterNiveau) showRow = false;
+        }
+    }
+    
+    // 🔥 MASQUER/AFFICHER LES COLONNES SELON LE GENRE
+    var cells = row.querySelectorAll('td');
+    
+    if (filterGenre === 'Filles') {
+        // Masquer Garçons (G) et Total (T)
+        // Colonnes : Région(0), Préf(1), Zone(2), Niveau(3), Badge(4)
+        // Scol: F(5), G(6), T(7) | Aban: F(8), G(9), T(10)
+        // Réussite CEE(11), BEPC(12), BAC(13) | Alpha(14), RatioEns(15), RatioCl(16), Dist(17)
+        
+        if (cells.length >= 18) {
+            cells[6].style.display = 'none';  // Scol G
+            cells[7].style.display = 'none';  // Scol T
+            cells[9].style.display = 'none';  // Aban G
+            cells[10].style.display = 'none'; // Aban T
+        }
+    } else if (filterGenre === 'Garcons') {
+        // Masquer Filles (F) et Total (T)
+        if (cells.length >= 18) {
+            cells[5].style.display = 'none';  // Scol F
+            cells[7].style.display = 'none';  // Scol T
+            cells[8].style.display = 'none';  // Aban F
+            cells[10].style.display = 'none'; // Aban T
+        }
+    } else if (filterGenre === 'Total') {
+        // Masquer Filles (F) et Garçons (G)
+        if (cells.length >= 18) {
+            cells[5].style.display = 'none';  // Scol F
+            cells[6].style.display = 'none';  // Scol G
+            cells[8].style.display = 'none';  // Aban F
+            cells[9].style.display = 'none';  // Aban G
+        }
+    } else {
+        // Afficher toutes les colonnes
+        for (var c = 0; c < cells.length; c++) {
+            cells[c].style.display = '';
+        }
+    }
+    
+    row.style.display = showRow ? '' : 'none';
+    if (showRow) visibleCount++;
 }
 
-function updateStatsPrefectureDropdown() {
-    var regionSelect = document.getElementById('filter-stats-region');
-    var prefectureSelect = document.getElementById('filter-stats-prefecture');
-    
-    if (!regionSelect || !prefectureSelect) {
-        console.log('⚠️ Sélecteurs de filtres non trouvés');
-        return;
-    }
-    
-    var regionId = regionSelect.value;
-    
-    console.log('🔄 Mise à jour préfectures pour région ID:', regionId);
-    
-    // Réinitialiser le dropdown des préfectures
-    prefectureSelect.innerHTML = '<option value="">Toutes</option>';
-    
-    if (regionId && regionId !== '') {
-        var count = 0;
-        for (var i = 0; i < prefecturesData.length; i++) {
-            if (prefecturesData[i].region_id.toString() === regionId.toString()) {
-                var option = document.createElement('option');
-                option.value = prefecturesData[i].nom;
-                option.textContent = prefecturesData[i].nom;
-                prefectureSelect.appendChild(option);
-                count++;
-            }
+// 🔥 MASQUER/AFFICHER LES EN-TÊTES AUSSI
+if (tableHeaders.length >= 18) {
+    if (filterGenre === 'Filles') {
+        tableHeaders[6].style.display = 'none';  // Scol. G (%)
+        tableHeaders[7].style.display = 'none';  // Scol. T (%)
+        tableHeaders[9].style.display = 'none';  // Aban. G (%)
+        tableHeaders[10].style.display = 'none'; // Aban. T (%)
+    } else if (filterGenre === 'Garcons') {
+        tableHeaders[5].style.display = 'none';  // Scol. F (%)
+        tableHeaders[7].style.display = 'none';  // Scol. T (%)
+        tableHeaders[8].style.display = 'none';  // Aban. F (%)
+        tableHeaders[10].style.display = 'none'; // Aban. T (%)
+    } else if (filterGenre === 'Total') {
+        tableHeaders[5].style.display = 'none';  // Scol. F (%)
+        tableHeaders[6].style.display = 'none';  // Scol. G (%)
+        tableHeaders[8].style.display = 'none';  // Aban. F (%)
+        tableHeaders[9].style.display = 'none';  // Aban. G (%)
+    } else {
+        // Afficher tous les en-têtes
+        for (var h = 0; h < tableHeaders.length; h++) {
+            tableHeaders[h].style.display = '';
         }
-        console.log('✅', count, 'préfectures ajoutées');
     }
 }
+
+console.log('📊 Lignes visibles dans le tableau:', visibleCount);
         // ========== FONCTION RENDER PRINCIPALE 
 function render() {
             var app = document.getElementById('app');
