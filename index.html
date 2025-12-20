@@ -2421,7 +2421,7 @@ html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="numbe
     
     html += '</div></div>';
     modalContainer.innerHTML = html;
-  // ========== CHARGER LES DONNÉES EXISTANTES ==========
+// ========== CHARGER LES DONNÉES EXISTANTES ==========
 setTimeout(async function() {
     var annee = document.getElementById('global-annee').value.trim();
     if (!annee) return;
@@ -2462,7 +2462,7 @@ setTimeout(async function() {
                         var prefecture = prefecturesRegion[p];
                         
                         if (prefecture.nom !== stat.prefecture) {
-                            rowIndex += 8; // 6 lignes par niveau (3 niveaux x 2 zones) + 2 lignes zone
+                            rowIndex += 6; // 2 zones × 3 niveaux
                             continue;
                         }
                         
@@ -2471,234 +2471,135 @@ setTimeout(async function() {
                             var zone = zones[z];
                             
                             if (zone !== stat.zone) {
-                                rowIndex += 4; // 3 lignes niveau + 1 ligne zone
+                                rowIndex += 3; // 3 niveaux
                                 continue;
                             }
                             
-                            if (stat.niveau && stat.niveau !== 'Alphabétisation') {
-                                // Données par niveau
-                                var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
-                                for (var n = 0; n < niveaux.length; n++) {
-                                    if (niveaux[n] === stat.niveau) {
-                                        var suffix = stat.genre === 'Total' ? 'total' : 'filles';
-                                        
-// Taux abandon Filles
-if (stat.taux_abandon_filles !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_filles"][data-type="niveau"]');
-    if (input) {
-        input.value = stat.taux_abandon_filles;
-        input.style.background = '#fce7f3';
-        input.style.borderColor = '#db2777';
-        input.disabled = true;
-        input.setAttribute('data-saved', 'true');
-        loaded++;
-    }
-}
-
-// Taux abandon Garçons
-if (stat.taux_abandon_garcons !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_garcons"][data-type="niveau"]');
-    if (input) {
-        input.value = stat.taux_abandon_garcons;
-        input.style.background = '#dbeafe';
-        input.style.borderColor = '#2563eb';
-        input.disabled = true;
-        input.setAttribute('data-saved', 'true');
-        loaded++;
-    }
-}
-
-// Taux abandon Total
-if (stat.taux_abandon_total !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_total"][data-type="niveau"]');
-    if (input) {
-        input.value = stat.taux_abandon_total;
-        input.style.background = '#d1fae5';
-        input.style.borderColor = '#10b981';
-        input.disabled = true;
-        input.setAttribute('data-saved', 'true');
-        loaded++;
-    }
-}
-                                            if (input) {
-                                                input.value = stat.taux_abandon;
-                                                input.style.background = '#e8f5e9';
-                                                input.style.borderColor = '#4caf50';
-                                                input.disabled = true;
-                                                input.setAttribute('data-saved', 'true');
-                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
-    
-    // Ajouter la période sur la ligne entière
-    var row = input.closest('tr');
-    if (row && !row.getAttribute('data-periode')) {
-        row.setAttribute('data-periode', stat.periode);
-    }
-
-                                                loaded++;
-                                            }
+                            var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
+                            for (var n = 0; n < niveaux.length && !found; n++) {
+                                if (niveaux[n] === stat.niveau) {
+                                    // 🔥 CHARGER SCOLARISATION F/G/T
+                                    if (stat.taux_scolarisation_filles !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_filles"]');
+                                        if (input) {
+                                            input.value = stat.taux_scolarisation_filles;
+                                            input.style.background = '#fce7f3';
+                                            input.style.borderColor = '#db2777';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
                                         }
-                                        
-                                        // Taux réussite
-                                        if (stat.taux_reussite_examens !== null) {
-                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="reussite_' + suffix + '"][data-type="niveau"]');
-                                            if (input) {
-                                                input.value = stat.taux_reussite_examens;
-                                                input.style.background = '#e8f5e9';
-                                                input.style.borderColor = '#4caf50';
-                                                input.disabled = true;
-                                                input.setAttribute('data-saved', 'true');
-                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
-    
-    // Ajouter la période sur la ligne entière
-    var row = input.closest('tr');
-    if (row && !row.getAttribute('data-periode')) {
-        row.setAttribute('data-periode', stat.periode);
-    }
-
-                                                loaded++;
-                                            }
-                                        }
-                                        // Taux scolarisation Filles
-if (stat.taux_scolarisation_filles !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_filles"][data-type="niveau"]');
-    if (input) {
-        input.value = stat.taux_scolarisation_filles;
-        input.style.background = '#fce7f3';
-        input.style.borderColor = '#db2777';
-        input.disabled = true;
-        input.setAttribute('data-saved', 'true');
-        loaded++;
-    }
-}
-
-// Taux scolarisation Garçons
-if (stat.taux_scolarisation_garcons !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_garcons"][data-type="niveau"]');
-    if (input) {
-        input.value = stat.taux_scolarisation_garcons;
-        input.style.background = '#dbeafe';
-        input.style.borderColor = '#2563eb';
-        input.disabled = true;
-        input.setAttribute('data-saved', 'true');
-        loaded++;
-    }
-}
-
-// Taux scolarisation Total
-if (stat.taux_scolarisation_total !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_total"][data-type="niveau"]');
-    if (input) {
-        input.value = stat.taux_scolarisation_total;
-        input.style.background = '#d1fae5';
-        input.style.borderColor = '#10b981';
-        input.disabled = true;
-        input.setAttribute('data-saved', 'true');
-        loaded++;
-    }
-}
-                                        // Ratio enseignant (seulement pour Total)
-                                        if (stat.genre === 'Total' && stat.ratio_eleves_enseignant !== null) {
-                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"][data-type="niveau"]');
-                                            if (input) {
-                                                input.value = stat.ratio_eleves_enseignant;
-                                                input.style.background = '#e8f5e9';
-                                                input.style.borderColor = '#4caf50';
-                                                input.disabled = true;
-                                                input.setAttribute('data-saved', 'true');
-                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
-    
-    // Ajouter la période sur la ligne entière
-    var row = input.closest('tr');
-    if (row && !row.getAttribute('data-periode')) {
-        row.setAttribute('data-periode', stat.periode);
-    }
-
-                                                loaded++;
-                                            }
-                                        }
-                                        
-                                        // Ratio classe (seulement pour Total)
-                                        if (stat.genre === 'Total' && stat.ratio_eleves_classe !== null) {
-                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"][data-type="niveau"]');
-                                            if (input) {
-                                                input.value = stat.ratio_eleves_classe;
-                                                input.style.background = '#e8f5e9';
-                                                input.style.borderColor = '#4caf50';
-                                                input.disabled = true;
-                                                input.setAttribute('data-saved', 'true');
-                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
-    
-    // Ajouter la période sur la ligne entière
-    var row = input.closest('tr');
-    if (row && !row.getAttribute('data-periode')) {
-        row.setAttribute('data-periode', stat.periode);
-    }
-
-                                                loaded++;
-                                            }
-                                        }
-                                        
-                                        // Distance (seulement pour Total)
-                                        if (stat.genre === 'Total' && stat.distance_moyenne_ecole_domicile !== null) {
-                                            var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"][data-type="niveau"]');
-                                            if (input) {
-                                                input.value = stat.distance_moyenne_ecole_domicile;
-                                                input.style.background = '#e8f5e9';
-                                                input.style.borderColor = '#4caf50';
-                                                input.disabled = true;
-                                                input.setAttribute('data-saved', 'true');
-                                                input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
-    
-    // Ajouter la période sur la ligne entière
-    var row = input.closest('tr');
-    if (row && !row.getAttribute('data-periode')) {
-        row.setAttribute('data-periode', stat.periode);
-    }
-
-                                                loaded++;
-                                            }
-                                        }
-                                        
-                                        found = true;
-                                        break;
                                     }
-                                    rowIndex++;
-                                }
-                            } else {
-                                // Données par zone (alphabétisation)
-                                rowIndex += 3; // Sauter les 3 niveaux
-                                
-                                var suffix = stat.genre === 'Total' ? 'total' : 'filles';
-                                if (stat.taux_alphabetisation !== null) {
-                                    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alphabetisation_' + suffix + '"][data-type="zone"]');
-                                    if (input) {
-                                        input.value = stat.taux_alphabetisation;
-                                        input.style.background = '#e8f5e9';
-                                        input.style.borderColor = '#4caf50';
-                                        input.disabled = true;
-                                        input.setAttribute('data-saved', 'true');
-                                        input.setAttribute('data-periode', stat.periode); // 🔥 NOUVEAU
-    
-    // Ajouter la période sur la ligne entière
-    var row = input.closest('tr');
-    if (row && !row.getAttribute('data-periode')) {
-        row.setAttribute('data-periode', stat.periode);
-    }
-
-                                        loaded++;
+                                    
+                                    if (stat.taux_scolarisation_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_garcons"]');
+                                        if (input) {
+                                            input.value = stat.taux_scolarisation_garcons;
+                                            input.style.background = '#dbeafe';
+                                            input.style.borderColor = '#2563eb';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
                                     }
+                                    
+                                    if (stat.taux_scolarisation_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_total"]');
+                                        if (input) {
+                                            input.value = stat.taux_scolarisation_total;
+                                            input.style.background = '#d1fae5';
+                                            input.style.borderColor = '#10b981';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    // 🔥 CHARGER ABANDON F/G/T
+                                    if (stat.taux_abandon_filles !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_filles"]');
+                                        if (input) {
+                                            input.value = stat.taux_abandon_filles;
+                                            input.style.background = '#fce7f3';
+                                            input.style.borderColor = '#db2777';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    if (stat.taux_abandon_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_garcons"]');
+                                        if (input) {
+                                            input.value = stat.taux_abandon_garcons;
+                                            input.style.background = '#dbeafe';
+                                            input.style.borderColor = '#2563eb';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    if (stat.taux_abandon_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_total"]');
+                                        if (input) {
+                                            input.value = stat.taux_abandon_total;
+                                            input.style.background = '#d1fae5';
+                                            input.style.borderColor = '#10b981';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    // Ratio enseignant
+                                    if (stat.ratio_eleves_enseignant !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"]');
+                                        if (input) {
+                                            input.value = stat.ratio_eleves_enseignant;
+                                            input.style.background = '#e8f5e9';
+                                            input.style.borderColor = '#4caf50';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    // Ratio classe
+                                    if (stat.ratio_eleves_classe !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"]');
+                                        if (input) {
+                                            input.value = stat.ratio_eleves_classe;
+                                            input.style.background = '#e8f5e9';
+                                            input.style.borderColor = '#4caf50';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    // Distance
+                                    if (stat.distance_moyenne_ecole_domicile !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"]');
+                                        if (input) {
+                                            input.value = stat.distance_moyenne_ecole_domicile;
+                                            input.style.background = '#e8f5e9';
+                                            input.style.borderColor = '#4caf50';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    found = true;
+                                    break;
                                 }
-                                
-                                found = true;
                                 rowIndex++;
                             }
                         }
                     }
                 }
             }
-            
-            // Mettre à jour la progression
-            updateProgression();
             
             if (loaded > 0) {
                 alert('📥 ' + loaded + ' champs déjà enregistrés ont été chargés (en vert).\n\nVous pouvez continuer la saisie des autres lignes.');
@@ -2708,7 +2609,6 @@ if (stat.taux_scolarisation_total !== null) {
         console.error('Erreur chargement:', error);
     }
 }, 500);
-  
     modalContainer.innerHTML = html;
   // Initialiser les cartes avec toutes les données
     setTimeout(function() {
