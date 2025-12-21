@@ -4369,7 +4369,6 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 }
 
 html += '</tr></thead><tbody>';
-
 // 🔥 AFFICHER LES STATS GÉNÉRALES ET CROISER AVEC LES EXAMENS
 
 if (dataStatsGenerales.length > 0) {
@@ -4453,6 +4452,13 @@ if (dataStatsGenerales.length > 0) {
     var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '19' : '18';
     html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
 }
+html += '</tbody></table></div>';
+
+            }
+
+            html += '</div><div id="modal-container"></div>';
+            app.innerHTML = html;
+        }
 function showReussiteExamensModal() {
     var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">✅ Saisir les taux de réussite aux examens</h2>';
