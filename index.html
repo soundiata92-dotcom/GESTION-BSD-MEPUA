@@ -4476,43 +4476,60 @@ function showReussiteExamensModal() {
     html += '</select></div>';
     html += '</div>';
 
-    // ========== FILTRES ==========
+    // ========== FILTRES (5 FILTRES) ==========
     html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
     html += '<h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
     
     // Filtre 1 : Région
-    html += '<div class="form-group"><label>Région</label><select id="filter-examens-region" class="form-control" onchange="updateExamensFilters()"><option value="">Toutes les régions</option>';
+    html += '<div class="form-group"><label>Région</label><select id="filter-examens-region" class="form-control" onchange="updateExamensFilters()"><option value="">Toutes</option>';
     for (var i = 0; i < regionsData.length; i++) {
         html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
     }
     html += '</select></div>';
     
     // Filtre 2 : Préfecture
-    html += '<div class="form-group"><label>Préfecture</label><select id="filter-examens-prefecture" class="form-control" onchange="filterExamensRows()"><option value="">Toutes les préfectures</option></select></div>';
+    html += '<div class="form-group"><label>Préfecture</label><select id="filter-examens-prefecture" class="form-control" onchange="filterExamensRows()"><option value="">Toutes</option></select></div>';
     
     // Filtre 3 : Zone
-    html += '<div class="form-group"><label>Zone</label><select id="filter-examens-zone" class="form-control" onchange="filterExamensRows()"><option value="">Toutes les zones</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+    html += '<div class="form-group"><label>Zone</label><select id="filter-examens-zone" class="form-control" onchange="filterExamensRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
     
-    // Filtre 4 : Genre
-    html += '<div class="form-group"><label>Genre</label><select id="filter-examens-genre" class="form-control" onchange="filterExamensRows()"><option value="">Total et Filles</option><option value="Total">Total uniquement</option><option value="Filles">Filles uniquement</option></select></div>';
+    // Filtre 4 : Niveau 🔥 NOUVEAU
+    html += '<div class="form-group"><label>Niveau</label><select id="filter-examens-niveau" class="form-control" onchange="filterExamensRows()"><option value="">Tous</option><option value="Primaire">Primaire (CEE)</option><option value="Collège">Collège (BEPC)</option><option value="Lycée">Lycée (BAC)</option></select></div>';
+    
+    // Filtre 5 : Genre
+    html += '<div class="form-group"><label>Genre</label><select id="filter-examens-genre" class="form-control" onchange="filterExamensRows()"><option value="">Tous (F/G/T)</option><option value="Filles">Filles uniquement</option><option value="Garcons">Garçons uniquement</option><option value="Total">Total uniquement</option></select></div>';
     
     html += '</div></div>';
     
-    // ========== TABLEAU DE SAISIE AVEC 3 NIVEAUX SÉPARÉS ==========
+    // ========== TABLEAU AVEC F/G/T POUR CEE, BEPC, BAC ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
     html += '<table id="examens-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #059669; color: white; z-index: 10;"><tr>';
     html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Région</th>';
     html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Préfecture</th>';
     html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Zone</th>';
     html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Niveau</th>';
-    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #10b981; color: white; font-weight: bold;">Taux T (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 80px; background-color: #db2777; color: white; font-weight: bold;">Taux F (%)</th>';
+    
+    // CEE F/G/T
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">CEE F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">CEE G (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #10b981; color: white; font-weight: bold;">CEE T (%)</th>';
+    
+    // BEPC F/G/T
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">BEPC F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">BEPC G (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #10b981; color: white; font-weight: bold;">BEPC T (%)</th>';
+    
+    // BAC F/G/T
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #db2777; color: white; font-weight: bold;">BAC F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">BAC G (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #10b981; color: white; font-weight: bold;">BAC T (%)</th>';
+    
     html += '</tr></thead><tbody>';
     
     var rowIndex = 0;
     var zones = ['Urbaine', 'Rurale'];
-    var niveaux = ['Primaire', 'Collège', 'Lycée']; // 🔥 3 NIVEAUX SÉPARÉS
+    var niveaux = ['Primaire', 'Collège', 'Lycée'];
     
     // Générer les lignes
     for (var r = 0; r < regionsData.length; r++) {
@@ -4541,9 +4558,20 @@ function showReussiteExamensModal() {
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 700;">' + niveau + '</td>';
                     
-                    // Total et Filles (2 colonnes seulement)
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    // CEE F/G/T (9 inputs au total : 3 par examen)
+                    html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+                    html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    
+                    // BEPC F/G/T
+                    html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+                    html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    
+                    // BAC F/G/T
+                    html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+                    html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
                     
                     html += '</tr>';
                     rowIndex++;
@@ -4554,7 +4582,7 @@ function showReussiteExamensModal() {
     
     html += '</tbody></table></div>';
     
-    // ========== BOUTONS D'ACTION ==========
+    // ========== BOUTONS ==========
     html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
     html += '<button class="btn btn-primary" onclick="submitExamensData(false)">💾 Enregistrer nouvelles</button>';
     html += '<button class="btn btn-warning" onclick="submitExamensData(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
@@ -4639,95 +4667,112 @@ function filterExamensRows() {
     var regionId = document.getElementById('filter-examens-region') ? document.getElementById('filter-examens-region').value : '';
     var prefectureNom = document.getElementById('filter-examens-prefecture') ? document.getElementById('filter-examens-prefecture').value : '';
     var zoneFilter = document.getElementById('filter-examens-zone') ? document.getElementById('filter-examens-zone').value : '';
+    var niveauFilter = document.getElementById('filter-examens-niveau') ? document.getElementById('filter-examens-niveau').value : '';
     var genreFilter = document.getElementById('filter-examens-genre') ? document.getElementById('filter-examens-genre').value : '';
     
     console.log('=== FILTRAGE EXAMENS ===');
     console.log('Région ID:', regionId);
     console.log('Préfecture:', prefectureNom);
     console.log('Zone:', zoneFilter);
+    console.log('Niveau:', niveauFilter);
     console.log('Genre:', genreFilter);
     
     var rows = document.querySelectorAll('.examens-row');
-    console.log('Nombre de lignes trouvées:', rows.length);
+    var table = document.getElementById('examens-table');
+    var headers = table ? table.querySelectorAll('thead th') : [];
     
     var visibleCount = 0;
     
+    // Filtrer les lignes
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
         var rowRegion = row.getAttribute('data-region');
         var rowPrefecture = row.getAttribute('data-prefecture');
         var rowZone = row.getAttribute('data-zone');
+        var rowNiveau = row.getAttribute('data-niveau');
         
         var showRow = true;
         
-        // Filtre par région
-        if (regionId && regionId !== '' && rowRegion != regionId) {
-            showRow = false;
-        }
+        if (regionId && regionId !== '' && rowRegion != regionId) showRow = false;
+        if (prefectureNom && prefectureNom !== '' && rowPrefecture != prefectureNom) showRow = false;
+        if (zoneFilter && zoneFilter !== '' && rowZone != zoneFilter) showRow = false;
+        if (niveauFilter && niveauFilter !== '' && rowNiveau != niveauFilter) showRow = false;
         
-        // Filtre par préfecture
-        if (prefectureNom && prefectureNom !== '' && rowPrefecture != prefectureNom) {
-            showRow = false;
-        }
+        row.style.display = showRow ? '' : 'none';
+        if (showRow) visibleCount++;
         
-        // Filtre par zone
-        if (zoneFilter && zoneFilter !== '' && rowZone != zoneFilter) {
-            showRow = false;
-        }
+        // Gérer l'affichage des colonnes selon le genre
+        var cells = row.querySelectorAll('td');
         
-        // Filtre par genre (masquer/afficher colonnes)
-        if (genreFilter === 'Total') {
-            // Masquer colonnes Filles (colonnes 5, 7, 9)
-            var cells = row.querySelectorAll('td');
-            if (cells.length >= 9) {
-                cells[4].style.display = 'none'; // CEE F
-                cells[6].style.display = 'none'; // BEPC F
-                cells[8].style.display = 'none'; // BAC F
+        if (genreFilter === 'Filles') {
+            // Masquer Garçons et Total (indices 5, 6, 8, 9, 11, 12)
+            if (cells.length >= 13) {
+                cells[5].style.display = 'none';  // CEE G
+                cells[6].style.display = 'none';  // CEE T
+                cells[8].style.display = 'none';  // BEPC G
+                cells[9].style.display = 'none';  // BEPC T
+                cells[11].style.display = 'none'; // BAC G
+                cells[12].style.display = 'none'; // BAC T
             }
-        } else if (genreFilter === 'Filles') {
-            // Masquer colonnes Total (colonnes 4, 6, 8)
-            var cells = row.querySelectorAll('td');
-            if (cells.length >= 9) {
-                cells[3].style.display = 'none'; // CEE T
-                cells[5].style.display = 'none'; // BEPC T
-                cells[7].style.display = 'none'; // BAC T
+        } else if (genreFilter === 'Garcons') {
+            // Masquer Filles et Total (indices 4, 6, 7, 9, 10, 12)
+            if (cells.length >= 13) {
+                cells[4].style.display = 'none';  // CEE F
+                cells[6].style.display = 'none';  // CEE T
+                cells[7].style.display = 'none';  // BEPC F
+                cells[9].style.display = 'none';  // BEPC T
+                cells[10].style.display = 'none'; // BAC F
+                cells[12].style.display = 'none'; // BAC T
+            }
+        } else if (genreFilter === 'Total') {
+            // Masquer Filles et Garçons (indices 4, 5, 7, 8, 10, 11)
+            if (cells.length >= 13) {
+                cells[4].style.display = 'none';  // CEE F
+                cells[5].style.display = 'none';  // CEE G
+                cells[7].style.display = 'none';  // BEPC F
+                cells[8].style.display = 'none';  // BEPC G
+                cells[10].style.display = 'none'; // BAC F
+                cells[11].style.display = 'none'; // BAC G
             }
         } else {
             // Afficher toutes les colonnes
-            var cells = row.querySelectorAll('td');
-            for (var j = 0; j < cells.length; j++) {
-                cells[j].style.display = '';
+            for (var c = 4; c < cells.length; c++) {
+                cells[c].style.display = '';
             }
-        }
-        
-        row.style.display = showRow ? '' : 'none';
-        
-        if (showRow) {
-            visibleCount++;
         }
     }
     
-    // Gérer aussi les en-têtes du tableau
-    var table = document.getElementById('examens-table');
-    if (table) {
-        var headers = table.querySelectorAll('thead th');
-        if (genreFilter === 'Total' && headers.length >= 9) {
-            headers[4].style.display = 'none'; // CEE F
-            headers[6].style.display = 'none'; // BEPC F
-            headers[8].style.display = 'none'; // BAC F
-        } else if (genreFilter === 'Filles' && headers.length >= 9) {
-            headers[3].style.display = 'none'; // CEE T
-            headers[5].style.display = 'none'; // BEPC T
-            headers[7].style.display = 'none'; // BAC T
+    // Gérer les en-têtes aussi
+    if (headers.length >= 13) {
+        if (genreFilter === 'Filles') {
+            headers[5].style.display = 'none';  // CEE G
+            headers[6].style.display = 'none';  // CEE T
+            headers[8].style.display = 'none';  // BEPC G
+            headers[9].style.display = 'none';  // BEPC T
+            headers[11].style.display = 'none'; // BAC G
+            headers[12].style.display = 'none'; // BAC T
+        } else if (genreFilter === 'Garcons') {
+            headers[4].style.display = 'none';  // CEE F
+            headers[6].style.display = 'none';  // CEE T
+            headers[7].style.display = 'none';  // BEPC F
+            headers[9].style.display = 'none';  // BEPC T
+            headers[10].style.display = 'none'; // BAC F
+            headers[12].style.display = 'none'; // BAC T
+        } else if (genreFilter === 'Total') {
+            headers[4].style.display = 'none';  // CEE F
+            headers[5].style.display = 'none';  // CEE G
+            headers[7].style.display = 'none';  // BEPC F
+            headers[8].style.display = 'none';  // BEPC G
+            headers[10].style.display = 'none'; // BAC F
+            headers[11].style.display = 'none'; // BAC G
         } else {
-            for (var j = 0; j < headers.length; j++) {
-                headers[j].style.display = '';
+            for (var h = 4; h < headers.length; h++) {
+                headers[h].style.display = '';
             }
         }
     }
     
     console.log('Lignes visibles:', visibleCount);
-    console.log('================');
 }
 async function submitExamensData(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
@@ -4740,13 +4785,12 @@ async function submitExamensData(forcerMiseAJour) {
     }
     
     var zones = ['Urbaine', 'Rurale'];
-    var niveaux = ['Primaire', 'Collège', 'Lycée']; // 🔥 3 NIVEAUX
+    var niveaux = ['Primaire', 'Collège', 'Lycée'];
     var dataToInsert = [];
     var rowIndex = 0;
     
-    console.log('📊 Collecte des données examens pour l\'année:', annee);
+    console.log('📊 Collecte des données examens...');
     
-    // Parcourir toutes les lignes
     for (var r = 0; r < regionsData.length; r++) {
         var region = regionsData[r];
         var prefecturesRegion = [];
@@ -4766,17 +4810,33 @@ async function submitExamensData(forcerMiseAJour) {
                 for (var n = 0; n < niveaux.length; n++) {
                     var niveau = niveaux[n];
                     
-                    // Récupérer les inputs
-                    var inputTotal = document.querySelector('input[data-row="' + rowIndex + '"][data-field="total"][data-niveau="' + niveau + '"]');
-                    var inputFilles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="filles"][data-niveau="' + niveau + '"]');
+                    // Récupérer les 9 inputs (3 par examen)
+                    var ceeF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_filles"]');
+                    var ceeG = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_garcons"]');
+                    var ceeT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_total"]');
+                    var bepcF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_filles"]');
+                    var bepcG = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_garcons"]');
+                    var bepcT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_total"]');
+                    var bacF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_filles"]');
+                    var bacG = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_garcons"]');
+                    var bacT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_total"]');
                     
-                    var valeurTotal = inputTotal && inputTotal.value ? parseFloat(inputTotal.value) : null;
-                    var valeurFilles = inputFilles && inputFilles.value ? parseFloat(inputFilles.value) : null;
-                    var valeurGarcons = (valeurTotal !== null && valeurFilles !== null) ? valeurTotal - valeurFilles : null;
+                    var valCeeF = ceeF && ceeF.value ? parseFloat(ceeF.value) : null;
+                    var valCeeG = ceeG && ceeG.value ? parseFloat(ceeG.value) : null;
+                    var valCeeT = ceeT && ceeT.value ? parseFloat(ceeT.value) : null;
+                    var valBepcF = bepcF && bepcF.value ? parseFloat(bepcF.value) : null;
+                    var valBepcG = bepcG && bepcG.value ? parseFloat(bepcG.value) : null;
+                    var valBepcT = bepcT && bepcT.value ? parseFloat(bepcT.value) : null;
+                    var valBacF = bacF && bacF.value ? parseFloat(bacF.value) : null;
+                    var valBacG = bacG && bacG.value ? parseFloat(bacG.value) : null;
+                    var valBacT = bacT && bacT.value ? parseFloat(bacT.value) : null;
                     
                     // Si au moins une valeur existe
-                    if (valeurTotal !== null || valeurFilles !== null) {
-                        var record = {
+                    if (valCeeF !== null || valCeeG !== null || valCeeT !== null ||
+                        valBepcF !== null || valBepcG !== null || valBepcT !== null ||
+                        valBacF !== null || valBacG !== null || valBacT !== null) {
+                        
+                        dataToInsert.push({
                             annee_scolaire: annee,
                             session: parseInt(annee.split('-')[0]),
                             periode: 'Annuel',
@@ -4784,46 +4844,17 @@ async function submitExamensData(forcerMiseAJour) {
                             prefecture: prefecture.nom,
                             zone: zone,
                             niveau: niveau,
+                            taux_reussite_cee_filles: valCeeF,
+                            taux_reussite_cee_garcons: valCeeG,
+                            taux_reussite_cee_total: valCeeT,
+                            taux_reussite_bepc_filles: valBepcF,
+                            taux_reussite_bepc_garcons: valBepcG,
+                            taux_reussite_bepc_total: valBepcT,
+                            taux_reussite_bac_filles: valBacF,
+                            taux_reussite_bac_garcons: valBacG,
+                            taux_reussite_bac_total: valBacT,
                             saisi_par: currentUser.nom
-                        };
-                        
-                        // 🔥 SELON LE NIVEAU
-                        if (niveau === 'Primaire') {
-                            // CEE
-                            record.taux_reussite_cee_total = valeurTotal;
-                            record.taux_reussite_cee_filles = valeurFilles;
-                            record.taux_reussite_cee_garcons = valeurGarcons;
-                            record.taux_reussite_bepc_total = null;
-                            record.taux_reussite_bepc_filles = null;
-                            record.taux_reussite_bepc_garcons = null;
-                            record.taux_reussite_bac_total = null;
-                            record.taux_reussite_bac_filles = null;
-                            record.taux_reussite_bac_garcons = null;
-                        } else if (niveau === 'Collège') {
-                            // BEPC
-                            record.taux_reussite_cee_total = null;
-                            record.taux_reussite_cee_filles = null;
-                            record.taux_reussite_cee_garcons = null;
-                            record.taux_reussite_bepc_total = valeurTotal;
-                            record.taux_reussite_bepc_filles = valeurFilles;
-                            record.taux_reussite_bepc_garcons = valeurGarcons;
-                            record.taux_reussite_bac_total = null;
-                            record.taux_reussite_bac_filles = null;
-                            record.taux_reussite_bac_garcons = null;
-                        } else if (niveau === 'Lycée') {
-                            // BAC
-                            record.taux_reussite_cee_total = null;
-                            record.taux_reussite_cee_filles = null;
-                            record.taux_reussite_cee_garcons = null;
-                            record.taux_reussite_bepc_total = null;
-                            record.taux_reussite_bepc_filles = null;
-                            record.taux_reussite_bepc_garcons = null;
-                            record.taux_reussite_bac_total = valeurTotal;
-                            record.taux_reussite_bac_filles = valeurFilles;
-                            record.taux_reussite_bac_garcons = valeurGarcons;
-                        }
-                        
-                        dataToInsert.push(record);
+                        });
                     }
                     
                     rowIndex++;
@@ -4842,8 +4873,6 @@ async function submitExamensData(forcerMiseAJour) {
     }
     
     try {
-        console.log('📤 Envoi vers Supabase...');
-        
         const { data: processedData, error } = await supabase
             .from('reussite_examens')
             .upsert(dataToInsert, { 
@@ -4854,8 +4883,7 @@ async function submitExamensData(forcerMiseAJour) {
         
         if (error) throw error;
         
-        alert('✅ ' + (processedData ? processedData.length : dataToInsert.length) + ' données enregistrées !');
-        
+        alert('✅ Données enregistrées !');
         await loadData();
         closeModal();
         render();
