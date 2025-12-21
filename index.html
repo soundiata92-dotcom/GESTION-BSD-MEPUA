@@ -4369,9 +4369,7 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 }
 
 html += '</tr></thead><tbody>';
-
-// 🔥 AFFICHER UNIQUEMENT LES STATS GÉNÉRALES dans le tableau
-// (Les examens sont utilisés uniquement pour les cartes)
+// 🔥 AFFICHER LES STATS GÉNÉRALES ET CROISER AVEC LES EXAMENS
 
 if (dataStatsGenerales.length > 0) {
     for (var i = 0; i < dataStatsGenerales.length; i++) {
@@ -4382,7 +4380,7 @@ if (dataStatsGenerales.length > 0) {
         html += '<td>' + stat.prefecture + '</td>';
         html += '<td>' + stat.zone + '</td>';
         html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
-        html += '<td><span class="badge badge-purple">' + (filterGenre || 'Total') + '</span></td>';
+        html += '<td><span class="badge badge-purple">' + (document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total') + '</span></td>';
         
         // Scolarisation F/G/T
         html += '<td>' + (stat.taux_scolarisation_filles !== null && stat.taux_scolarisation_filles !== undefined ? stat.taux_scolarisation_filles : '-') + '</td>';
@@ -4394,27 +4392,43 @@ if (dataStatsGenerales.length > 0) {
         html += '<td>' + (stat.taux_abandon_garcons !== null && stat.taux_abandon_garcons !== undefined ? stat.taux_abandon_garcons : '-') + '</td>';
         html += '<td>' + (stat.taux_abandon_total !== null && stat.taux_abandon_total !== undefined ? stat.taux_abandon_total : '-') + '</td>';
         
-        // Réussite examens - Chercher dans dataExamens2025
+        // Réussite examens - Chercher les données correspondantes
         var ceeValue = '-', bepcValue = '-', bacValue = '-';
+        var genreActuel = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
         
+        // Chercher dans dataExamens2025 les données correspondantes
         for (var j = 0; j < dataExamens2025.length; j++) {
             var exam = dataExamens2025[j];
-            if (exam.region === stat.region && exam.prefecture === stat.prefecture && exam.zone === stat.zone && exam.niveau === stat.niveau) {
-                // Selon le genre sélectionné
-                if (filterGenre === 'Filles') {
-                    ceeValue = exam.taux_reussite_cee_filles !== null ? exam.taux_reussite_cee_filles : '-';
-                    bepcValue = exam.taux_reussite_bepc_filles !== null ? exam.taux_reussite_bepc_filles : '-';
-                    bacValue = exam.taux_reussite_bac_filles !== null ? exam.taux_reussite_bac_filles : '-';
-                } else if (filterGenre === 'Garcons') {
-                    ceeValue = exam.taux_reussite_cee_garcons !== null ? exam.taux_reussite_cee_garcons : '-';
-                    bepcValue = exam.taux_reussite_bepc_garcons !== null ? exam.taux_reussite_bepc_garcons : '-';
-                    bacValue = exam.taux_reussite_bac_garcons !== null ? exam.taux_reussite_bac_garcons : '-';
-                } else { // Total
-                    ceeValue = exam.taux_reussite_cee_total !== null ? exam.taux_reussite_cee_total : '-';
-                    bepcValue = exam.taux_reussite_bepc_total !== null ? exam.taux_reussite_bepc_total : '-';
-                    bacValue = exam.taux_reussite_bac_total !== null ? exam.taux_reussite_bac_total : '-';
+            
+            // Vérifier la correspondance région/préfecture/zone
+            if (exam.region === stat.region && 
+                exam.prefecture === stat.prefecture && 
+                exam.zone === stat.zone) {
+                
+                // Pour CEE (Primaire)
+                if (exam.niveau === 'Primaire') {
+                    if (genreActuel === 'Filles') {
+                        ceeValue = exam.taux_reussite_cee_filles !== null && exam.taux_reussite_cee_filles !== undefined ? exam.taux_reussite_cee_filles : '-';
+                    } else if (genreActuel === 'Garcons') {
+                        ceeValue = exam.taux_reussite_cee_garcons !== null && exam.taux_reussite_cee_garcons !== undefined ? exam.taux_reussite_cee_garcons : '-';
+                    } else {
+                        ceeValue = exam.taux_reussite_cee_total !== null && exam.taux_reussite_cee_total !== undefined ? exam.taux_reussite_cee_total : '-';
+                    }
                 }
-                break;
+                
+                // Pour BEPC et BAC (Secondaire)
+                if (exam.niveau === 'Secondaire') {
+                    if (genreActuel === 'Filles') {
+                        bepcValue = exam.taux_reussite_bepc_filles !== null && exam.taux_reussite_bepc_filles !== undefined ? exam.taux_reussite_bepc_filles : '-';
+                        bacValue = exam.taux_reussite_bac_filles !== null && exam.taux_reussite_bac_filles !== undefined ? exam.taux_reussite_bac_filles : '-';
+                    } else if (genreActuel === 'Garcons') {
+                        bepcValue = exam.taux_reussite_bepc_garcons !== null && exam.taux_reussite_bepc_garcons !== undefined ? exam.taux_reussite_bepc_garcons : '-';
+                        bacValue = exam.taux_reussite_bac_garcons !== null && exam.taux_reussite_bac_garcons !== undefined ? exam.taux_reussite_bac_garcons : '-';
+                    } else {
+                        bepcValue = exam.taux_reussite_bepc_total !== null && exam.taux_reussite_bepc_total !== undefined ? exam.taux_reussite_bepc_total : '-';
+                        bacValue = exam.taux_reussite_bac_total !== null && exam.taux_reussite_bac_total !== undefined ? exam.taux_reussite_bac_total : '-';
+                    }
+                }
             }
         }
         
