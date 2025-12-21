@@ -4370,19 +4370,74 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 
 html += '</tr></thead><tbody>';
 
-// 🔥 COMBINER Stats générales + Examens pour le tableau
-var dataTableau = [];
+// 🔥 AFFICHER UNIQUEMENT LES STATS GÉNÉRALES dans le tableau
+// (Les examens sont utilisés uniquement pour les cartes)
 
-// Ajouter stats générales 2025-2026
-for (var i = 0; i < dataStatsGenerales.length; i++) {
-    dataTableau.push(dataStatsGenerales[i]);
+if (dataStatsGenerales.length > 0) {
+    for (var i = 0; i < dataStatsGenerales.length; i++) {
+        var stat = dataStatsGenerales[i];
+
+        html += '<tr data-region="' + stat.region + '" data-prefecture="' + stat.prefecture + '" data-zone="' + stat.zone + '" data-niveau="' + stat.niveau + '">';
+        html += '<td>' + stat.region + '</td>';
+        html += '<td>' + stat.prefecture + '</td>';
+        html += '<td>' + stat.zone + '</td>';
+        html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
+        html += '<td><span class="badge badge-purple">' + (filterGenre || 'Total') + '</span></td>';
+        
+        // Scolarisation F/G/T
+        html += '<td>' + (stat.taux_scolarisation_filles !== null && stat.taux_scolarisation_filles !== undefined ? stat.taux_scolarisation_filles : '-') + '</td>';
+        html += '<td>' + (stat.taux_scolarisation_garcons !== null && stat.taux_scolarisation_garcons !== undefined ? stat.taux_scolarisation_garcons : '-') + '</td>';
+        html += '<td>' + (stat.taux_scolarisation_total !== null && stat.taux_scolarisation_total !== undefined ? stat.taux_scolarisation_total : '-') + '</td>';
+        
+        // Abandon F/G/T
+        html += '<td>' + (stat.taux_abandon_filles !== null && stat.taux_abandon_filles !== undefined ? stat.taux_abandon_filles : '-') + '</td>';
+        html += '<td>' + (stat.taux_abandon_garcons !== null && stat.taux_abandon_garcons !== undefined ? stat.taux_abandon_garcons : '-') + '</td>';
+        html += '<td>' + (stat.taux_abandon_total !== null && stat.taux_abandon_total !== undefined ? stat.taux_abandon_total : '-') + '</td>';
+        
+        // Réussite examens - Chercher dans dataExamens2025
+        var ceeValue = '-', bepcValue = '-', bacValue = '-';
+        
+        for (var j = 0; j < dataExamens2025.length; j++) {
+            var exam = dataExamens2025[j];
+            if (exam.region === stat.region && exam.prefecture === stat.prefecture && exam.zone === stat.zone && exam.niveau === stat.niveau) {
+                // Selon le genre sélectionné
+                if (filterGenre === 'Filles') {
+                    ceeValue = exam.taux_reussite_cee_filles !== null ? exam.taux_reussite_cee_filles : '-';
+                    bepcValue = exam.taux_reussite_bepc_filles !== null ? exam.taux_reussite_bepc_filles : '-';
+                    bacValue = exam.taux_reussite_bac_filles !== null ? exam.taux_reussite_bac_filles : '-';
+                } else if (filterGenre === 'Garcons') {
+                    ceeValue = exam.taux_reussite_cee_garcons !== null ? exam.taux_reussite_cee_garcons : '-';
+                    bepcValue = exam.taux_reussite_bepc_garcons !== null ? exam.taux_reussite_bepc_garcons : '-';
+                    bacValue = exam.taux_reussite_bac_garcons !== null ? exam.taux_reussite_bac_garcons : '-';
+                } else { // Total
+                    ceeValue = exam.taux_reussite_cee_total !== null ? exam.taux_reussite_cee_total : '-';
+                    bepcValue = exam.taux_reussite_bepc_total !== null ? exam.taux_reussite_bepc_total : '-';
+                    bacValue = exam.taux_reussite_bac_total !== null ? exam.taux_reussite_bac_total : '-';
+                }
+                break;
+            }
+        }
+        
+        html += '<td>' + ceeValue + '</td>';
+        html += '<td>' + bepcValue + '</td>';
+        html += '<td>' + bacValue + '</td>';
+        
+        // Autres colonnes
+        html += '<td>' + (stat.taux_alphabetisation !== null && stat.taux_alphabetisation !== undefined ? stat.taux_alphabetisation : '-') + '</td>';
+        html += '<td>' + (stat.ratio_eleves_enseignant !== null && stat.ratio_eleves_enseignant !== undefined ? stat.ratio_eleves_enseignant : '-') + '</td>';
+        html += '<td>' + (stat.ratio_eleves_classe !== null && stat.ratio_eleves_classe !== undefined ? stat.ratio_eleves_classe : '-') + '</td>';
+        html += '<td>' + (stat.distance_moyenne_ecole_domicile !== null && stat.distance_moyenne_ecole_domicile !== undefined ? stat.distance_moyenne_ecole_domicile : '-') + '</td>';
+        
+        if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+            html += '<td style="text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + stat.id + ')">Supprimer</button></td>';
+        }
+        
+        html += '</tr>';
+    }
+} else {
+    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '19' : '18';
+    html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
 }
-
-// Ajouter examens session 2025
-for (var i = 0; i < dataExamens2025.length; i++) {
-    dataTableau.push(dataExamens2025[i]);
-}
-
 console.log('📋 Tableau combiné:', dataTableau.length, 'lignes');
 
 if (dataTableau.length > 0) {
