@@ -4833,7 +4833,7 @@ function filterExamensRows() {
 async function submitExamensData(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
-   var annee = document.getElementById('examens-session').value;
+    var annee = document.getElementById('examens-session').value;
     
     if (!annee) {
         alert('⚠️ Veuillez sélectionner une année');
@@ -4879,10 +4879,11 @@ async function submitExamensData(forcerMiseAJour) {
                 var bacT = inputBacT && inputBacT.value ? parseFloat(inputBacT.value) : null;
                 var bacF = inputBacF && inputBacF.value ? parseFloat(inputBacF.value) : null;
                 
-                // ========== CEE (Primaire) ==========
+                // ========== STRUCTURE CORRIGÉE SANS COLONNE 'genre' ==========
+                // On utilise les colonnes _total et _filles directement
                 
-                // CEE Total
-                if (ceeT !== null) {
+                // CEE (Primaire) - UN SEUL enregistrement avec T et F
+                if (ceeT !== null || ceeF !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
                         session: parseInt(annee.split('-')[0]),  
@@ -4891,36 +4892,21 @@ async function submitExamensData(forcerMiseAJour) {
                         prefecture: prefecture.nom,
                         zone: zone,
                         niveau: 'Primaire',
-                        genre: 'Total',
-                        taux_reussite_cee: ceeT,
-                        taux_reussite_bepc: null,
-                        taux_reussite_bac: null,
+                        taux_reussite_cee_total: ceeT,
+                        taux_reussite_cee_filles: ceeF,
+                        taux_reussite_cee_garcons: ceeT !== null && ceeF !== null ? ceeT - ceeF : null,
+                        taux_reussite_bepc_total: null,
+                        taux_reussite_bepc_filles: null,
+                        taux_reussite_bepc_garcons: null,
+                        taux_reussite_bac_total: null,
+                        taux_reussite_bac_filles: null,
+                        taux_reussite_bac_garcons: null,
                         saisi_par: currentUser.nom
                     });
                 }
                 
-                // CEE Filles
-                if (ceeF !== null) {
-                    dataToInsert.push({
-                        annee_scolaire: annee,
-                        session: parseInt(annee.split('-')[0]),  
-                        periode: 'Annuel',
-                        region: region.nom,
-                        prefecture: prefecture.nom,
-                        zone: zone,
-                        niveau: 'Primaire',
-                        genre: 'Filles',
-                        taux_reussite_cee: ceeF,
-                        taux_reussite_bepc: null,
-                        taux_reussite_bac: null,
-                        saisi_par: currentUser.nom
-                    });
-                }
-                
-                // ========== BEPC + BAC (Secondaire) - UN SEUL enregistrement ==========
-                
-                // Total (BEPC + BAC ensemble)
-                if (bepcT !== null || bacT !== null) {
+                // BEPC + BAC (Secondaire) - UN SEUL enregistrement
+                if (bepcT !== null || bepcF !== null || bacT !== null || bacF !== null) {
                     dataToInsert.push({
                         annee_scolaire: annee,
                         session: parseInt(annee.split('-')[0]),  
@@ -4929,28 +4915,15 @@ async function submitExamensData(forcerMiseAJour) {
                         prefecture: prefecture.nom,
                         zone: zone,
                         niveau: 'Secondaire',
-                        genre: 'Total',
-                        taux_reussite_cee: null,
-                        taux_reussite_bepc: bepcT,
-                        taux_reussite_bac: bacT,
-                        saisi_par: currentUser.nom
-                    });
-                }
-                
-                // Filles (BEPC + BAC ensemble)
-                if (bepcF !== null || bacF !== null) {
-                    dataToInsert.push({
-                        annee_scolaire: annee,
-                        session: parseInt(annee.split('-')[0]),  
-                        periode: 'Annuel',
-                        region: region.nom,
-                        prefecture: prefecture.nom,
-                        zone: zone,
-                        niveau: 'Secondaire',
-                        genre: 'Filles',
-                        taux_reussite_cee: null,
-                        taux_reussite_bepc: bepcF,
-                        taux_reussite_bac: bacF,
+                        taux_reussite_cee_total: null,
+                        taux_reussite_cee_filles: null,
+                        taux_reussite_cee_garcons: null,
+                        taux_reussite_bepc_total: bepcT,
+                        taux_reussite_bepc_filles: bepcF,
+                        taux_reussite_bepc_garcons: bepcT !== null && bepcF !== null ? bepcT - bepcF : null,
+                        taux_reussite_bac_total: bacT,
+                        taux_reussite_bac_filles: bacF,
+                        taux_reussite_bac_garcons: bacT !== null && bacF !== null ? bacT - bacF : null,
                         saisi_par: currentUser.nom
                     });
                 }
@@ -4988,7 +4961,7 @@ async function submitExamensData(forcerMiseAJour) {
             const { data: processedData, error } = await supabase
                 .from('reussite_examens')
                 .upsert(batch, { 
-                    onConflict: 'annee_scolaire,periode,region,prefecture,zone,niveau,genre',
+                    onConflict: 'annee_scolaire,periode,region,prefecture,zone,niveau',
                     ignoreDuplicates: false 
                 })
                 .select();
@@ -5001,20 +4974,20 @@ async function submitExamensData(forcerMiseAJour) {
             console.log('✅ Lot traité avec succès');
             
             if (processedData) {
-    totalProcessed += processedData.length;
-    
-    // 🔥 Mettre à jour reussiteExamensData (pas statistiquesData)
-    for (var j = 0; j < processedData.length; j++) {
-        var found = false;
-        for (var k = 0; k < reussiteExamensData.length; k++) {
-            if (reussiteExamensData[k].id === processedData[j].id) {
-                reussiteExamensData[k] = processedData[j];
+                totalProcessed += processedData.length;
+                
+                // Mettre à jour reussiteExamensData
+                for (var j = 0; j < processedData.length; j++) {
+                    var found = false;
+                    for (var k = 0; k < reussiteExamensData.length; k++) {
+                        if (reussiteExamensData[k].id === processedData[j].id) {
+                            reussiteExamensData[k] = processedData[j];
                             found = true;
                             break;
                         }
                     }
                     if (!found) {
-                       reussiteExamensData.unshift(processedData[j]);
+                        reussiteExamensData.unshift(processedData[j]);
                     }
                 }
             }
@@ -5025,11 +4998,10 @@ async function submitExamensData(forcerMiseAJour) {
             : '✅ ' + totalProcessed + ' données enregistrées avec succès !';
         
         alert(successMessage);
+        
         // Recharger les données depuis Supabase
-await loadData();
-
-closeModal();
-render();
+        await loadData();
+        
         closeModal();
         render();
         
