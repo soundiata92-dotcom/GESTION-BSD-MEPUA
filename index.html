@@ -3217,71 +3217,36 @@ function appliquerFiltresStatistiques() {
         dataStatsGeneralesFiltrees.push(stat);
     }
     
-// Examens 2024-2025
-var dataExamens2025Filtrees = [];
-console.log('🔍 Filtrage examens 2024-2025...');
-console.log('   Total reussiteExamensData:', reussiteExamensData.length);
-
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    var exam = reussiteExamensData[i];
-    
-    // Vérifier l'année
-    if (exam.annee_scolaire !== '2024-2025') continue;
-    
-    var includeExam = true;
-    
-    // Filtre par région
-    if (filterRegion && filterRegion !== '') {
-        var examRegionId = '';
+    // Examens 2024-2025
+    var dataExamens2025Filtrees = [];
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire !== '2024-2025') continue;
+        
+        // Trouver l'ID de la région
+        var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === exam.region) {
-                examRegionId = regionsData[r].id.toString();
+                regionId = regionsData[r].id;
                 break;
             }
         }
-        if (examRegionId !== filterRegion) {
-            includeExam = false;
-        }
-    }
-    
-    // Filtre par préfecture
-    if (includeExam && filterPrefecture && filterPrefecture !== '' && exam.prefecture !== filterPrefecture) {
-        includeExam = false;
-    }
-    
-    // Filtre par zone
-    if (includeExam && filterZone && filterZone !== '' && exam.zone !== filterZone) {
-        includeExam = false;
-    }
-    
-    // Filtre par niveau
-    if (includeExam && filterNiveau && filterNiveau !== '') {
-        if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-            // Pour Collège/Lycée, chercher Secondaire
-            if (exam.niveau !== 'Secondaire') {
-                includeExam = false;
-            }
-        } else if (filterNiveau === 'Primaire') {
-            // Pour CEE, chercher Primaire
-            if (exam.niveau !== 'Primaire') {
-                includeExam = false;
-            }
-        } else {
-            // Autres niveaux
-            if (exam.niveau !== filterNiveau) {
-                includeExam = false;
+        
+        if (filterRegion && regionId != filterRegion) continue;
+        if (filterPrefecture && exam.prefecture != filterPrefecture) continue;
+        if (filterZone && exam.zone != filterZone) continue;
+        
+        // Gestion Collège/Lycée → Secondaire
+        if (filterNiveau) {
+            if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+                if (exam.niveau !== 'Secondaire') continue;
+            } else {
+                if (exam.niveau != filterNiveau) continue;
             }
         }
-    }
-    
-    if (includeExam) {
+        
         dataExamens2025Filtrees.push(exam);
-        console.log('   ✓ Ajouté:', exam.region, '/', exam.prefecture, '/', exam.zone, '/', exam.niveau);
     }
-}
-
-console.log('✅ Examens filtrés:', dataExamens2025Filtrees.length, 'lignes');
-console.log('');
     
     var moyenneScolarisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_scolarisation', filterGenre || 'Total');
     var moyenneAbandon = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_abandon', filterGenre || 'Total');
