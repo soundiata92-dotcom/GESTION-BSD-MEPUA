@@ -2131,25 +2131,6 @@ function calculerMoyenne(data, field) {
     }
     return count > 0 ? Math.round(total / count * 10) / 10 : 0;
 }
-function calculerMoyenneParGenre(data, field, genre) {
-    if (data.length === 0) return 0;
-    
-    var total = 0;
-    var count = 0;
-    
-    for (var i = 0; i < data.length; i++) {
-        // Filtrer par genre si spécifié
-        if (genre && data[i].genre !== genre) continue;
-        
-        if (data[i][field] !== null && data[i][field] !== undefined) {
-            total += parseFloat(data[i][field]);
-            count++;
-        }
-    }
-    
-    return count > 0 ? Math.round(total / count * 10) / 10 : 0;
-}
-        
 function updateFormFilters() {
     var regionId = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var prefectureSelect = document.getElementById('filter-prefecture');
