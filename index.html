@@ -5049,16 +5049,29 @@ function calculerMoyenne(dataArray, fieldBase, genre) {
     return moyenne;
 }
 function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
-    if (!dataArray || dataArray.length === 0) return 0;
+    if (!dataArray || dataArray.length === 0) {
+        console.warn('⚠️ calculerMoyenneParGenre: tableau vide pour', fieldBase);
+        return 0;
+    }
     
     // Déterminer le champ exact selon le genre
-    var field = fieldBase + '_' + genre.toLowerCase();
-    if (genre === 'Garcons') field = fieldBase + '_garcons';
+    var field;
+    if (genre === 'Total') {
+        field = fieldBase + '_total';
+    } else if (genre === 'Filles') {
+        field = fieldBase + '_filles';
+    } else if (genre === 'Garcons') {
+        field = fieldBase + '_garcons';
+    } else {
+        field = fieldBase + '_total'; // Par défaut
+    }
     
     console.log('📊 Calcul moyenne examens:', field, 'pour genre:', genre);
+    console.log('   Nombre de lignes reçues:', dataArray.length);
     
     var sum = 0;
     var count = 0;
+    var valeurs = [];
     
     for (var i = 0; i < dataArray.length; i++) {
         var stat = dataArray[i];
@@ -5067,12 +5080,17 @@ function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
         if (value !== null && value !== undefined && !isNaN(value)) {
             sum += parseFloat(value);
             count++;
-            console.log('  ✓ Ajout:', value);
+            valeurs.push(value);
+            console.log('   ✓ Ligne', i + 1, ':', value, '| Région:', stat.region, '| Préf:', stat.prefecture);
         }
     }
     
     var moyenne = count > 0 ? Math.round((sum / count) * 100) / 100 : 0;
-    console.log('  ➜ Moyenne finale:', moyenne, '(', count, 'valeurs)');
+    
+    console.log('   📈 Valeurs utilisées:', valeurs.join(', '));
+    console.log('   🧮 Somme:', sum, '/ Nombre:', count);
+    console.log('   ➜ MOYENNE FINALE:', moyenne);
+    console.log('');
     
     return moyenne;
 }
