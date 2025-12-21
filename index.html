@@ -4370,40 +4370,74 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 
 html += '</tr></thead><tbody>';
 
-// 🔥 COMBINER Stats générales + Examens pour le tableau
-var dataTableau = [];
+// 🔥 AFFICHER LES STATS GÉNÉRALES ET CROISER AVEC LES EXAMENS
 
-// Ajouter stats générales 2025-2026
-for (var i = 0; i < dataStatsGenerales.length; i++) {
-    dataTableau.push(dataStatsGenerales[i]);
-}
+if (dataStatsGenerales.length > 0) {
+    for (var i = 0; i < dataStatsGenerales.length; i++) {
+        var stat = dataStatsGenerales[i];
 
-// Ajouter examens session 2025
-for (var i = 0; i < dataExamens2025.length; i++) {
-    dataTableau.push(dataExamens2025[i]);
-}
-
-console.log('📋 Tableau combiné:', dataTableau.length, 'lignes');
-
-if (dataTableau.length > 0) {
-    for (var i = 0; i < dataTableau.length; i++) {
-        var stat = dataTableau[i];
-
-        html += '<tr data-region="' + stat.region + '" data-prefecture="' + stat.prefecture + '" data-zone="' + stat.zone + '" data-niveau="' + stat.niveau + '" data-genre="' + stat.genre + '">';
+        html += '<tr data-region="' + stat.region + '" data-prefecture="' + stat.prefecture + '" data-zone="' + stat.zone + '" data-niveau="' + stat.niveau + '">';
         html += '<td>' + stat.region + '</td>';
         html += '<td>' + stat.prefecture + '</td>';
         html += '<td>' + stat.zone + '</td>';
         html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
-        html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
-html += '<td>' + (stat.taux_scolarisation_filles !== null && stat.taux_scolarisation_filles !== undefined ? stat.taux_scolarisation_filles : '-') + '</td>';
-html += '<td>' + (stat.taux_scolarisation_garcons !== null && stat.taux_scolarisation_garcons !== undefined ? stat.taux_scolarisation_garcons : '-') + '</td>';
-html += '<td>' + (stat.taux_scolarisation_total !== null && stat.taux_scolarisation_total !== undefined ? stat.taux_scolarisation_total : '-') + '</td>';
-html += '<td>' + (stat.taux_abandon_filles !== null && stat.taux_abandon_filles !== undefined ? stat.taux_abandon_filles : '-') + '</td>';
-html += '<td>' + (stat.taux_abandon_garcons !== null && stat.taux_abandon_garcons !== undefined ? stat.taux_abandon_garcons : '-') + '</td>';
-html += '<td>' + (stat.taux_abandon_total !== null && stat.taux_abandon_total !== undefined ? stat.taux_abandon_total : '-') + '</td>';
-        html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.taux_reussite_cee : '-') + '</td>';
-        html += '<td>' + (stat.taux_reussite_bepc !== null && stat.taux_reussite_bepc !== undefined ? stat.taux_reussite_bepc : '-') + '</td>';
-        html += '<td>' + (stat.taux_reussite_bac !== null && stat.taux_reussite_bac !== undefined ? stat.taux_reussite_bac : '-') + '</td>';
+        html += '<td><span class="badge badge-purple">' + (document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total') + '</span></td>';
+        
+        // Scolarisation F/G/T
+        html += '<td>' + (stat.taux_scolarisation_filles !== null && stat.taux_scolarisation_filles !== undefined ? stat.taux_scolarisation_filles : '-') + '</td>';
+        html += '<td>' + (stat.taux_scolarisation_garcons !== null && stat.taux_scolarisation_garcons !== undefined ? stat.taux_scolarisation_garcons : '-') + '</td>';
+        html += '<td>' + (stat.taux_scolarisation_total !== null && stat.taux_scolarisation_total !== undefined ? stat.taux_scolarisation_total : '-') + '</td>';
+        
+        // Abandon F/G/T
+        html += '<td>' + (stat.taux_abandon_filles !== null && stat.taux_abandon_filles !== undefined ? stat.taux_abandon_filles : '-') + '</td>';
+        html += '<td>' + (stat.taux_abandon_garcons !== null && stat.taux_abandon_garcons !== undefined ? stat.taux_abandon_garcons : '-') + '</td>';
+        html += '<td>' + (stat.taux_abandon_total !== null && stat.taux_abandon_total !== undefined ? stat.taux_abandon_total : '-') + '</td>';
+        
+        // Réussite examens - Chercher les données correspondantes
+        var ceeValue = '-', bepcValue = '-', bacValue = '-';
+        var genreActuel = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
+        
+        // Chercher dans dataExamens2025 les données correspondantes
+        for (var j = 0; j < dataExamens2025.length; j++) {
+            var exam = dataExamens2025[j];
+            
+            // Vérifier la correspondance région/préfecture/zone
+            if (exam.region === stat.region && 
+                exam.prefecture === stat.prefecture && 
+                exam.zone === stat.zone) {
+                
+                // Pour CEE (Primaire)
+                if (exam.niveau === 'Primaire') {
+                    if (genreActuel === 'Filles') {
+                        ceeValue = exam.taux_reussite_cee_filles !== null && exam.taux_reussite_cee_filles !== undefined ? exam.taux_reussite_cee_filles : '-';
+                    } else if (genreActuel === 'Garcons') {
+                        ceeValue = exam.taux_reussite_cee_garcons !== null && exam.taux_reussite_cee_garcons !== undefined ? exam.taux_reussite_cee_garcons : '-';
+                    } else {
+                        ceeValue = exam.taux_reussite_cee_total !== null && exam.taux_reussite_cee_total !== undefined ? exam.taux_reussite_cee_total : '-';
+                    }
+                }
+                
+                // Pour BEPC et BAC (Secondaire)
+                if (exam.niveau === 'Secondaire') {
+                    if (genreActuel === 'Filles') {
+                        bepcValue = exam.taux_reussite_bepc_filles !== null && exam.taux_reussite_bepc_filles !== undefined ? exam.taux_reussite_bepc_filles : '-';
+                        bacValue = exam.taux_reussite_bac_filles !== null && exam.taux_reussite_bac_filles !== undefined ? exam.taux_reussite_bac_filles : '-';
+                    } else if (genreActuel === 'Garcons') {
+                        bepcValue = exam.taux_reussite_bepc_garcons !== null && exam.taux_reussite_bepc_garcons !== undefined ? exam.taux_reussite_bepc_garcons : '-';
+                        bacValue = exam.taux_reussite_bac_garcons !== null && exam.taux_reussite_bac_garcons !== undefined ? exam.taux_reussite_bac_garcons : '-';
+                    } else {
+                        bepcValue = exam.taux_reussite_bepc_total !== null && exam.taux_reussite_bepc_total !== undefined ? exam.taux_reussite_bepc_total : '-';
+                        bacValue = exam.taux_reussite_bac_total !== null && exam.taux_reussite_bac_total !== undefined ? exam.taux_reussite_bac_total : '-';
+                    }
+                }
+            }
+        }
+        
+        html += '<td>' + ceeValue + '</td>';
+        html += '<td>' + bepcValue + '</td>';
+        html += '<td>' + bacValue + '</td>';
+        
+        // Autres colonnes
         html += '<td>' + (stat.taux_alphabetisation !== null && stat.taux_alphabetisation !== undefined ? stat.taux_alphabetisation : '-') + '</td>';
         html += '<td>' + (stat.ratio_eleves_enseignant !== null && stat.ratio_eleves_enseignant !== undefined ? stat.ratio_eleves_enseignant : '-') + '</td>';
         html += '<td>' + (stat.ratio_eleves_classe !== null && stat.ratio_eleves_classe !== undefined ? stat.ratio_eleves_classe : '-') + '</td>';
@@ -4416,17 +4450,9 @@ html += '<td>' + (stat.taux_abandon_total !== null && stat.taux_abandon_total !=
         html += '</tr>';
     }
 } else {
-    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '15' : '14';
+    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '19' : '18';
     html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
 }
-
-html += '</tbody></table></div>';
-
-            }
-
-            html += '</div><div id="modal-container"></div>';
-            app.innerHTML = html;
-        }
 function showReussiteExamensModal() {
     var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">✅ Saisir les taux de réussite aux examens</h2>';
