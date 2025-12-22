@@ -4742,24 +4742,12 @@ if (genreFilter === 'Filles') {
         cells[12].style.display = '';    // BAC T (afficher)
     }
 }
-        } else if (genreFilter === 'Total') {
-            // Masquer Filles et Garçons (indices 4, 5, 7, 8, 10, 11)
-            if (cells.length >= 13) {
-                cells[4].style.display = 'none';  // CEE F
-                cells[5].style.display = 'none';  // CEE G
-                cells[7].style.display = 'none';  // BEPC F
-                cells[8].style.display = 'none';  // BEPC G
-                cells[10].style.display = 'none'; // BAC F
-                cells[11].style.display = 'none'; // BAC G
-            }
-        } else {
             // Afficher toutes les colonnes
             for (var c = 4; c < cells.length; c++) {
                 cells[c].style.display = '';
             }
         }
-    }
-    
+    } 
     // Gérer les en-têtes aussi
 if (headers.length >= 13) {
     if (genreFilter === 'Filles') {
@@ -4794,20 +4782,6 @@ if (headers.length >= 13) {
         headers[12].style.display = '';    // BAC T
     }
 }
-        } else if (genreFilter === 'Total') {
-            headers[4].style.display = 'none';  // CEE F
-            headers[5].style.display = 'none';  // CEE G
-            headers[7].style.display = 'none';  // BEPC F
-            headers[8].style.display = 'none';  // BEPC G
-            headers[10].style.display = 'none'; // BAC F
-            headers[11].style.display = 'none'; // BAC G
-        } else {
-            for (var h = 4; h < headers.length; h++) {
-                headers[h].style.display = '';
-            }
-        }
-    }
-    
     console.log('Lignes visibles:', visibleCount);
 }
 async function submitExamensData(forcerMiseAJour) {
