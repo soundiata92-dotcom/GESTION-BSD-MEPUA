@@ -2431,7 +2431,7 @@ html += '<div class="form-group"><label>Préfecture</label><select id="filter-st
 html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
 
 // Filtre 4 : Niveau
-html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Secondaire">Secondaire</option></select></div>';
+html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
 
 // Filtre 5 : Genre
 html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
@@ -2455,16 +2455,13 @@ html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Ens</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Classe</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Distance (km)</th>';
-    html += '</tr></thead><tbody>';
-    
-    var rowIndex = 0;
-    var zones = ['Urbaine', 'Rurale'];
-    var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
-    
+    html += '</tr></thead><tbody>'; 
+var rowIndex = 0;
+var zones = ['Urbaine', 'Rurale'];
+var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];    
     // Générer les lignes
     for (var r = 0; r < regionsData.length; r++) {
-        var region = regionsData[r];
-        
+        var region = regionsData[r];  
         var prefecturesRegion = [];
         for (var p = 0; p < prefecturesData.length; p++) {
             if (prefecturesData[p].region_id == region.id) {
@@ -2834,7 +2831,7 @@ async function submitStatistiquesTableau(forcerMiseAJour) {
     }
     
     var zones = ['Urbaine', 'Rurale'];
-    var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
+    var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
     var dataToInsert = [];
     var rowIndex = 0;
     
