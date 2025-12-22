@@ -2435,6 +2435,7 @@ html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-f
 
 // Filtre 5 : Genre
 html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+
 html += '</div></div>';
     // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
@@ -4817,97 +4818,74 @@ function filterExamensRows() {
         // Gérer l'affichage des colonnes selon le genre
         var cells = row.querySelectorAll('td');
         
-        // Structure : 0:Région | 1:Préfecture | 2:Zone | 3:Niveau
-        // 4:CEE F | 5:CEE G | 6:CEE T
-        // 7:BEPC F | 8:BEPC G | 9:BEPC T
-        // 10:BAC F | 11:BAC G | 12:BAC T
-        
         if (genreFilter === 'Filles') {
-            // 🔴 AFFICHER FILLES, MASQUER GARÇONS ET TOTAL
+            // Masquer Garçons et Total (indices 5, 6, 8, 9, 11, 12)
             if (cells.length >= 13) {
-                cells[4].style.display = '';     // CEE F
-                cells[5].style.display = 'none'; // CEE G
-                cells[6].style.display = 'none'; // CEE T
-                cells[7].style.display = '';     // BEPC F
-                cells[8].style.display = 'none'; // BEPC G
-                cells[9].style.display = 'none'; // BEPC T
-                cells[10].style.display = '';    // BAC F
+                cells[5].style.display = 'none';  // CEE G
+                cells[6].style.display = 'none';  // CEE T
+                cells[8].style.display = 'none';  // BEPC G
+                cells[9].style.display = 'none';  // BEPC T
                 cells[11].style.display = 'none'; // BAC G
                 cells[12].style.display = 'none'; // BAC T
             }
         } else if (genreFilter === 'Garcons') {
-            // 🟡 AFFICHER GARÇONS, MASQUER FILLES ET TOTAL
+            // Masquer Filles et Total (indices 4, 6, 7, 9, 10, 12)
             if (cells.length >= 13) {
-                cells[4].style.display = 'none'; // CEE F
-                cells[5].style.display = '';     // CEE G
-                cells[6].style.display = 'none'; // CEE T
-                cells[7].style.display = 'none'; // BEPC F
-                cells[8].style.display = '';     // BEPC G
-                cells[9].style.display = 'none'; // BEPC T
+                cells[4].style.display = 'none';  // CEE F
+                cells[6].style.display = 'none';  // CEE T
+                cells[7].style.display = 'none';  // BEPC F
+                cells[9].style.display = 'none';  // BEPC T
                 cells[10].style.display = 'none'; // BAC F
-                cells[11].style.display = '';    // BAC G
                 cells[12].style.display = 'none'; // BAC T
             }
         } else if (genreFilter === 'Total') {
-            // 🟢 AFFICHER TOTAL, MASQUER FILLES ET GARÇONS
+            // Masquer Filles et Garçons (indices 4, 5, 7, 8, 10, 11)
             if (cells.length >= 13) {
-                cells[4].style.display = 'none'; // CEE F
-                cells[5].style.display = 'none'; // CEE G
-                cells[6].style.display = '';     // CEE T
-                cells[7].style.display = 'none'; // BEPC F
-                cells[8].style.display = 'none'; // BEPC G
-                cells[9].style.display = '';     // BEPC T
+                cells[4].style.display = 'none';  // CEE F
+                cells[5].style.display = 'none';  // CEE G
+                cells[7].style.display = 'none';  // BEPC F
+                cells[8].style.display = 'none';  // BEPC G
                 cells[10].style.display = 'none'; // BAC F
                 cells[11].style.display = 'none'; // BAC G
-                cells[12].style.display = '';    // BAC T
             }
         } else {
-            // TOUS : Afficher toutes les colonnes
+            // Afficher toutes les colonnes
             for (var c = 4; c < cells.length; c++) {
                 cells[c].style.display = '';
             }
         }
     }
     
-    // 🔥 GÉRER LES EN-TÊTES AUSSI
+    // Gérer les en-têtes aussi
     if (headers.length >= 13) {
         if (genreFilter === 'Filles') {
-            headers[4].style.display = '';     // CEE F
-            headers[5].style.display = 'none'; // CEE G
-            headers[6].style.display = 'none'; // CEE T
-            headers[7].style.display = '';     // BEPC F
-            headers[8].style.display = 'none'; // BEPC G
-            headers[9].style.display = 'none'; // BEPC T
-            headers[10].style.display = '';    // BAC F
+            headers[5].style.display = 'none';  // CEE G
+            headers[6].style.display = 'none';  // CEE T
+            headers[8].style.display = 'none';  // BEPC G
+            headers[9].style.display = 'none';  // BEPC T
             headers[11].style.display = 'none'; // BAC G
             headers[12].style.display = 'none'; // BAC T
         } else if (genreFilter === 'Garcons') {
-            headers[4].style.display = 'none'; // CEE F
-            headers[5].style.display = '';     // CEE G
-            headers[6].style.display = 'none'; // CEE T
-            headers[7].style.display = 'none'; // BEPC F
-            headers[8].style.display = '';     // BEPC G
-            headers[9].style.display = 'none'; // BEPC T
+            headers[4].style.display = 'none';  // CEE F
+            headers[6].style.display = 'none';  // CEE T
+            headers[7].style.display = 'none';  // BEPC F
+            headers[9].style.display = 'none';  // BEPC T
             headers[10].style.display = 'none'; // BAC F
-            headers[11].style.display = '';    // BAC G
             headers[12].style.display = 'none'; // BAC T
         } else if (genreFilter === 'Total') {
-            headers[4].style.display = 'none'; // CEE F
-            headers[5].style.display = 'none'; // CEE G
-            headers[6].style.display = '';     // CEE T
-            headers[7].style.display = 'none'; // BEPC F
-            headers[8].style.display = 'none'; // BEPC G
-            headers[9].style.display = '';     // BEPC T
+            headers[4].style.display = 'none';  // CEE F
+            headers[5].style.display = 'none';  // CEE G
+            headers[7].style.display = 'none';  // BEPC F
+            headers[8].style.display = 'none';  // BEPC G
             headers[10].style.display = 'none'; // BAC F
             headers[11].style.display = 'none'; // BAC G
-            headers[12].style.display = '';    // BAC T
         } else {
-            // TOUS : Afficher tous les en-têtes
             for (var h = 4; h < headers.length; h++) {
                 headers[h].style.display = '';
             }
         }
     }
+    
     console.log('Lignes visibles:', visibleCount);
 }
 async function submitExamensData(forcerMiseAJour) {
