@@ -4615,7 +4615,8 @@ function showReussiteExamensModal() {
     // Filtre 4 : Niveau 🔥 NOUVEAU
     html += '<div class="form-group"><label>Niveau</label><select id="filter-examens-niveau" class="form-control" onchange="filterExamensRows()"><option value="">Tous</option><option value="Primaire">Primaire (CEE)</option><option value="Collège">Collège (BEPC)</option><option value="Lycée">Lycée (BAC)</option></select></div>';
     // Filtre 5 : Genre
-html += '<div class="form-group"><label>Genre</label><select id="filter-examens-genre" class="form-control" onchange="filterExamensRows()"><option value="">Tous🟢</option><option value="Filles">🔴Filles</option><option value="Garcons"> 🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+html += '<div class="form-group"><label>Genre</label><select id="filter-examens-genre" class="form-control" onchange="filterExamensRows()"><option value="">Tous🟢</option><option value="Filles">🔴Filles</option><option value="Garcons"> 🟡 Garçons </option></select></div>';
+    html += '</div></div>';
     
     // ========== TABLEAU AVEC F/G/T POUR CEE, BEPC, BAC ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
