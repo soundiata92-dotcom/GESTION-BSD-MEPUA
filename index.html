@@ -2276,6 +2276,129 @@ function filterTableRows() {
     console.log('Lignes visibles:', visibleCount);
     console.log('================');
 }
+function filterStatsFormRows() {
+    var regionId = document.getElementById('filter-stats-form-region') ? document.getElementById('filter-stats-form-region').value : '';
+    var prefectureNom = document.getElementById('filter-stats-form-prefecture') ? document.getElementById('filter-stats-form-prefecture').value : '';
+    var zoneFilter = document.getElementById('filter-stats-form-zone') ? document.getElementById('filter-stats-form-zone').value : '';
+    var niveauFilter = document.getElementById('filter-stats-form-niveau') ? document.getElementById('filter-stats-form-niveau').value : '';
+    var genreFilter = document.getElementById('filter-stats-form-genre') ? document.getElementById('filter-stats-form-genre').value : '';
+    
+    console.log('🔍 Filtrage formulaire Stats:', regionId, prefectureNom, zoneFilter, niveauFilter, genreFilter);
+    
+    // Mettre à jour les préfectures selon la région
+    var prefectureSelect = document.getElementById('filter-stats-form-prefecture');
+    if (regionId && regionId !== '' && prefectureSelect) {
+        var currentValue = prefectureSelect.value;
+        prefectureSelect.innerHTML = '<option value="">Toutes</option>';
+        
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+        
+        if (currentValue) prefectureSelect.value = currentValue;
+    }
+    
+    // Filtrer les lignes du tableau
+    var rows = document.querySelectorAll('.stat-row');
+    var visibleCount = 0;
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var rowRegion = row.getAttribute('data-region');
+        var rowPrefecture = row.getAttribute('data-prefecture');
+        var rowZone = row.getAttribute('data-zone');
+        var rowNiveau = row.getAttribute('data-niveau');
+        
+        var showRow = true;
+        
+        if (regionId && regionId !== '' && rowRegion != regionId) showRow = false;
+        if (prefectureNom && prefectureNom !== '' && rowPrefecture != prefectureNom) showRow = false;
+        if (zoneFilter && zoneFilter !== '' && rowZone != zoneFilter) showRow = false;
+        if (niveauFilter && niveauFilter !== '' && rowNiveau != niveauFilter) showRow = false;
+        
+        row.style.display = showRow ? '' : 'none';
+        if (showRow) visibleCount++;
+        
+        // Gérer l'affichage des colonnes selon le genre
+        var cells = row.querySelectorAll('td');
+        
+        if (genreFilter === 'Filles') {
+            // Afficher F, masquer G et T
+            if (cells.length >= 9) {
+                cells[4].style.display = '';     // Scol F
+                cells[5].style.display = 'none'; // Scol G
+                cells[6].style.display = 'none'; // Scol T
+                cells[7].style.display = '';     // Aban F
+                cells[8].style.display = 'none'; // Aban G
+                cells[9].style.display = 'none'; // Aban T
+            }
+        } else if (genreFilter === 'Garcons') {
+            // Afficher G, masquer F et T
+            if (cells.length >= 9) {
+                cells[4].style.display = 'none'; // Scol F
+                cells[5].style.display = '';     // Scol G
+                cells[6].style.display = 'none'; // Scol T
+                cells[7].style.display = 'none'; // Aban F
+                cells[8].style.display = '';     // Aban G
+                cells[9].style.display = 'none'; // Aban T
+            }
+        } else if (genreFilter === 'Total') {
+            // Afficher T, masquer F et G
+            if (cells.length >= 9) {
+                cells[4].style.display = 'none'; // Scol F
+                cells[5].style.display = 'none'; // Scol G
+                cells[6].style.display = '';     // Scol T
+                cells[7].style.display = 'none'; // Aban F
+                cells[8].style.display = 'none'; // Aban G
+                cells[9].style.display = '';     // Aban T
+            }
+        } else {
+            // Afficher toutes les colonnes
+            for (var c = 4; c <= 9 && c < cells.length; c++) {
+                cells[c].style.display = '';
+            }
+        }
+    }
+    
+    // Gérer les en-têtes
+    var table = document.getElementById('stats-table');
+    if (table) {
+        var headers = table.querySelectorAll('thead th');
+        
+        if (genreFilter === 'Filles' && headers.length >= 10) {
+            headers[4].style.display = '';     // Scol F
+            headers[5].style.display = 'none'; // Scol G
+            headers[6].style.display = 'none'; // Scol T
+            headers[7].style.display = '';     // Aban F
+            headers[8].style.display = 'none'; // Aban G
+            headers[9].style.display = 'none'; // Aban T
+        } else if (genreFilter === 'Garcons' && headers.length >= 10) {
+            headers[4].style.display = 'none'; // Scol F
+            headers[5].style.display = '';     // Scol G
+            headers[6].style.display = 'none'; // Scol T
+            headers[7].style.display = 'none'; // Aban F
+            headers[8].style.display = '';     // Aban G
+            headers[9].style.display = 'none'; // Aban T
+        } else if (genreFilter === 'Total' && headers.length >= 10) {
+            headers[4].style.display = 'none'; // Scol F
+            headers[5].style.display = 'none'; // Scol G
+            headers[6].style.display = '';     // Scol T
+            headers[7].style.display = 'none'; // Aban F
+            headers[8].style.display = 'none'; // Aban G
+            headers[9].style.display = '';     // Aban T
+        } else {
+            for (var h = 4; h <= 9 && h < headers.length; h++) {
+                headers[h].style.display = '';
+            }
+        }
+    }
+    console.log('✅ Lignes visibles:', visibleCount);
+}
 
 function showStatistiquesModal() {
 var modalContainer = document.getElementById('modal-container');
@@ -2290,30 +2413,30 @@ html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>
 html += '</div>';
 
     // ========== FILTRES COMPLETS (5 filtres) ==========
-    html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
-    html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
-    
-    // Filtre 1 : Région
-    html += '<div class="form-group"><label>Région</label><select id="filter-region" class="form-control" onchange="updateFormFilters()"><option value="">Toutes les régions</option>';
-    for (var i = 0; i < regionsData.length; i++) {
-        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
-    }
-    html += '</select></div>';
-    
-    // Filtre 2 : Préfecture
-    html += '<div class="form-group"><label>Préfecture</label><select id="filter-prefecture" class="form-control" onchange="filterTableRows()"><option value="">Toutes les préfectures</option></select></div>';
-    
-    // Filtre 3 : Zone
-    html += '<div class="form-group"><label>Zone</label><select id="filter-zone" class="form-control" onchange="filterTableRows()"><option value="">Toutes les zones</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
-    
-    // Filtre 4 : Niveau
-    html += '<div class="form-group"><label>Niveau</label><select id="filter-niveau" class="form-control" onchange="filterTableRows()"><option value="">Tous les niveaux</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Secondaire">Secondaire</option></select></div>';
-    
-    // Filtre 5 : Genre
-html += '<div class="form-group"><label>Genre</label><select id="filter-examens-genre" class="form-control" onchange="filterExamensRows()"><option value="">Tous🟢</option><option value="Filles">🔴Filles</option><option value="Garcons"> 🟡 Garçons </option></select></div>';    
-    html += '</div></div>';
-    
+html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
+html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
+html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+
+// Filtre 1 : Région
+html += '<div class="form-group"><label>Région</label><select id="filter-stats-form-region" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option>';
+for (var i = 0; i < regionsData.length; i++) {
+    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+}
+html += '</select></div>';
+
+// Filtre 2 : Préfecture
+html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-form-prefecture" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option></select></div>';
+
+// Filtre 3 : Zone
+html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+
+// Filtre 4 : Niveau
+html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Secondaire">Secondaire</option></select></div>';
+
+// Filtre 5 : Genre
+html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+
+html += '</div></div>';
     // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
     html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
