@@ -4615,7 +4615,7 @@ function showReussiteExamensModal() {
     // Filtre 4 : Niveau 🔥 NOUVEAU
     html += '<div class="form-group"><label>Niveau</label><select id="filter-examens-niveau" class="form-control" onchange="filterExamensRows()"><option value="">Tous</option><option value="Primaire">Primaire (CEE)</option><option value="Collège">Collège (BEPC)</option><option value="Lycée">Lycée (BAC)</option></select></div>';
     // Filtre 5 : Genre
-html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+html += '<div class="form-group"><label>Genre</label><select id="filter-examens-genre" class="form-control" onchange="filterExamensRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
     html += '</div></div>';
     
     // ========== TABLEAU AVEC F/G/T POUR CEE, BEPC, BAC ==========
@@ -4784,20 +4784,32 @@ function filterExamensRows() {
     var niveauFilter = document.getElementById('filter-examens-niveau') ? document.getElementById('filter-examens-niveau').value : '';
     var genreFilter = document.getElementById('filter-examens-genre') ? document.getElementById('filter-examens-genre').value : '';
     
-    console.log('=== FILTRAGE EXAMENS ===');
-    console.log('Région ID:', regionId);
-    console.log('Préfecture:', prefectureNom);
-    console.log('Zone:', zoneFilter);
-    console.log('Niveau:', niveauFilter);
-    console.log('Genre:', genreFilter);
+    console.log('🔍 Filtrage formulaire Examens:', regionId, prefectureNom, zoneFilter, niveauFilter, genreFilter);
     
+    // Mettre à jour les préfectures selon la région
+    var prefectureSelect = document.getElementById('filter-examens-prefecture');
+    if (regionId && regionId !== '' && prefectureSelect) {
+        var currentValue = prefectureSelect.value;
+        prefectureSelect.innerHTML = '<option value="">Toutes</option>';
+        
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+        
+        if (currentValue) prefectureSelect.value = currentValue;
+    }
+    
+    // Filtrer les lignes du tableau
     var rows = document.querySelectorAll('.examens-row');
     var table = document.getElementById('examens-table');
     var headers = table ? table.querySelectorAll('thead th') : [];
-    
     var visibleCount = 0;
     
-    // Filtrer les lignes
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
         var rowRegion = row.getAttribute('data-region');
@@ -4818,35 +4830,49 @@ function filterExamensRows() {
         // Gérer l'affichage des colonnes selon le genre
         var cells = row.querySelectorAll('td');
         
+        // Structure : 0:Région | 1:Préfecture | 2:Zone | 3:Niveau
+        // 4:CEE F | 5:CEE G | 6:CEE T
+        // 7:BEPC F | 8:BEPC G | 9:BEPC T
+        // 10:BAC F | 11:BAC G | 12:BAC T
+        
         if (genreFilter === 'Filles') {
-            // Masquer Garçons et Total (indices 5, 6, 8, 9, 11, 12)
+            // Afficher F, masquer G et T
             if (cells.length >= 13) {
-                cells[5].style.display = 'none';  // CEE G
-                cells[6].style.display = 'none';  // CEE T
-                cells[8].style.display = 'none';  // BEPC G
-                cells[9].style.display = 'none';  // BEPC T
+                cells[4].style.display = '';     // CEE F
+                cells[5].style.display = 'none'; // CEE G
+                cells[6].style.display = 'none'; // CEE T
+                cells[7].style.display = '';     // BEPC F
+                cells[8].style.display = 'none'; // BEPC G
+                cells[9].style.display = 'none'; // BEPC T
+                cells[10].style.display = '';    // BAC F
                 cells[11].style.display = 'none'; // BAC G
                 cells[12].style.display = 'none'; // BAC T
             }
         } else if (genreFilter === 'Garcons') {
-            // Masquer Filles et Total (indices 4, 6, 7, 9, 10, 12)
+            // Afficher G, masquer F et T
             if (cells.length >= 13) {
-                cells[4].style.display = 'none';  // CEE F
-                cells[6].style.display = 'none';  // CEE T
-                cells[7].style.display = 'none';  // BEPC F
-                cells[9].style.display = 'none';  // BEPC T
+                cells[4].style.display = 'none'; // CEE F
+                cells[5].style.display = '';     // CEE G
+                cells[6].style.display = 'none'; // CEE T
+                cells[7].style.display = 'none'; // BEPC F
+                cells[8].style.display = '';     // BEPC G
+                cells[9].style.display = 'none'; // BEPC T
                 cells[10].style.display = 'none'; // BAC F
+                cells[11].style.display = '';    // BAC G
                 cells[12].style.display = 'none'; // BAC T
             }
         } else if (genreFilter === 'Total') {
-            // Masquer Filles et Garçons (indices 4, 5, 7, 8, 10, 11)
+            // Afficher T, masquer F et G
             if (cells.length >= 13) {
-                cells[4].style.display = 'none';  // CEE F
-                cells[5].style.display = 'none';  // CEE G
-                cells[7].style.display = 'none';  // BEPC F
-                cells[8].style.display = 'none';  // BEPC G
+                cells[4].style.display = 'none'; // CEE F
+                cells[5].style.display = 'none'; // CEE G
+                cells[6].style.display = '';     // CEE T
+                cells[7].style.display = 'none'; // BEPC F
+                cells[8].style.display = 'none'; // BEPC G
+                cells[9].style.display = '';     // BEPC T
                 cells[10].style.display = 'none'; // BAC F
                 cells[11].style.display = 'none'; // BAC G
+                cells[12].style.display = '';    // BAC T
             }
         } else {
             // Afficher toutes les colonnes
@@ -4856,37 +4882,47 @@ function filterExamensRows() {
         }
     }
     
-    // Gérer les en-têtes aussi
+    // Gérer les en-têtes
     if (headers.length >= 13) {
         if (genreFilter === 'Filles') {
-            headers[5].style.display = 'none';  // CEE G
-            headers[6].style.display = 'none';  // CEE T
-            headers[8].style.display = 'none';  // BEPC G
-            headers[9].style.display = 'none';  // BEPC T
+            headers[4].style.display = '';     // CEE F
+            headers[5].style.display = 'none'; // CEE G
+            headers[6].style.display = 'none'; // CEE T
+            headers[7].style.display = '';     // BEPC F
+            headers[8].style.display = 'none'; // BEPC G
+            headers[9].style.display = 'none'; // BEPC T
+            headers[10].style.display = '';    // BAC F
             headers[11].style.display = 'none'; // BAC G
             headers[12].style.display = 'none'; // BAC T
         } else if (genreFilter === 'Garcons') {
-            headers[4].style.display = 'none';  // CEE F
-            headers[6].style.display = 'none';  // CEE T
-            headers[7].style.display = 'none';  // BEPC F
-            headers[9].style.display = 'none';  // BEPC T
+            headers[4].style.display = 'none'; // CEE F
+            headers[5].style.display = '';     // CEE G
+            headers[6].style.display = 'none'; // CEE T
+            headers[7].style.display = 'none'; // BEPC F
+            headers[8].style.display = '';     // BEPC G
+            headers[9].style.display = 'none'; // BEPC T
             headers[10].style.display = 'none'; // BAC F
+            headers[11].style.display = '';    // BAC G
             headers[12].style.display = 'none'; // BAC T
         } else if (genreFilter === 'Total') {
-            headers[4].style.display = 'none';  // CEE F
-            headers[5].style.display = 'none';  // CEE G
-            headers[7].style.display = 'none';  // BEPC F
-            headers[8].style.display = 'none';  // BEPC G
+            headers[4].style.display = 'none'; // CEE F
+            headers[5].style.display = 'none'; // CEE G
+            headers[6].style.display = '';     // CEE T
+            headers[7].style.display = 'none'; // BEPC F
+            headers[8].style.display = 'none'; // BEPC G
+            headers[9].style.display = '';     // BEPC T
             headers[10].style.display = 'none'; // BAC F
             headers[11].style.display = 'none'; // BAC G
+            headers[12].style.display = '';    // BAC T
         } else {
+            // Afficher tous les en-têtes
             for (var h = 4; h < headers.length; h++) {
                 headers[h].style.display = '';
             }
         }
     }
     
-    console.log('Lignes visibles:', visibleCount);
+    console.log('✅ Lignes visibles:', visibleCount);
 }
 async function submitExamensData(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
