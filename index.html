@@ -21,6 +21,7 @@
         .nav button.active { border-bottom-color: #2563eb; color: #2563eb; }
         .main { max-width: 1280px; margin: 0 auto; padding: 32px 16px; }
         .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; margin-top: 32px; }
+        
         .card { padding: 24px; border-radius: 8px; border-left: 4px solid; }
         .card-blue { background-color: #dbeafe; border-color: #2563eb; }
         .card-yellow { background-color: #fef3c7; border-color: #d97706; }
@@ -4407,6 +4408,65 @@ html += '<option value="Garcons">Garçons</option>';
 html += '</select></div>';
 html += '</div></div>';
                 
+             // Cartes d'indicateurs (10 cartes au total)
+html += '<div class="cards-fixed">';
+// 🔥 CALCUL DES MOYENNES POUR LES CARTES
+console.log('📊 Calcul des indicateurs pour les cartes...');
+
+// Stats générales depuis statistiques_educatives (année 2025-2026)
+var dataStatsGenerales = [];
+for (var i = 0; i < statistiquesData.length; i++) {
+    var stat = statistiquesData[i];
+    if (stat.annee_scolaire === '2025-2026') {
+        dataStatsGenerales.push(stat);
+    }
+}
+
+// Examens depuis reussiteExamensData (Session 2024-2025)
+var dataExamens2025 = [];
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    if (reussiteExamensData[i].annee_scolaire === '2024-2025') {
+        dataExamens2025.push(reussiteExamensData[i]);
+    }
+}
+
+// Alphabétisation depuis alphabetisationData (année 2025-2026)
+var dataAlpha2026 = [];
+for (var i = 0; i < alphabetisationData.length; i++) {
+    if (alphabetisationData[i].annee_scolaire === '2025-2026') {
+        dataAlpha2026.push(alphabetisationData[i]);
+    }
+}
+
+console.log('✅ Stats générales:', dataStatsGenerales.length);
+console.log('✅ Examens 2024-2025:', dataExamens2025.length);
+console.log('✅ Alphabétisation 2025-2026:', dataAlpha2026.length);
+
+// 🎯 RÉCUPÉRER LE FILTRE GENRE ACTUEL
+var genreFilterActuel = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
+
+console.log('🎯 Calcul des moyennes avec genre:', genreFilterActuel);
+
+// Calculer les moyennes selon le genre sélectionné
+var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation', genreFilterActuel);
+var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon', genreFilterActuel);
+var moyenneAlphabetisation = calculerMoyenne(dataAlpha2026, 'taux_alphabetisation', genreFilterActuel);
+
+// Ratios et distance (toujours Total - pas de distinction F/G)
+var moyenneRatioEnseignant = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_enseignant', 'Total');
+var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_classe', 'Total');
+var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile', 'Total');
+
+// 🔥 Examens depuis reussiteExamensData
+var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_cee', genreFilterActuel);
+var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bepc', genreFilterActuel);
+var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bac', genreFilterActuel);
+
+console.log('📊 Moyennes calculées:');
+console.log('  Scolarisation:', moyenneScolarisation, '%');
+console.log('  Abandon:', moyenneAbandon, '%');
+console.log('  CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');
+console.log('  Alphabétisation:', moyenneAlphabetisation, '%');
 // ========== 10 CARTES EN 2 LIGNES (5+5) ==========
 
 // LIGNE 1 : Scolarisation, Abandon, CEE, BEPC, BAC
