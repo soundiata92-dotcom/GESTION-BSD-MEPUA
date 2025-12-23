@@ -4420,128 +4420,74 @@ html += '<option value="Garcons">Garçons</option>';
 html += '</select></div>';
 html += '</div></div>';
                 
-             // Cartes d'indicateurs (9 cartes au total)
-html += '<div class="cards-fixed">';
+// ========== 10 CARTES EN 2 LIGNES (5+5) ==========
 
-// 🔥 SÉPARER : Stats générales (2025-2026) + Examens (Session 2025)
-console.log('📊 Calcul des indicateurs pour les cartes...');
+// LIGNE 1 : Scolarisation, Abandon, CEE, BEPC, BAC
+html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 14px; margin-top: 20px;">';
 
-// Stats générales depuis statistiques_educatives (année 2025-2026)
-var dataStatsGenerales = [];
-console.log('🔍 Filtrage stats générales 2025-2026...');
-console.log('   Total statistiquesData:', statistiquesData.length);
-
-for (var i = 0; i < statistiquesData.length; i++) {
-    var stat = statistiquesData[i];
-    if (stat.annee_scolaire === '2025-2026') {
-        dataStatsGenerales.push(stat);
-        console.log('   ✓ Ajouté:', stat.region, '/', stat.prefecture, '/', stat.zone, '/', stat.niveau, '/', stat.genre, '| Scolarisation:', stat.taux_scolarisation);
-    }
-}
-
-console.log('✅ Stats 2025-2026 filtrées:', dataStatsGenerales.length);
-console.log('');
-
-// Examens depuis reussiteExamensData (Session 2025 uniquement)
-var dataExamens2025 = [];
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    if (reussiteExamensData[i].annee_scolaire === '2024-2025') {
-        dataExamens2025.push(reussiteExamensData[i]);
-    }
-}
-
-console.log('✅ Stats générales:', dataStatsGenerales.length);
-console.log('✅ Examens 2025:', dataExamens2025.length);
-// 🎯 RÉCUPÉRER LE FILTRE GENRE ACTUEL
-var genreFilterActuel = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
-
-console.log('🎯 Calcul des moyennes avec genre:', genreFilterActuel);
-
-// Calculer les moyennes selon le genre sélectionné
-var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation', genreFilterActuel);
-var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon', genreFilterActuel);
-var moyenneAlphabetisation = calculerMoyenne(dataStatsGenerales, 'taux_alphabetisation', genreFilterActuel);
-
-// Ratios et distance (toujours Total - pas de distinction F/G)
-var moyenneRatioEnseignant = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_enseignant', 'Total');
-var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_classe', 'Total');
-var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile', 'Total');
-
-// 🔥 Examens depuis reussiteExamensData
-var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_cee', genreFilterActuel);
-var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bepc', genreFilterActuel);
-var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bac', genreFilterActuel);
-
-console.log('📊 Moyennes calculées:');
-console.log('  Scolarisation:', moyenneScolarisation, '%');
-console.log('  Abandon:', moyenneAbandon, '%');
-console.log('  CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');
-// Ligne 1 : 5 premières cartes
-html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 16px;">';
-
-// Carte 1 : Scolarisation (Bleu ciel)
-html += '<div class="card" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">📊 Scolarisation</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #1e40af;">' + moyenneScolarisation + '%</div>';
+// 1. Scolarisation
+html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #1e40af; margin-bottom: 6px; text-align: center;">📊 Scolarisation</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #1e40af; text-align: center;">' + moyenneScolarisation + '%</div>';
 html += '</div>';
 
-// Carte 2 : Abandon (Orange)
-html += '<div class="card" style="background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); border-left: 4px solid #ea580c; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #9a3412; margin-bottom: 8px;">📉 Abandon</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #9a3412;">' + moyenneAbandon + '%</div>';
+// 2. Abandon
+html += '<div style="background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); border-left: 4px solid #ea580c; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #9a3412; margin-bottom: 6px; text-align: center;">📉 Abandon</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #9a3412; text-align: center;">' + moyenneAbandon + '%</div>';
 html += '</div>';
 
-// Carte 3 : CEE (Vert clair)
-html += '<div class="card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #065f46; margin-bottom: 8px;">✅ Réussite CEE</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #065f46;">' + moyenneReussiteCEE + '%</div>';
+// 3. CEE
+html += '<div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #065f46; margin-bottom: 6px; text-align: center;">✅ Réussite CEE</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #065f46; text-align: center;">' + moyenneReussiteCEE + '%</div>';
 html += '</div>';
 
-// Carte 4 : BEPC (Vert moyen)
-html += '<div class="card" style="background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%); border-left: 4px solid #16a34a; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #14532d; margin-bottom: 8px;">✅ Réussite BEPC</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #14532d;">' + moyenneReussiteBEPC + '%</div>';
+// 4. BEPC
+html += '<div style="background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%); border-left: 4px solid #16a34a; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #14532d; margin-bottom: 6px; text-align: center;">✅ Réussite BEPC</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #14532d; text-align: center;">' + moyenneReussiteBEPC + '%</div>';
 html += '</div>';
 
-// Carte 5 : BAC (Vert foncé)
-html += '<div class="card" style="background: linear-gradient(135deg, #86efac 0%, #4ade80 100%); border-left: 4px solid #22c55e; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #14532d; margin-bottom: 8px;">✅ Réussite BAC</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #14532d;">' + moyenneReussiteBAC + '%</div>';
+// 5. BAC
+html += '<div style="background: linear-gradient(135deg, #86efac 0%, #4ade80 100%); border-left: 4px solid #22c55e; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #14532d; margin-bottom: 6px; text-align: center;">✅ Réussite BAC</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #14532d; text-align: center;">' + moyenneReussiteBAC + '%</div>';
 html += '</div>';
 
 html += '</div>'; // Fin ligne 1
 
-// Ligne 2 : 5 dernières cartes
-html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px;">';
+// LIGNE 2 : Alphabétisation, Bénéficiaires, Ratios, Distance
+html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px;">';
 
-// Carte 6 : Alphabétisation (Jaune/Or)
-html += '<div class="card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #92400e; margin-bottom: 8px;">✍️ Alphabétisation</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #92400e;">' + moyenneAlphabetisation + '%</div>';
+// 6. Alphabétisation
+html += '<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #92400e; margin-bottom: 6px; text-align: center;">✍️ Alphabétisation</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #92400e; text-align: center;">' + moyenneAlphabetisation + '%</div>';
 html += '</div>';
 
-// Carte 7 : Bénéficiaires (Violet)
-html += '<div class="card" style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border-left: 4px solid #a855f7; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #6b21a8; margin-bottom: 8px;">👥 Bénéficiaires</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #6b21a8;">0</div>';
+// 7. Bénéficiaires
+html += '<div style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border-left: 4px solid #a855f7; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #6b21a8; margin-bottom: 6px; text-align: center;">👥 Bénéficiaires</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #6b21a8; text-align: center;">0</div>';
 html += '</div>';
 
-// Carte 8 : Ratio Enseignant (Rose)
-html += '<div class="card" style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 4px solid #ec4899; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #9f1239; margin-bottom: 8px;">👨‍🏫 Ratio Ens.</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #9f1239;">' + moyenneRatioEnseignant + '</div>';
+// 8. Ratio Enseignant
+html += '<div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 4px solid #ec4899; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #9f1239; margin-bottom: 6px; text-align: center;">👨‍🏫 Ratio Ens.</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #9f1239; text-align: center;">' + moyenneRatioEnseignant + '</div>';
 html += '</div>';
 
-// Carte 9 : Ratio Classe (Rouge clair)
-html += '<div class="card" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #ef4444; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #991b1b; margin-bottom: 8px;">🏫 Ratio Classe</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #991b1b;">' + moyenneRatioClasse + '</div>';
+// 9. Ratio Classe
+html += '<div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #ef4444; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #991b1b; margin-bottom: 6px; text-align: center;">🏫 Ratio Classe</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #991b1b; text-align: center;">' + moyenneRatioClasse + '</div>';
 html += '</div>';
 
-// Carte 10 : Distance (Gris/Bleu foncé)
-html += '<div class="card" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border-left: 4px solid #6366f1; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">';
-html += '<div style="font-size: 12px; font-weight: bold; color: #312e81; margin-bottom: 8px;">📍 Distance</div>';
-html += '<div class="card-value" style="font-size: 28px; font-weight: bold; color: #312e81;">' + moyenneDistance + ' km</div>';
+// 10. Distance
+html += '<div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border-left: 4px solid #6366f1; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+html += '<div style="font-size: 11px; font-weight: bold; color: #312e81; margin-bottom: 6px; text-align: center;">📍 Distance</div>';
+html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-align: center;">' + moyenneDistance + ' km</div>';
 html += '</div>';
 
                // Tableau des données
