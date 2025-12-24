@@ -4557,10 +4557,10 @@ html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-al
 html += '</div>';
 
 // ========== TABLEAU UNIFIÉ AVEC COULEURS F/G/T ==========
-html += '<div class="table-container" style="overflow-x: auto; margin-top: 20px;"><table style="width: 100%; min-width: 2000px;"><thead><tr>';
+html += '<div class="table-container" style="overflow-x: auto; margin-top: 20px; width: 100%;"><table style="width: 100%; min-width: 2000px; border-collapse: collapse;"><thead><tr>';
 
 // Colonnes fixes
-html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af; position: sticky; left: 0; z-index: 3;">Région</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Région</th>';
 html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Préfecture</th>';
 html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Zone</th>';
 html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Niveau</th>';
@@ -4712,7 +4712,7 @@ if (lignesArray.length > 0) {
         html += '<tr style="background-color: ' + bgColor + ';" data-region="' + ligne.region + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '">';
         
         // Colonnes fixes
-        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600; position: sticky; left: 0; background-color: ' + bgColor + ';">' + ligne.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + ligne.region + '</td>';
         html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.prefecture + '</td>';
         html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.zone + '</td>';
         html += '<td style="padding: 10px; border: 1px solid #e5e7eb;"><span class="badge badge-blue">' + ligne.niveau + '</span></td>';
