@@ -4416,6 +4416,8 @@ html += '<option value="Debutant">Débutant (Alpha)</option>';
 html += '<option value="Intermediaire">Intermédiaire (Alpha)</option>';
 html += '<option value="Avance">Avancé (Alpha)</option>';
 html += '</select></div>';
+
+// 6️⃣ GENRE
 html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">👤 Genre</label>';
 html += '<select id="filter-stats-genre" class="form-control" onchange="appliquerFiltresStatistiques()">';
 html += '<option value="">Tous</option>';
@@ -4427,7 +4429,7 @@ html += '</div></div>';
                 
              // Cartes d'indicateurs (10 cartes au total)
 html += '<div class="cards-fixed">';
-// 🔥 CALCUL INITIAL DES MOYENNES POUR LES CARTES
+// 🔥 CALCUL DES MOYENNES POUR LES CARTES
 console.log('📊 Calcul des indicateurs pour les cartes...');
 
 // Stats générales depuis statistiques_educatives (année 2025-2026)
@@ -4459,28 +4461,31 @@ console.log('✅ Stats générales:', dataStatsGenerales.length);
 console.log('✅ Examens 2024-2025:', dataExamens2025.length);
 console.log('✅ Alphabétisation 2025-2026:', dataAlpha2026.length);
 
-// Calculer les moyennes INITIALES (Total par défaut)
-var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation', 'Total');
-var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon', 'Total');
-var moyenneAlphabetisation = calculerMoyenne(dataAlpha2026, 'taux_alphabetisation', 'Total');
+// 🎯 RÉCUPÉRER LE FILTRE GENRE ACTUEL
+var genreFilterActuel = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
 
-// Ratios et distance (toujours Total)
+console.log('🎯 Calcul des moyennes avec genre:', genreFilterActuel);
+
+// Calculer les moyennes selon le genre sélectionné
+var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation', genreFilterActuel);
+var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon', genreFilterActuel);
+var moyenneAlphabetisation = calculerMoyenne(dataAlpha2026, 'taux_alphabetisation', genreFilterActuel);
+
+// Ratios et distance (toujours Total - pas de distinction F/G)
 var moyenneRatioEnseignant = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_enseignant', 'Total');
 var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_classe', 'Total');
 var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile', 'Total');
 
-// Examens
-var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_cee', 'Total');
-var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bepc', 'Total');
-var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bac', 'Total');
+// 🔥 Examens depuis reussiteExamensData
+var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_cee', genreFilterActuel);
+var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bepc', genreFilterActuel);
+var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bac', genreFilterActuel);
 
-// Bénéficiaires Total
-var totalBeneficiaires = 0;
-for (var i = 0; i < dataAlpha2026.length; i++) {
-    totalBeneficiaires += dataAlpha2026[i].beneficiaires_total || 0;
-}
-
-console.log('📊 Moyennes initiales calculées');
+console.log('📊 Moyennes calculées:');
+console.log('  Scolarisation:', moyenneScolarisation, '%');
+console.log('  Abandon:', moyenneAbandon, '%');
+console.log('  CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');
+console.log('  Alphabétisation:', moyenneAlphabetisation, '%');
 // ========== 10 CARTES EN 2 LIGNES (5+5) ==========
 
 // LIGNE 1 : Scolarisation, Abandon, CEE, BEPC, BAC
@@ -4550,8 +4555,7 @@ html += '<div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100
 html += '<div style="font-size: 11px; font-weight: bold; color: #312e81; margin-bottom: 6px; text-align: center;">📍 Distance</div>';
 html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-align: center;">' + moyenneDistance + ' km</div>';
 html += '</div>';
-
-// ========== TABLEAU UNIFIÉ (Stats + Examens + Alphabétisation) ==========
+==========
 html += '<div class="table-container"><table><thead class="blue"><tr>';
 html += '<th>Région</th>';
 html += '<th>Préfecture</th>';
@@ -4763,10 +4767,6 @@ if (lignesTableau.length > 0) {
 }
 
 html += '</tbody></table></div>';
-// 🔥 ATTACHER L'ÉVÉNEMENT DE FILTRAGE APRÈS CHARGEMENT
-setTimeout(function() {
-    appliquerFiltresStatistiques();
-}, 200);
 
             }
 
@@ -5607,7 +5607,6 @@ function showAlphabetisationModal() {
 
 // ========== FONCTIONS DE CALCUL DE MOYENNES ==========
 function calculerMoyenne(dataArray, fieldBase, genre) {
-   if (!genre || genre === '') genre = 'Total';
     if (!dataArray || dataArray.length === 0) {
         console.warn('⚠️ calculerMoyenne: tableau vide pour', fieldBase);
         return 0;
