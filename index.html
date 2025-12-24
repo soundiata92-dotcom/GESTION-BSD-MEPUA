@@ -3150,155 +3150,14 @@ function appliquerFiltresStatistiques() {
     console.log('  - Niveau:', filterNiveau);
     console.log('  - Genre:', filterGenre);
     
-    var rows = document.querySelectorAll('.table-container tbody tr');
-    var visibleCount = 0;
+    // ========== FILTRER LES DONNÉES POUR LES CARTES ==========
     
-    // 🔥 Récupérer l'en-tête pour masquer/afficher les colonnes
-    var tableHeaders = document.querySelectorAll('.table-container thead th');
-    
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        
-        // Ignorer la ligne "Aucune statistique"
-        if (row.querySelector('.empty-state')) {
-            row.style.display = '';
-            continue;
-        }
-        
-        var rowRegion = row.getAttribute('data-region');
-        var rowPrefecture = row.getAttribute('data-prefecture');
-        var rowZone = row.getAttribute('data-zone');
-        var rowNiveau = row.getAttribute('data-niveau');
-        
-        var showRow = true;
-        
-        // Filtre par région
-        if (filterRegion && filterRegion !== '') {
-            // Trouver l'ID de la région de la ligne
-            var rowRegionId = '';
-            for (var r = 0; r < regionsData.length; r++) {
-                if (regionsData[r].nom === rowRegion) {
-                    rowRegionId = regionsData[r].id.toString();
-                    break;
-                }
-            }
-            if (rowRegionId !== filterRegion) showRow = false;
-        }
-        
-        // Filtre par préfecture
-        if (filterPrefecture && filterPrefecture !== '' && rowPrefecture !== filterPrefecture) {
-            showRow = false;
-        }
-        
-        // Filtre par zone
-        if (filterZone && filterZone !== '' && rowZone !== filterZone) {
-            showRow = false;
-        }
-        
-        // Filtre par niveau
-        if (filterNiveau && filterNiveau !== '') {
-            if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                // Pour Collège/Lycée, on cherche "Secondaire"
-                if (rowNiveau !== 'Secondaire') showRow = false;
-            } else {
-                if (rowNiveau !== filterNiveau) showRow = false;
-            }
-        }
-        
-        // 🔥 MASQUER/AFFICHER LES COLONNES SELON LE GENRE
-        var cells = row.querySelectorAll('td');
-        
-        // Structure du tableau :
-        // 0: Région | 1: Préfecture | 2: Zone | 3: Niveau | 4: Genre
-        // 5: Scol F | 6: Scol G | 7: Scol T
-        // 8: Aban F | 9: Aban G | 10: Aban T
-        // 11: CEE | 12: BEPC | 13: BAC | 14: Alpha
-        // 15: Ratio Ens | 16: Ratio Classe | 17: Distance | 18: Actions (si admin)
-        
-        if (filterGenre === 'Filles') {
-            // Afficher F, masquer G et T
-            if (cells.length >= 11) {
-                cells[5].style.display = '';    // Scol F (afficher)
-                cells[6].style.display = 'none'; // Scol G (masquer)
-                cells[7].style.display = 'none'; // Scol T (masquer)
-                cells[8].style.display = '';    // Aban F (afficher)
-                cells[9].style.display = 'none'; // Aban G (masquer)
-                cells[10].style.display = 'none'; // Aban T (masquer)
-            }
-        } else if (filterGenre === 'Garcons') {
-            // Afficher G, masquer F et T
-            if (cells.length >= 11) {
-                cells[5].style.display = 'none'; // Scol F (masquer)
-                cells[6].style.display = '';    // Scol G (afficher)
-                cells[7].style.display = 'none'; // Scol T (masquer)
-                cells[8].style.display = 'none'; // Aban F (masquer)
-                cells[9].style.display = '';    // Aban G (afficher)
-                cells[10].style.display = 'none'; // Aban T (masquer)
-            }
-        } else if (filterGenre === 'Total') {
-            // Afficher T, masquer F et G
-            if (cells.length >= 11) {
-                cells[5].style.display = 'none'; // Scol F (masquer)
-                cells[6].style.display = 'none'; // Scol G (masquer)
-                cells[7].style.display = '';    // Scol T (afficher)
-                cells[8].style.display = 'none'; // Aban F (masquer)
-                cells[9].style.display = 'none'; // Aban G (masquer)
-                cells[10].style.display = '';    // Aban T (afficher)
-            }
-        } else {
-            // Afficher toutes les colonnes
-            for (var c = 5; c <= 10 && c < cells.length; c++) {
-                cells[c].style.display = '';
-            }
-        }
-        
-        row.style.display = showRow ? '' : 'none';
-        if (showRow) visibleCount++;
-    }
-    
-    // 🔥 MASQUER/AFFICHER LES EN-TÊTES AUSSI
-    // Structure des en-têtes (même ordre que les cellules)
-    if (tableHeaders.length >= 11) {
-        if (filterGenre === 'Filles') {
-            tableHeaders[5].style.display = '';    // Scol F (afficher)
-            tableHeaders[6].style.display = 'none'; // Scol G (masquer)
-            tableHeaders[7].style.display = 'none'; // Scol T (masquer)
-            tableHeaders[8].style.display = '';    // Aban F (afficher)
-            tableHeaders[9].style.display = 'none'; // Aban G (masquer)
-            tableHeaders[10].style.display = 'none'; // Aban T (masquer)
-        } else if (filterGenre === 'Garcons') {
-            tableHeaders[5].style.display = 'none'; // Scol F (masquer)
-            tableHeaders[6].style.display = '';    // Scol G (afficher)
-            tableHeaders[7].style.display = 'none'; // Scol T (masquer)
-            tableHeaders[8].style.display = 'none'; // Aban F (masquer)
-            tableHeaders[9].style.display = '';    // Aban G (afficher)
-            tableHeaders[10].style.display = 'none'; // Aban T (masquer)
-        } else if (filterGenre === 'Total') {
-            tableHeaders[5].style.display = 'none'; // Scol F (masquer)
-            tableHeaders[6].style.display = 'none'; // Scol G (masquer)
-            tableHeaders[7].style.display = '';    // Scol T (afficher)
-            tableHeaders[8].style.display = 'none'; // Aban F (masquer)
-            tableHeaders[9].style.display = 'none'; // Aban G (masquer)
-            tableHeaders[10].style.display = '';    // Aban T (afficher)
-        } else {
-            // Afficher tous les en-têtes
-            for (var h = 5; h <= 10 && h < tableHeaders.length; h++) {
-                tableHeaders[h].style.display = '';
-            }
-        }
-    }
-    
-    console.log('✅ Filtrage terminé - Lignes visibles:', visibleCount);
-    
-    // ========== RECALCULER LES MOYENNES DES CARTES ==========
-    
-    // Stats générales 2025-2026
+    // 1️⃣ Filtrer Stats Générales (Scolarisation, Abandon, Ratios, Distance)
     var dataStatsGeneralesFiltrees = [];
     for (var i = 0; i < statistiquesData.length; i++) {
         var stat = statistiquesData[i];
         if (stat.annee_scolaire !== '2025-2026') continue;
         
-        // Trouver l'ID de la région
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === stat.region) {
@@ -3311,87 +3170,105 @@ function appliquerFiltresStatistiques() {
         if (filterPrefecture && stat.prefecture != filterPrefecture) continue;
         if (filterZone && stat.zone != filterZone) continue;
         
-        // Gestion Collège/Lycée → Secondaire
+        // Filtre Niveau pour Stats
         if (filterNiveau) {
-            if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                if (stat.niveau !== 'Secondaire') continue;
+            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+                    if (stat.niveau !== 'Secondaire') continue;
+                } else {
+                    if (stat.niveau !== filterNiveau) continue;
+                }
             } else {
-                if (stat.niveau != filterNiveau) continue;
+                // Si filtre = Débutant/Intermédiaire/Avancé, ignorer stats générales
+                continue;
             }
         }
         
         dataStatsGeneralesFiltrees.push(stat);
     }
     
-// Examens 2024-2025
-var dataExamens2025Filtrees = [];
-console.log('🔍 Filtrage examens 2024-2025...');
-console.log('   Total reussiteExamensData:', reussiteExamensData.length);
-
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    var exam = reussiteExamensData[i];
+    // 2️⃣ Filtrer Examens (CEE, BEPC, BAC)
+    var dataExamens2025Filtrees = [];
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire !== '2024-2025') continue;
+        
+        var includeExam = true;
+        
+        if (filterRegion && filterRegion !== '') {
+            var examRegionId = '';
+            for (var r = 0; r < regionsData.length; r++) {
+                if (regionsData[r].nom === exam.region) {
+                    examRegionId = regionsData[r].id.toString();
+                    break;
+                }
+            }
+            if (examRegionId !== filterRegion) includeExam = false;
+        }
+        
+        if (includeExam && filterPrefecture && filterPrefecture !== '' && exam.prefecture !== filterPrefecture) includeExam = false;
+        if (includeExam && filterZone && filterZone !== '' && exam.zone !== filterZone) includeExam = false;
+        
+        // Filtre Niveau pour Examens
+        if (includeExam && filterNiveau && filterNiveau !== '') {
+            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+                    if (exam.niveau !== 'Secondaire') includeExam = false;
+                } else if (filterNiveau === 'Primaire') {
+                    if (exam.niveau !== 'Primaire') includeExam = false;
+                } else {
+                    includeExam = false; // Préscolaire n'a pas d'examens
+                }
+            } else {
+                // Si filtre = Débutant/Intermédiaire/Avancé, ignorer examens
+                includeExam = false;
+            }
+        }
+        
+        if (includeExam) dataExamens2025Filtrees.push(exam);
+    }
     
-    // Vérifier l'année
-    if (exam.annee_scolaire !== '2024-2025') continue;
-    
-    var includeExam = true;
-    
-    // Filtre par région
-    if (filterRegion && filterRegion !== '') {
-        var examRegionId = '';
+    // 3️⃣ Filtrer Alphabétisation
+    var dataAlpha2026Filtrees = [];
+    for (var i = 0; i < alphabetisationData.length; i++) {
+        var alpha = alphabetisationData[i];
+        if (alpha.annee_scolaire !== '2025-2026') continue;
+        
+        var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
-            if (regionsData[r].nom === exam.region) {
-                examRegionId = regionsData[r].id.toString();
+            if (regionsData[r].nom === alpha.region) {
+                regionId = regionsData[r].id;
                 break;
             }
         }
-        if (examRegionId !== filterRegion) {
-            includeExam = false;
-        }
-    }
-    
-    // Filtre par préfecture
-    if (includeExam && filterPrefecture && filterPrefecture !== '' && exam.prefecture !== filterPrefecture) {
-        includeExam = false;
-    }
-    
-    // Filtre par zone
-    if (includeExam && filterZone && filterZone !== '' && exam.zone !== filterZone) {
-        includeExam = false;
-    }
-    
-    // Filtre par niveau
-    if (includeExam && filterNiveau && filterNiveau !== '') {
-        if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-            // Pour Collège/Lycée, chercher Secondaire
-            if (exam.niveau !== 'Secondaire') {
-                includeExam = false;
-            }
-        } else if (filterNiveau === 'Primaire') {
-            // Pour CEE, chercher Primaire
-            if (exam.niveau !== 'Primaire') {
-                includeExam = false;
-            }
-        } else {
-            // Autres niveaux
-            if (exam.niveau !== filterNiveau) {
-                includeExam = false;
+        
+        if (filterRegion && regionId != filterRegion) continue;
+        if (filterPrefecture && alpha.prefecture != filterPrefecture) continue;
+        if (filterZone && alpha.zone != filterZone) continue;
+        
+        // Filtre Niveau pour Alpha
+        if (filterNiveau) {
+            if (['Debutant', 'Intermediaire', 'Avance'].indexOf(filterNiveau) !== -1) {
+                if (alpha.niveau !== filterNiveau) continue;
+            } else if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+                // Si filtre = éducation formelle, ignorer alpha
+                continue;
             }
         }
+        
+        dataAlpha2026Filtrees.push(alpha);
     }
     
-    if (includeExam) {
-        dataExamens2025Filtrees.push(exam);
-        console.log('   ✓ Ajouté:', exam.region, '/', exam.prefecture, '/', exam.zone, '/', exam.niveau);
-    }
-}
-
-console.log('✅ Examens filtrés:', dataExamens2025Filtrees.length, 'lignes');
-console.log('');
+    console.log('✅ Données filtrées:');
+    console.log('  Stats:', dataStatsGeneralesFiltrees.length);
+    console.log('  Examens:', dataExamens2025Filtrees.length);
+    console.log('  Alpha:', dataAlpha2026Filtrees.length);
+    
+    // ========== RECALCULER LES MOYENNES ==========
     
     var moyenneScolarisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_scolarisation', filterGenre || 'Total');
     var moyenneAbandon = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_abandon', filterGenre || 'Total');
-    var moyenneAlphabetisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_alphabetisation', filterGenre || 'Total');
+    var moyenneAlphabetisation = calculerMoyenne(dataAlpha2026Filtrees, 'taux_alphabetisation', filterGenre || 'Total');
     
     // Ratios toujours en Total
     var moyenneRatioEnseignant = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_enseignant', 'Total');
@@ -3402,20 +3279,158 @@ console.log('');
     var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_bepc', filterGenre || 'Total');
     var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_bac', filterGenre || 'Total');
     
+    // Calculer nombre total de bénéficiaires
+    var totalBeneficiaires = 0;
+    for (var i = 0; i < dataAlpha2026Filtrees.length; i++) {
+        var alpha = dataAlpha2026Filtrees[i];
+        var benef = 0;
+        if (filterGenre === 'Filles' && alpha.beneficiaires_filles) {
+            benef = alpha.beneficiaires_filles;
+        } else if (filterGenre === 'Garcons' && alpha.beneficiaires_garcons) {
+            benef = alpha.beneficiaires_garcons;
+        } else if (alpha.beneficiaires_total) {
+            benef = alpha.beneficiaires_total;
+        }
+        totalBeneficiaires += benef || 0;
+    }
+    
     // ========== METTRE À JOUR LES CARTES ==========
     
-    var cartes = document.querySelectorAll('.cards-fixed .card');
-    if (cartes.length >= 9) {
-        cartes[0].querySelector('.card-value').textContent = moyenneScolarisation + '%';
-        cartes[1].querySelector('.card-value').textContent = moyenneAbandon + '%';
-        cartes[2].querySelector('.card-value').textContent = moyenneReussiteCEE + '%';
-        cartes[3].querySelector('.card-value').textContent = moyenneReussiteBEPC + '%';
-        cartes[4].querySelector('.card-value').textContent = moyenneReussiteBAC + '%';
-        cartes[5].querySelector('.card-value').textContent = moyenneAlphabetisation + '%';
-        cartes[6].querySelector('.card-value').textContent = moyenneRatioEnseignant;
-        cartes[7].querySelector('.card-value').textContent = moyenneRatioClasse;
-        cartes[8].querySelector('.card-value').textContent = moyenneDistance;
+    var cartes = document.querySelectorAll('.card-value');
+    if (cartes.length >= 10) {
+        cartes[0].textContent = moyenneScolarisation + '%';
+        cartes[1].textContent = moyenneAbandon + '%';
+        cartes[2].textContent = moyenneReussiteCEE + '%';
+        cartes[3].textContent = moyenneReussiteBEPC + '%';
+        cartes[4].textContent = moyenneReussiteBAC + '%';
+        cartes[5].textContent = moyenneAlphabetisation + '%';
+        cartes[6].textContent = totalBeneficiaires.toLocaleString();
+        cartes[7].textContent = moyenneRatioEnseignant;
+        cartes[8].textContent = moyenneRatioClasse;
+        cartes[9].textContent = moyenneDistance + ' km';
     }
+    
+    console.log('✅ Cartes mises à jour');
+    
+    // ========== FILTRER LE TABLEAU ==========
+    
+    var rows = document.querySelectorAll('.table-container tbody tr');
+    var tableHeaders = document.querySelectorAll('.table-container thead th');
+    var visibleCount = 0;
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        
+        if (row.querySelector('.empty-state')) {
+            row.style.display = '';
+            continue;
+        }
+        
+        var rowRegion = row.getAttribute('data-region');
+        var rowPrefecture = row.getAttribute('data-prefecture');
+        var rowZone = row.getAttribute('data-zone');
+        var rowNiveau = row.getAttribute('data-niveau');
+        
+        var showRow = true;
+        
+        if (filterRegion && filterRegion !== '') {
+            var rowRegionId = '';
+            for (var r = 0; r < regionsData.length; r++) {
+                if (regionsData[r].nom === rowRegion) {
+                    rowRegionId = regionsData[r].id.toString();
+                    break;
+                }
+            }
+            if (rowRegionId !== filterRegion) showRow = false;
+        }
+        
+        if (filterPrefecture && filterPrefecture !== '' && rowPrefecture !== filterPrefecture) showRow = false;
+        if (filterZone && filterZone !== '' && rowZone !== filterZone) showRow = false;
+        
+        // Filtre Niveau pour le tableau
+        if (filterNiveau && filterNiveau !== '') {
+            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+                    if (rowNiveau !== 'Secondaire') showRow = false;
+                } else {
+                    if (rowNiveau !== filterNiveau) showRow = false;
+                }
+            } else if (['Debutant', 'Intermediaire', 'Avance'].indexOf(filterNiveau) !== -1) {
+                if (rowNiveau !== filterNiveau) showRow = false;
+            }
+        }
+        
+        row.style.display = showRow ? '' : 'none';
+        if (showRow) visibleCount++;
+        
+        // Gérer les colonnes selon le genre
+        var cells = row.querySelectorAll('td');
+        
+        if (filterGenre === 'Filles') {
+            if (cells.length >= 11) {
+                cells[5].style.display = '';
+                cells[6].style.display = 'none';
+                cells[7].style.display = 'none';
+                cells[8].style.display = '';
+                cells[9].style.display = 'none';
+                cells[10].style.display = 'none';
+            }
+        } else if (filterGenre === 'Garcons') {
+            if (cells.length >= 11) {
+                cells[5].style.display = 'none';
+                cells[6].style.display = '';
+                cells[7].style.display = 'none';
+                cells[8].style.display = 'none';
+                cells[9].style.display = '';
+                cells[10].style.display = 'none';
+            }
+        } else if (filterGenre === 'Total') {
+            if (cells.length >= 11) {
+                cells[5].style.display = 'none';
+                cells[6].style.display = 'none';
+                cells[7].style.display = '';
+                cells[8].style.display = 'none';
+                cells[9].style.display = 'none';
+                cells[10].style.display = '';
+            }
+        } else {
+            for (var c = 5; c <= 10 && c < cells.length; c++) {
+                cells[c].style.display = '';
+            }
+        }
+    }
+    
+    // Gérer les en-têtes
+    if (tableHeaders.length >= 11) {
+        if (filterGenre === 'Filles') {
+            tableHeaders[5].style.display = '';
+            tableHeaders[6].style.display = 'none';
+            tableHeaders[7].style.display = 'none';
+            tableHeaders[8].style.display = '';
+            tableHeaders[9].style.display = 'none';
+            tableHeaders[10].style.display = 'none';
+        } else if (filterGenre === 'Garcons') {
+            tableHeaders[5].style.display = 'none';
+            tableHeaders[6].style.display = '';
+            tableHeaders[7].style.display = 'none';
+            tableHeaders[8].style.display = 'none';
+            tableHeaders[9].style.display = '';
+            tableHeaders[10].style.display = 'none';
+        } else if (filterGenre === 'Total') {
+            tableHeaders[5].style.display = 'none';
+            tableHeaders[6].style.display = 'none';
+            tableHeaders[7].style.display = '';
+            tableHeaders[8].style.display = 'none';
+            tableHeaders[9].style.display = 'none';
+            tableHeaders[10].style.display = '';
+        } else {
+            for (var h = 5; h <= 10 && h < tableHeaders.length; h++) {
+                tableHeaders[h].style.display = '';
+            }
+        }
+    }
+    
+    console.log('✅ Filtrage terminé - Lignes visibles:', visibleCount);
 }
 function updateStatsPrefectureDropdown() {
     var regionSelect = document.getElementById('filter-stats-region');
@@ -4389,14 +4404,17 @@ html += '<option value="">Toutes</option>';
 html += '<option value="Urbaine">Urbaine</option>';
 html += '<option value="Rurale">Rurale</option>';
 html += '</select></div>';
-// 5️⃣ NIVEAU
+// 5️⃣ NIVEAU UNIFIÉ (Éducation formelle + Alphabétisation)
 html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
 html += '<select id="filter-stats-niveau" class="form-control" onchange="appliquerFiltresStatistiques()">';
-html += '<option value="Préscolaire">Préscolaire</option>';
+html += '<option value="">Tous</option>';
+html += '<option value="Prescolaire">Préscolaire</option>';
 html += '<option value="Primaire">Primaire</option>';
 html += '<option value="Collège">Collège</option>';
 html += '<option value="Lycée">Lycée</option>';
-html += '<option value="Alphabétisation">Alphabétisation</option>';
+html += '<option value="Debutant">Débutant (Alpha)</option>';
+html += '<option value="Intermediaire">Intermédiaire (Alpha)</option>';
+html += '<option value="Avance">Avancé (Alpha)</option>';
 html += '</select></div>';
 
 // 6️⃣ GENRE
