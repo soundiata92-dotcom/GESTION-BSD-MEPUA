@@ -4557,7 +4557,7 @@ html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-al
 html += '</div>';
 
 // ========== TABLEAU UNIFIÉ AVEC COULEURS F/G/T ==========
-html += '<div class="table-container" style="overflow-x: auto; margin-top: 20px; width: 100%;"><table style="width: 100%; min-width: 2000px; border-collapse: collapse;"><thead><tr>';
+html += '<div style="overflow-x: auto; margin: 20px 0; padding: 0; width: 100% !important; max-width: 100% !important;"><table style="width: 100%; min-width: 100%; border-collapse: collapse;"><thead><tr>';
 
 // Colonnes fixes
 html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Région</th>';
@@ -4769,8 +4769,10 @@ if (lignesArray.length > 0) {
 }
 
 html += '</tbody></table></div>';
-
             }
+
+            html += '</div><div id="modal-container"></div>';
+            app.innerHTML = html;
         }
 function showReussiteExamensModal() {
     var modalContainer = document.getElementById('modal-container');
