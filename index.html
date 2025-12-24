@@ -4556,56 +4556,56 @@ html += '<div style="font-size: 11px; font-weight: bold; color: #312e81; margin-
 html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-align: center;">' + moyenneDistance + ' km</div>';
 html += '</div>';
 // ========== TABLEAU UNIFIÉ AVEC COULEURS F/G/T ==========
-html += '<div class="table-container" style="width: 100%; margin-top: 20px;"><table style="width: 100%; border-collapse: collapse; table-layout: fixed;"><thead><tr>';
+html += '<div style="overflow-x: auto; margin: 20px auto; max-width: 98%;"><table style="border-collapse: collapse; margin: 0 auto;"><thead><tr>';
 
 // Colonnes fixes
-html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; font-size: 10px; width: 3.5%;">Région</th>';
-html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; font-size: 10px; width: 3.5%;">Préfecture</th>';
-html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; font-size: 10px; width: 3%;">Zone</th>';
-html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; font-size: 10px; width: 3.5%;">Niveau</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 10px 12px; border: 1px solid #1e40af; white-space: nowrap;">Région</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 10px 12px; border: 1px solid #1e40af; white-space: nowrap;">Préfecture</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 10px 12px; border: 1px solid #1e40af; white-space: nowrap;">Zone</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 10px 12px; border: 1px solid #1e40af; white-space: nowrap;">Niveau</th>';
 
 // 🔵 SCOLARISATION (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">Scol. F</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">Scol. G</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">Scol. T</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 10px 12px; border: 1px solid #b91c1c; white-space: nowrap;">Scol. F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 10px 12px; border: 1px solid #f59e0b; white-space: nowrap;">Scol. G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 10px 12px; border: 1px solid #15803d; white-space: nowrap;">Scol. T (%)</th>';
 
 // 🟠 ABANDON (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">Aban. F</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">Aban. G</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">Aban. T</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 10px 12px; border: 1px solid #b91c1c; white-space: nowrap;">Aban. F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 10px 12px; border: 1px solid #f59e0b; white-space: nowrap;">Aban. G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 10px 12px; border: 1px solid #15803d; white-space: nowrap;">Aban. T (%)</th>';
 
 // 🟢 CEE (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">CEE F</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">CEE G</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">CEE T</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 10px 12px; border: 1px solid #b91c1c; white-space: nowrap;">CEE F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 10px 12px; border: 1px solid #f59e0b; white-space: nowrap;">CEE G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 10px 12px; border: 1px solid #15803d; white-space: nowrap;">CEE T (%)</th>';
 
 // 🟢 BEPC (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">BEPC F</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">BEPC G</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">BEPC T</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 10px 12px; border: 1px solid #b91c1c; white-space: nowrap;">BEPC F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 10px 12px; border: 1px solid #f59e0b; white-space: nowrap;">BEPC G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 10px 12px; border: 1px solid #15803d; white-space: nowrap;">BEPC T (%)</th>';
 
 // 🟢 BAC (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">BAC F</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">BAC G</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">BAC T</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 10px 12px; border: 1px solid #b91c1c; white-space: nowrap;">BAC F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 10px 12px; border: 1px solid #f59e0b; white-space: nowrap;">BAC G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 10px 12px; border: 1px solid #15803d; white-space: nowrap;">BAC T (%)</th>';
 
 // 🟡 ALPHABÉTISATION (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">Alpha F</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">Alpha G</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">Alpha T</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 10px 12px; border: 1px solid #b91c1c; white-space: nowrap;">Alpha F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 10px 12px; border: 1px solid #f59e0b; white-space: nowrap;">Alpha G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 10px 12px; border: 1px solid #15803d; white-space: nowrap;">Alpha T (%)</th>';
 
 // 🟣 BÉNÉFICIAIRES (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">Bénéf. F</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">Bénéf. G</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">Bénéf. T</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 10px 12px; border: 1px solid #b91c1c; white-space: nowrap;">Bénéf. F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 10px 12px; border: 1px solid #f59e0b; white-space: nowrap;">Bénéf. G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 10px 12px; border: 1px solid #15803d; white-space: nowrap;">Bénéf. T</th>';
 
 // ⚪ RATIOS & DISTANCE
-html += '<th style="background-color: #6b7280; color: white; padding: 6px 4px; border: 1px solid #4b5563; white-space: nowrap; font-size: 10px; width: 3%;">R. E/Ens</th>';
-html += '<th style="background-color: #6b7280; color: white; padding: 6px 4px; border: 1px solid #4b5563; white-space: nowrap; font-size: 10px; width: 3%;">R. E/Cl</th>';
-html += '<th style="background-color: #6b7280; color: white; padding: 6px 4px; border: 1px solid #4b5563; white-space: nowrap; font-size: 10px; width: 3%;">Dist.(km)</th>';
+html += '<th style="background-color: #6b7280; color: white; padding: 10px 12px; border: 1px solid #4b5563; white-space: nowrap;">Ratio E/Ens</th>';
+html += '<th style="background-color: #6b7280; color: white; padding: 10px 12px; border: 1px solid #4b5563; white-space: nowrap;">Ratio E/Cl</th>';
+html += '<th style="background-color: #6b7280; color: white; padding: 10px 12px; border: 1px solid #4b5563; white-space: nowrap;">Distance (km)</th>';
 
 if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-    html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; text-align: center; font-size: 10px; width: 3.5%;">Actions</th>';
+    html += '<th style="background-color: #2563eb; color: white; padding: 10px 12px; border: 1px solid #1e40af; text-align: center; white-space: nowrap;">Actions</th>';
 }
 
 html += '</tr></thead><tbody>';
@@ -4711,53 +4711,53 @@ if (lignesArray.length > 0) {
         html += '<tr style="background-color: ' + bgColor + ';" data-region="' + ligne.region + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '">';
         
         // Colonnes fixes
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; font-weight: 600; font-size: 10px; overflow: hidden; text-overflow: ellipsis;">' + ligne.region + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; font-size: 10px; overflow: hidden; text-overflow: ellipsis;">' + ligne.prefecture + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; font-size: 10px; overflow: hidden; text-overflow: ellipsis;">' + ligne.zone + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; font-size: 10px; overflow: hidden; text-overflow: ellipsis;"><span class="badge badge-blue" style="font-size: 9px; padding: 2px 4px;">' + ligne.niveau + '</span></td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; font-weight: 600; white-space: nowrap;">' + ligne.region + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; white-space: nowrap;">' + ligne.prefecture + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; white-space: nowrap;">' + ligne.zone + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; white-space: nowrap;"><span class="badge badge-blue">' + ligne.niveau + '</span></td>';
         
         // Scolarisation F/G/T
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.scol_f !== null && ligne.scol_f !== undefined ? ligne.scol_f : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.scol_g !== null && ligne.scol_g !== undefined ? ligne.scol_g : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.scol_t !== null && ligne.scol_t !== undefined ? ligne.scol_t : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.scol_f !== null && ligne.scol_f !== undefined ? ligne.scol_f : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.scol_g !== null && ligne.scol_g !== undefined ? ligne.scol_g : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.scol_t !== null && ligne.scol_t !== undefined ? ligne.scol_t : '-') + '</td>';
         
         // Abandon F/G/T
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.aban_f !== null && ligne.aban_f !== undefined ? ligne.aban_f : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.aban_g !== null && ligne.aban_g !== undefined ? ligne.aban_g : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.aban_t !== null && ligne.aban_t !== undefined ? ligne.aban_t : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.aban_f !== null && ligne.aban_f !== undefined ? ligne.aban_f : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.aban_g !== null && ligne.aban_g !== undefined ? ligne.aban_g : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.aban_t !== null && ligne.aban_t !== undefined ? ligne.aban_t : '-') + '</td>';
         
         // CEE F/G/T
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.cee_f !== null && ligne.cee_f !== undefined ? ligne.cee_f : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.cee_g !== null && ligne.cee_g !== undefined ? ligne.cee_g : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.cee_t !== null && ligne.cee_t !== undefined ? ligne.cee_t : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.cee_f !== null && ligne.cee_f !== undefined ? ligne.cee_f : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.cee_g !== null && ligne.cee_g !== undefined ? ligne.cee_g : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.cee_t !== null && ligne.cee_t !== undefined ? ligne.cee_t : '-') + '</td>';
         
         // BEPC F/G/T
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bepc_f !== null && ligne.bepc_f !== undefined ? ligne.bepc_f : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bepc_g !== null && ligne.bepc_g !== undefined ? ligne.bepc_g : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bepc_t !== null && ligne.bepc_t !== undefined ? ligne.bepc_t : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.bepc_f !== null && ligne.bepc_f !== undefined ? ligne.bepc_f : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.bepc_g !== null && ligne.bepc_g !== undefined ? ligne.bepc_g : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.bepc_t !== null && ligne.bepc_t !== undefined ? ligne.bepc_t : '-') + '</td>';
         
         // BAC F/G/T
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bac_f !== null && ligne.bac_f !== undefined ? ligne.bac_f : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bac_g !== null && ligne.bac_g !== undefined ? ligne.bac_g : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bac_t !== null && ligne.bac_t !== undefined ? ligne.bac_t : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.bac_f !== null && ligne.bac_f !== undefined ? ligne.bac_f : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.bac_g !== null && ligne.bac_g !== undefined ? ligne.bac_g : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.bac_t !== null && ligne.bac_t !== undefined ? ligne.bac_t : '-') + '</td>';
         
         // Alpha F/G/T
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.alpha_f !== null && ligne.alpha_f !== undefined ? ligne.alpha_f : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.alpha_g !== null && ligne.alpha_g !== undefined ? ligne.alpha_g : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.alpha_t !== null && ligne.alpha_t !== undefined ? ligne.alpha_t : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.alpha_f !== null && ligne.alpha_f !== undefined ? ligne.alpha_f : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.alpha_g !== null && ligne.alpha_g !== undefined ? ligne.alpha_g : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.alpha_t !== null && ligne.alpha_t !== undefined ? ligne.alpha_t : '-') + '</td>';
         
         // Bénéf F/G/T
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.benef_f !== null && ligne.benef_f !== undefined ? ligne.benef_f : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.benef_g !== null && ligne.benef_g !== undefined ? ligne.benef_g : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.benef_t !== null && ligne.benef_t !== undefined ? ligne.benef_t : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.benef_f !== null && ligne.benef_f !== undefined ? ligne.benef_f : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.benef_g !== null && ligne.benef_g !== undefined ? ligne.benef_g : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.benef_t !== null && ligne.benef_t !== undefined ? ligne.benef_t : '-') + '</td>';
         
         // Ratios & Distance
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.ratio_ens !== null && ligne.ratio_ens !== undefined ? ligne.ratio_ens : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.ratio_classe !== null && ligne.ratio_classe !== undefined ? ligne.ratio_classe : '-') + '</td>';
-        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.distance !== null && ligne.distance !== undefined ? ligne.distance : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.ratio_ens !== null && ligne.ratio_ens !== undefined ? ligne.ratio_ens : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.ratio_classe !== null && ligne.ratio_classe !== undefined ? ligne.ratio_classe : '-') + '</td>';
+        html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center; white-space: nowrap;">' + (ligne.distance !== null && ligne.distance !== undefined ? ligne.distance : '-') + '</td>';
         
         if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-            html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center;"><button class="btn btn-danger" style="font-size: 9px; padding: 2px 5px;" onclick="deleteStatistique(' + ligne.id + ')">Suppr.</button></td>';
+            html += '<td style="padding: 10px 12px; border: 1px solid #e5e7eb; text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + ligne.id + ')">Supprimer</button></td>';
         }
         
         html += '</tr>';
