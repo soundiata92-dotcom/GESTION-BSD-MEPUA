@@ -4556,59 +4556,218 @@ html += '<div style="font-size: 11px; font-weight: bold; color: #312e81; margin-
 html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-align: center;">' + moyenneDistance + ' km</div>';
 html += '</div>';
 // ========== TABLEAU UNIFIÉ AVEC COULEURS F/G/T ==========
-html += '<div style="width: 100%; overflow-x: auto; margin-top: 20px;"><div style="display: flex; justify-content: center;"><table style="border-collapse: collapse; margin: 0 auto;"><thead><tr>';
+html += '<div class="table-container" style="width: 100%; margin-top: 20px;"><table style="width: 100%; border-collapse: collapse; table-layout: fixed;"><thead><tr>';
 
 // Colonnes fixes
-html += '<th style="background-color: #2563eb; color: white; padding: 10px; border: 1px solid #1e40af; min-width: 100px;">Région</th>';
-html += '<th style="background-color: #2563eb; color: white; padding: 10px; border: 1px solid #1e40af; min-width: 100px;">Préfecture</th>';
-html += '<th style="background-color: #2563eb; color: white; padding: 10px; border: 1px solid #1e40af; min-width: 80px;">Zone</th>';
-html += '<th style="background-color: #2563eb; color: white; padding: 10px; border: 1px solid #1e40af; min-width: 100px;">Niveau</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; font-size: 10px; width: 3.5%;">Région</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; font-size: 10px; width: 3.5%;">Préfecture</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; font-size: 10px; width: 3%;">Zone</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; font-size: 10px; width: 3.5%;">Niveau</th>';
 
 // 🔵 SCOLARISATION (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 10px; border: 1px solid #b91c1c; white-space: nowrap; min-width: 80px;">Scol. F (%)</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 10px; border: 1px solid #f59e0b; white-space: nowrap; min-width: 80px;">Scol. G (%)</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 10px; border: 1px solid #15803d; white-space: nowrap; min-width: 80px;">Scol. T (%)</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">Scol. F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">Scol. G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">Scol. T</th>';
 
 // 🟠 ABANDON (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 10px; border: 1px solid #b91c1c; white-space: nowrap; min-width: 80px;">Aban. F (%)</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 10px; border: 1px solid #f59e0b; white-space: nowrap; min-width: 80px;">Aban. G (%)</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 10px; border: 1px solid #15803d; white-space: nowrap; min-width: 80px;">Aban. T (%)</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">Aban. F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">Aban. G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">Aban. T</th>';
 
 // 🟢 CEE (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 10px; border: 1px solid #b91c1c; white-space: nowrap; min-width: 80px;">CEE F (%)</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 10px; border: 1px solid #f59e0b; white-space: nowrap; min-width: 80px;">CEE G (%)</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 10px; border: 1px solid #15803d; white-space: nowrap; min-width: 80px;">CEE T (%)</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">CEE F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">CEE G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">CEE T</th>';
 
 // 🟢 BEPC (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 10px; border: 1px solid #b91c1c; white-space: nowrap; min-width: 80px;">BEPC F (%)</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 10px; border: 1px solid #f59e0b; white-space: nowrap; min-width: 80px;">BEPC G (%)</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 10px; border: 1px solid #15803d; white-space: nowrap; min-width: 80px;">BEPC T (%)</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">BEPC F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">BEPC G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">BEPC T</th>';
 
 // 🟢 BAC (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 10px; border: 1px solid #b91c1c; white-space: nowrap; min-width: 80px;">BAC F (%)</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 10px; border: 1px solid #f59e0b; white-space: nowrap; min-width: 80px;">BAC G (%)</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 10px; border: 1px solid #15803d; white-space: nowrap; min-width: 80px;">BAC T (%)</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">BAC F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">BAC G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">BAC T</th>';
 
 // 🟡 ALPHABÉTISATION (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 10px; border: 1px solid #b91c1c; white-space: nowrap; min-width: 80px;">Alpha F (%)</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 10px; border: 1px solid #f59e0b; white-space: nowrap; min-width: 80px;">Alpha G (%)</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 10px; border: 1px solid #15803d; white-space: nowrap; min-width: 80px;">Alpha T (%)</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">Alpha F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">Alpha G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">Alpha T</th>';
 
 // 🟣 BÉNÉFICIAIRES (F/G/T)
-html += '<th style="background-color: #dc2626; color: white; padding: 10px; border: 1px solid #b91c1c; white-space: nowrap; min-width: 80px;">Bénéf. F</th>';
-html += '<th style="background-color: #fbbf24; color: #000; padding: 10px; border: 1px solid #f59e0b; white-space: nowrap; min-width: 80px;">Bénéf. G</th>';
-html += '<th style="background-color: #16a34a; color: white; padding: 10px; border: 1px solid #15803d; white-space: nowrap; min-width: 80px;">Bénéf. T</th>';
+html += '<th style="background-color: #dc2626; color: white; padding: 6px 4px; border: 1px solid #b91c1c; white-space: nowrap; font-size: 10px; width: 3%;">Bénéf. F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 6px 4px; border: 1px solid #f59e0b; white-space: nowrap; font-size: 10px; width: 3%;">Bénéf. G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 6px 4px; border: 1px solid #15803d; white-space: nowrap; font-size: 10px; width: 3%;">Bénéf. T</th>';
 
 // ⚪ RATIOS & DISTANCE
-html += '<th style="background-color: #6b7280; color: white; padding: 10px; border: 1px solid #4b5563; white-space: nowrap; min-width: 90px;">Ratio E/Ens</th>';
-html += '<th style="background-color: #6b7280; color: white; padding: 10px; border: 1px solid #4b5563; white-space: nowrap; min-width: 90px;">Ratio E/Cl</th>';
-html += '<th style="background-color: #6b7280; color: white; padding: 10px; border: 1px solid #4b5563; white-space: nowrap; min-width: 100px;">Distance (km)</th>';
+html += '<th style="background-color: #6b7280; color: white; padding: 6px 4px; border: 1px solid #4b5563; white-space: nowrap; font-size: 10px; width: 3%;">R. E/Ens</th>';
+html += '<th style="background-color: #6b7280; color: white; padding: 6px 4px; border: 1px solid #4b5563; white-space: nowrap; font-size: 10px; width: 3%;">R. E/Cl</th>';
+html += '<th style="background-color: #6b7280; color: white; padding: 6px 4px; border: 1px solid #4b5563; white-space: nowrap; font-size: 10px; width: 3%;">Dist.(km)</th>';
 
 if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-    html += '<th style="background-color: #2563eb; color: white; padding: 10px; border: 1px solid #1e40af; text-align: center; min-width: 100px;">Actions</th>';
+    html += '<th style="background-color: #2563eb; color: white; padding: 6px 4px; border: 1px solid #1e40af; text-align: center; font-size: 10px; width: 3.5%;">Actions</th>';
 }
 
 html += '</tr></thead><tbody>';
+
+// ========== GÉNÉRATION DES LIGNES ==========
+
+// 🔥 COMBINER LES 3 SOURCES
+var lignesTableau = {};
+
+// 1️⃣ Stats Générales
+for (var i = 0; i < statistiquesData.length; i++) {
+    var stat = statistiquesData[i];
+    if (stat.annee_scolaire !== '2025-2026') continue;
+    
+    var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
+    
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: stat.region,
+            prefecture: stat.prefecture,
+            zone: stat.zone,
+            niveau: stat.niveau,
+            id: stat.id
+        };
+    }
+    
+    lignesTableau[key].scol_f = stat.taux_scolarisation_filles;
+    lignesTableau[key].scol_g = stat.taux_scolarisation_garcons;
+    lignesTableau[key].scol_t = stat.taux_scolarisation_total;
+    lignesTableau[key].aban_f = stat.taux_abandon_filles;
+    lignesTableau[key].aban_g = stat.taux_abandon_garcons;
+    lignesTableau[key].aban_t = stat.taux_abandon_total;
+    lignesTableau[key].ratio_ens = stat.ratio_eleves_enseignant;
+    lignesTableau[key].ratio_classe = stat.ratio_eleves_classe;
+    lignesTableau[key].distance = stat.distance_moyenne_ecole_domicile;
+}
+
+// 2️⃣ Examens
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    var exam = reussiteExamensData[i];
+    if (exam.annee_scolaire !== '2024-2025') continue;
+    
+    var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau;
+    
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: exam.region,
+            prefecture: exam.prefecture,
+            zone: exam.zone,
+            niveau: exam.niveau,
+            id: exam.id
+        };
+    }
+    
+    lignesTableau[key].cee_f = exam.taux_reussite_cee_filles;
+    lignesTableau[key].cee_g = exam.taux_reussite_cee_garcons;
+    lignesTableau[key].cee_t = exam.taux_reussite_cee_total;
+    lignesTableau[key].bepc_f = exam.taux_reussite_bepc_filles;
+    lignesTableau[key].bepc_g = exam.taux_reussite_bepc_garcons;
+    lignesTableau[key].bepc_t = exam.taux_reussite_bepc_total;
+    lignesTableau[key].bac_f = exam.taux_reussite_bac_filles;
+    lignesTableau[key].bac_g = exam.taux_reussite_bac_garcons;
+    lignesTableau[key].bac_t = exam.taux_reussite_bac_total;
+}
+
+// 3️⃣ Alphabétisation
+for (var i = 0; i < alphabetisationData.length; i++) {
+    var alpha = alphabetisationData[i];
+    if (alpha.annee_scolaire !== '2025-2026') continue;
+    
+    var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
+    
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: alpha.region,
+            prefecture: alpha.prefecture,
+            zone: alpha.zone,
+            niveau: alpha.niveau,
+            id: alpha.id
+        };
+    }
+    
+    lignesTableau[key].alpha_f = alpha.taux_alphabetisation_filles;
+    lignesTableau[key].alpha_g = alpha.taux_alphabetisation_garcons;
+    lignesTableau[key].alpha_t = alpha.taux_alphabetisation_total;
+    lignesTableau[key].benef_f = alpha.beneficiaires_filles;
+    lignesTableau[key].benef_g = alpha.beneficiaires_garcons;
+    lignesTableau[key].benef_t = alpha.beneficiaires_total;
+}
+
+// Convertir objet en tableau
+var lignesArray = [];
+for (var key in lignesTableau) {
+    lignesArray.push(lignesTableau[key]);
+}
+
+// ========== AFFICHER LES LIGNES ==========
+if (lignesArray.length > 0) {
+    for (var i = 0; i < lignesArray.length; i++) {
+        var ligne = lignesArray[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        html += '<tr style="background-color: ' + bgColor + ';" data-region="' + ligne.region + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '">';
+        
+        // Colonnes fixes
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; font-weight: 600; font-size: 10px; overflow: hidden; text-overflow: ellipsis;">' + ligne.region + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; font-size: 10px; overflow: hidden; text-overflow: ellipsis;">' + ligne.prefecture + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; font-size: 10px; overflow: hidden; text-overflow: ellipsis;">' + ligne.zone + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; font-size: 10px; overflow: hidden; text-overflow: ellipsis;"><span class="badge badge-blue" style="font-size: 9px; padding: 2px 4px;">' + ligne.niveau + '</span></td>';
+        
+        // Scolarisation F/G/T
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.scol_f !== null && ligne.scol_f !== undefined ? ligne.scol_f : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.scol_g !== null && ligne.scol_g !== undefined ? ligne.scol_g : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.scol_t !== null && ligne.scol_t !== undefined ? ligne.scol_t : '-') + '</td>';
+        
+        // Abandon F/G/T
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.aban_f !== null && ligne.aban_f !== undefined ? ligne.aban_f : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.aban_g !== null && ligne.aban_g !== undefined ? ligne.aban_g : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.aban_t !== null && ligne.aban_t !== undefined ? ligne.aban_t : '-') + '</td>';
+        
+        // CEE F/G/T
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.cee_f !== null && ligne.cee_f !== undefined ? ligne.cee_f : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.cee_g !== null && ligne.cee_g !== undefined ? ligne.cee_g : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.cee_t !== null && ligne.cee_t !== undefined ? ligne.cee_t : '-') + '</td>';
+        
+        // BEPC F/G/T
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bepc_f !== null && ligne.bepc_f !== undefined ? ligne.bepc_f : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bepc_g !== null && ligne.bepc_g !== undefined ? ligne.bepc_g : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bepc_t !== null && ligne.bepc_t !== undefined ? ligne.bepc_t : '-') + '</td>';
+        
+        // BAC F/G/T
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bac_f !== null && ligne.bac_f !== undefined ? ligne.bac_f : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bac_g !== null && ligne.bac_g !== undefined ? ligne.bac_g : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.bac_t !== null && ligne.bac_t !== undefined ? ligne.bac_t : '-') + '</td>';
+        
+        // Alpha F/G/T
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.alpha_f !== null && ligne.alpha_f !== undefined ? ligne.alpha_f : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.alpha_g !== null && ligne.alpha_g !== undefined ? ligne.alpha_g : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.alpha_t !== null && ligne.alpha_t !== undefined ? ligne.alpha_t : '-') + '</td>';
+        
+        // Bénéf F/G/T
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.benef_f !== null && ligne.benef_f !== undefined ? ligne.benef_f : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.benef_g !== null && ligne.benef_g !== undefined ? ligne.benef_g : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.benef_t !== null && ligne.benef_t !== undefined ? ligne.benef_t : '-') + '</td>';
+        
+        // Ratios & Distance
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.ratio_ens !== null && ligne.ratio_ens !== undefined ? ligne.ratio_ens : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.ratio_classe !== null && ligne.ratio_classe !== undefined ? ligne.ratio_classe : '-') + '</td>';
+        html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center; font-size: 10px;">' + (ligne.distance !== null && ligne.distance !== undefined ? ligne.distance : '-') + '</td>';
+        
+        if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+            html += '<td style="padding: 5px 3px; border: 1px solid #e5e7eb; text-align: center;"><button class="btn btn-danger" style="font-size: 9px; padding: 2px 5px;" onclick="deleteStatistique(' + ligne.id + ')">Suppr.</button></td>';
+        }
+        
+        html += '</tr>';
+    }
+} else {
+    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '29' : '28';
+    html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
+}
+
+html += '</tbody></table></div>';
 
 // ========== GÉNÉRATION DES LIGNES ==========
 
