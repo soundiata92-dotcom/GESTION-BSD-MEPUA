@@ -4555,81 +4555,215 @@ html += '<div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100
 html += '<div style="font-size: 11px; font-weight: bold; color: #312e81; margin-bottom: 6px; text-align: center;">📍 Distance</div>';
 html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-align: center;">' + moyenneDistance + ' km</div>';
 html += '</div>';
+// ========== TABLEAU UNIFIÉ AVEC COULEURS F/G/T ==========
+html += '<div class="table-container" style="overflow-x: auto; margin-top: 20px;"><table style="width: 100%; min-width: 2000px;"><thead><tr>';
 
-               // Tableau des données
-html += '<div class="table-container"><table><thead class="blue"><tr>';
-html += '<th>Région</th>';
-html += '<th>Préfecture</th>';
-html += '<th>Zone</th>';
-html += '<th>Niveau</th>';
-html += '<th>Genre</th>';
-html += '<th>Scol. F (%)</th>';
-html += '<th>Scol. G (%)</th>';
-html += '<th>Scol. T (%)</th>';
-html += '<th>Aban. F (%)</th>';
-html += '<th>Aban. G (%)</th>';
-html += '<th>Aban. T (%)</th>';
-html += '<th>Réussite CEE (%)</th>';
-html += '<th>Réussite BEPC(%)</th>';
-html += '<th>Réussite BAC (%)</th>';
-html += '<th>Taux alphabétisation (%)</th>';
-html += '<th>Ratio élèves/enseignant</th>';
-html += '<th>Ratio élèves/classe</th>';
-html += '<th>Distance (km)</th>';
+// Colonnes fixes
+html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af; position: sticky; left: 0; z-index: 3;">Région</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Préfecture</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Zone</th>';
+html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Niveau</th>';
+
+// 🔵 SCOLARISATION (F/G/T)
+html += '<th style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c; white-space: nowrap;">Scol. F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b; white-space: nowrap;">Scol. G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d; white-space: nowrap;">Scol. T (%)</th>';
+
+// 🟠 ABANDON (F/G/T)
+html += '<th style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c; white-space: nowrap;">Aban. F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b; white-space: nowrap;">Aban. G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d; white-space: nowrap;">Aban. T (%)</th>';
+
+// 🟢 CEE (F/G/T)
+html += '<th style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c; white-space: nowrap;">CEE F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b; white-space: nowrap;">CEE G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d; white-space: nowrap;">CEE T (%)</th>';
+
+// 🟢 BEPC (F/G/T)
+html += '<th style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c; white-space: nowrap;">BEPC F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b; white-space: nowrap;">BEPC G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d; white-space: nowrap;">BEPC T (%)</th>';
+
+// 🟢 BAC (F/G/T)
+html += '<th style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c; white-space: nowrap;">BAC F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b; white-space: nowrap;">BAC G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d; white-space: nowrap;">BAC T (%)</th>';
+
+// 🟡 ALPHABÉTISATION (F/G/T)
+html += '<th style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c; white-space: nowrap;">Alpha F (%)</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b; white-space: nowrap;">Alpha G (%)</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d; white-space: nowrap;">Alpha T (%)</th>';
+
+// 🟣 BÉNÉFICIAIRES (F/G/T)
+html += '<th style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c; white-space: nowrap;">Bénéf. F</th>';
+html += '<th style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b; white-space: nowrap;">Bénéf. G</th>';
+html += '<th style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d; white-space: nowrap;">Bénéf. T</th>';
+
+// ⚪ RATIOS & DISTANCE
+html += '<th style="background-color: #6b7280; color: white; padding: 12px; border: 1px solid #4b5563; white-space: nowrap;">Ratio E/Ens</th>';
+html += '<th style="background-color: #6b7280; color: white; padding: 12px; border: 1px solid #4b5563; white-space: nowrap;">Ratio E/Cl</th>';
+html += '<th style="background-color: #6b7280; color: white; padding: 12px; border: 1px solid #4b5563; white-space: nowrap;">Distance (km)</th>';
 
 if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-    html += '<th style="text-align: center;">Actions</th>';
+    html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af; text-align: center;">Actions</th>';
 }
 
 html += '</tr></thead><tbody>';
 
-// 🔥 COMBINER Stats générales + Examens pour le tableau
-var dataTableau = [];
+// ========== GÉNÉRATION DES LIGNES ==========
 
-// Ajouter stats générales 2025-2026
-for (var i = 0; i < dataStatsGenerales.length; i++) {
-    dataTableau.push(dataStatsGenerales[i]);
+// 🔥 COMBINER LES 3 SOURCES
+var lignesTableau = {};
+
+// 1️⃣ Stats Générales
+for (var i = 0; i < statistiquesData.length; i++) {
+    var stat = statistiquesData[i];
+    if (stat.annee_scolaire !== '2025-2026') continue;
+    
+    var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
+    
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: stat.region,
+            prefecture: stat.prefecture,
+            zone: stat.zone,
+            niveau: stat.niveau,
+            id: stat.id
+        };
+    }
+    
+    lignesTableau[key].scol_f = stat.taux_scolarisation_filles;
+    lignesTableau[key].scol_g = stat.taux_scolarisation_garcons;
+    lignesTableau[key].scol_t = stat.taux_scolarisation_total;
+    lignesTableau[key].aban_f = stat.taux_abandon_filles;
+    lignesTableau[key].aban_g = stat.taux_abandon_garcons;
+    lignesTableau[key].aban_t = stat.taux_abandon_total;
+    lignesTableau[key].ratio_ens = stat.ratio_eleves_enseignant;
+    lignesTableau[key].ratio_classe = stat.ratio_eleves_classe;
+    lignesTableau[key].distance = stat.distance_moyenne_ecole_domicile;
 }
 
-// Ajouter examens session 2025
-for (var i = 0; i < dataExamens2025.length; i++) {
-    dataTableau.push(dataExamens2025[i]);
+// 2️⃣ Examens
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    var exam = reussiteExamensData[i];
+    if (exam.annee_scolaire !== '2024-2025') continue;
+    
+    var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau;
+    
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: exam.region,
+            prefecture: exam.prefecture,
+            zone: exam.zone,
+            niveau: exam.niveau,
+            id: exam.id
+        };
+    }
+    
+    lignesTableau[key].cee_f = exam.taux_reussite_cee_filles;
+    lignesTableau[key].cee_g = exam.taux_reussite_cee_garcons;
+    lignesTableau[key].cee_t = exam.taux_reussite_cee_total;
+    lignesTableau[key].bepc_f = exam.taux_reussite_bepc_filles;
+    lignesTableau[key].bepc_g = exam.taux_reussite_bepc_garcons;
+    lignesTableau[key].bepc_t = exam.taux_reussite_bepc_total;
+    lignesTableau[key].bac_f = exam.taux_reussite_bac_filles;
+    lignesTableau[key].bac_g = exam.taux_reussite_bac_garcons;
+    lignesTableau[key].bac_t = exam.taux_reussite_bac_total;
 }
 
-console.log('📋 Tableau combiné:', dataTableau.length, 'lignes');
+// 3️⃣ Alphabétisation
+for (var i = 0; i < alphabetisationData.length; i++) {
+    var alpha = alphabetisationData[i];
+    if (alpha.annee_scolaire !== '2025-2026') continue;
+    
+    var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
+    
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: alpha.region,
+            prefecture: alpha.prefecture,
+            zone: alpha.zone,
+            niveau: alpha.niveau,
+            id: alpha.id
+        };
+    }
+    
+    lignesTableau[key].alpha_f = alpha.taux_alphabetisation_filles;
+    lignesTableau[key].alpha_g = alpha.taux_alphabetisation_garcons;
+    lignesTableau[key].alpha_t = alpha.taux_alphabetisation_total;
+    lignesTableau[key].benef_f = alpha.beneficiaires_filles;
+    lignesTableau[key].benef_g = alpha.beneficiaires_garcons;
+    lignesTableau[key].benef_t = alpha.beneficiaires_total;
+}
 
-if (dataTableau.length > 0) {
-    for (var i = 0; i < dataTableau.length; i++) {
-        var stat = dataTableau[i];
+// Convertir objet en tableau
+var lignesArray = [];
+for (var key in lignesTableau) {
+    lignesArray.push(lignesTableau[key]);
+}
 
-        html += '<tr data-region="' + stat.region + '" data-prefecture="' + stat.prefecture + '" data-zone="' + stat.zone + '" data-niveau="' + stat.niveau + '" data-genre="' + stat.genre + '">';
-        html += '<td>' + stat.region + '</td>';
-        html += '<td>' + stat.prefecture + '</td>';
-        html += '<td>' + stat.zone + '</td>';
-        html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
-        html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
-html += '<td>' + (stat.taux_scolarisation_filles !== null && stat.taux_scolarisation_filles !== undefined ? stat.taux_scolarisation_filles : '-') + '</td>';
-html += '<td>' + (stat.taux_scolarisation_garcons !== null && stat.taux_scolarisation_garcons !== undefined ? stat.taux_scolarisation_garcons : '-') + '</td>';
-html += '<td>' + (stat.taux_scolarisation_total !== null && stat.taux_scolarisation_total !== undefined ? stat.taux_scolarisation_total : '-') + '</td>';
-html += '<td>' + (stat.taux_abandon_filles !== null && stat.taux_abandon_filles !== undefined ? stat.taux_abandon_filles : '-') + '</td>';
-html += '<td>' + (stat.taux_abandon_garcons !== null && stat.taux_abandon_garcons !== undefined ? stat.taux_abandon_garcons : '-') + '</td>';
-html += '<td>' + (stat.taux_abandon_total !== null && stat.taux_abandon_total !== undefined ? stat.taux_abandon_total : '-') + '</td>';
-        html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.taux_reussite_cee : '-') + '</td>';
-        html += '<td>' + (stat.taux_reussite_bepc !== null && stat.taux_reussite_bepc !== undefined ? stat.taux_reussite_bepc : '-') + '</td>';
-        html += '<td>' + (stat.taux_reussite_bac !== null && stat.taux_reussite_bac !== undefined ? stat.taux_reussite_bac : '-') + '</td>';
-        html += '<td>' + (stat.taux_alphabetisation !== null && stat.taux_alphabetisation !== undefined ? stat.taux_alphabetisation : '-') + '</td>';
-        html += '<td>' + (stat.ratio_eleves_enseignant !== null && stat.ratio_eleves_enseignant !== undefined ? stat.ratio_eleves_enseignant : '-') + '</td>';
-        html += '<td>' + (stat.ratio_eleves_classe !== null && stat.ratio_eleves_classe !== undefined ? stat.ratio_eleves_classe : '-') + '</td>';
-        html += '<td>' + (stat.distance_moyenne_ecole_domicile !== null && stat.distance_moyenne_ecole_domicile !== undefined ? stat.distance_moyenne_ecole_domicile : '-') + '</td>';
+// ========== AFFICHER LES LIGNES ==========
+if (lignesArray.length > 0) {
+    for (var i = 0; i < lignesArray.length; i++) {
+        var ligne = lignesArray[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        html += '<tr style="background-color: ' + bgColor + ';" data-region="' + ligne.region + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '">';
+        
+        // Colonnes fixes
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600; position: sticky; left: 0; background-color: ' + bgColor + ';">' + ligne.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.prefecture + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.zone + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;"><span class="badge badge-blue">' + ligne.niveau + '</span></td>';
+        
+        // Scolarisation F/G/T
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.scol_f !== null && ligne.scol_f !== undefined ? ligne.scol_f : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.scol_g !== null && ligne.scol_g !== undefined ? ligne.scol_g : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.scol_t !== null && ligne.scol_t !== undefined ? ligne.scol_t : '-') + '</td>';
+        
+        // Abandon F/G/T
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.aban_f !== null && ligne.aban_f !== undefined ? ligne.aban_f : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.aban_g !== null && ligne.aban_g !== undefined ? ligne.aban_g : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.aban_t !== null && ligne.aban_t !== undefined ? ligne.aban_t : '-') + '</td>';
+        
+        // CEE F/G/T
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.cee_f !== null && ligne.cee_f !== undefined ? ligne.cee_f : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.cee_g !== null && ligne.cee_g !== undefined ? ligne.cee_g : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.cee_t !== null && ligne.cee_t !== undefined ? ligne.cee_t : '-') + '</td>';
+        
+        // BEPC F/G/T
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_f !== null && ligne.bepc_f !== undefined ? ligne.bepc_f : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_g !== null && ligne.bepc_g !== undefined ? ligne.bepc_g : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_t !== null && ligne.bepc_t !== undefined ? ligne.bepc_t : '-') + '</td>';
+        
+        // BAC F/G/T
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_f !== null && ligne.bac_f !== undefined ? ligne.bac_f : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_g !== null && ligne.bac_g !== undefined ? ligne.bac_g : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_t !== null && ligne.bac_t !== undefined ? ligne.bac_t : '-') + '</td>';
+        
+        // Alpha F/G/T
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.alpha_f !== null && ligne.alpha_f !== undefined ? ligne.alpha_f : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.alpha_g !== null && ligne.alpha_g !== undefined ? ligne.alpha_g : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.alpha_t !== null && ligne.alpha_t !== undefined ? ligne.alpha_t : '-') + '</td>';
+        
+        // Bénéf F/G/T
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.benef_f !== null && ligne.benef_f !== undefined ? ligne.benef_f : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.benef_g !== null && ligne.benef_g !== undefined ? ligne.benef_g : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.benef_t !== null && ligne.benef_t !== undefined ? ligne.benef_t : '-') + '</td>';
+        
+        // Ratios & Distance
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.ratio_ens !== null && ligne.ratio_ens !== undefined ? ligne.ratio_ens : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.ratio_classe !== null && ligne.ratio_classe !== undefined ? ligne.ratio_classe : '-') + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.distance !== null && ligne.distance !== undefined ? ligne.distance : '-') + '</td>';
         
         if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-            html += '<td style="text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + stat.id + ')">Supprimer</button></td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + ligne.id + ')">Supprimer</button></td>';
         }
         
         html += '</tr>';
     }
 } else {
-    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '15' : '14';
+    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '29' : '28';
     html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
 }
 
