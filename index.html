@@ -4555,49 +4555,27 @@ html += '<div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100
 html += '<div style="font-size: 11px; font-weight: bold; color: #312e81; margin-bottom: 6px; text-align: center;">📍 Distance</div>';
 html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-align: center;">' + moyenneDistance + ' km</div>';
 html += '</div>';
+
+               // Tableau des données
 html += '<div class="table-container"><table><thead class="blue"><tr>';
 html += '<th>Région</th>';
 html += '<th>Préfecture</th>';
 html += '<th>Zone</th>';
 html += '<th>Niveau</th>';
-
-// 🔵 SCOLARISATION (F/G/T)
-html += '<th style="background-color: #3b82f6; color: white;">Scol. F (%)</th>';
-html += '<th style="background-color: #60a5fa; color: white;">Scol. G (%)</th>';
-html += '<th style="background-color: #93c5fd; color: white;">Scol. T (%)</th>';
-
-// 🟠 ABANDON (F/G/T)
-html += '<th style="background-color: #ea580c; color: white;">Aban. F (%)</th>';
-html += '<th style="background-color: #fb923c; color: white;">Aban. G (%)</th>';
-html += '<th style="background-color: #fdba74; color: white;">Aban. T (%)</th>';
-
-// 🟢 EXAMENS (F/G/T pour chaque)
-html += '<th style="background-color: #059669; color: white;">CEE F (%)</th>';
-html += '<th style="background-color: #10b981; color: white;">CEE G (%)</th>';
-html += '<th style="background-color: #34d399; color: white;">CEE T (%)</th>';
-
-html += '<th style="background-color: #16a34a; color: white;">BEPC F (%)</th>';
-html += '<th style="background-color: #22c55e; color: white;">BEPC G (%)</th>';
-html += '<th style="background-color: #4ade80; color: white;">BEPC T (%)</th>';
-
-html += '<th style="background-color: #15803d; color: white;">BAC F (%)</th>';
-html += '<th style="background-color: #16a34a; color: white;">BAC G (%)</th>';
-html += '<th style="background-color: #22c55e; color: white;">BAC T (%)</th>';
-
-// 🟡 ALPHABÉTISATION (F/G/T)
-html += '<th style="background-color: #f59e0b; color: white;">Alpha F (%)</th>';
-html += '<th style="background-color: #fbbf24; color: white;">Alpha G (%)</th>';
-html += '<th style="background-color: #fcd34d; color: white;">Alpha T (%)</th>';
-
-// 🟣 BÉNÉFICIAIRES (F/G/T)
-html += '<th style="background-color: #a855f7; color: white;">Bénéf. F</th>';
-html += '<th style="background-color: #c084fc; color: white;">Bénéf. G</th>';
-html += '<th style="background-color: #d8b4fe; color: white;">Bénéf. T</th>';
-
-// ⚪ RATIOS & DISTANCE
-html += '<th style="background-color: #ec4899; color: white;">Ratio E/Ens</th>';
-html += '<th style="background-color: #ef4444; color: white;">Ratio E/Classe</th>';
-html += '<th style="background-color: #6366f1; color: white;">Distance (km)</th>';
+html += '<th>Genre</th>';
+html += '<th>Scol. F (%)</th>';
+html += '<th>Scol. G (%)</th>';
+html += '<th>Scol. T (%)</th>';
+html += '<th>Aban. F (%)</th>';
+html += '<th>Aban. G (%)</th>';
+html += '<th>Aban. T (%)</th>';
+html += '<th>Réussite CEE (%)</th>';
+html += '<th>Réussite BEPC(%)</th>';
+html += '<th>Réussite BAC (%)</th>';
+html += '<th>Taux alphabétisation (%)</th>';
+html += '<th>Ratio élèves/enseignant</th>';
+html += '<th>Ratio élèves/classe</th>';
+html += '<th>Distance (km)</th>';
 
 if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
     html += '<th style="text-align: center;">Actions</th>';
@@ -4605,163 +4583,53 @@ if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
 
 html += '</tr></thead><tbody>';
 
-// ========== GÉNÉRATION DES LIGNES ==========
+// 🔥 COMBINER Stats générales + Examens pour le tableau
+var dataTableau = [];
 
-// 🔥 COMBINER LES 3 SOURCES DE DONNÉES
-var lignesTableau = [];
-
-// 1️⃣ Ajouter Stats Générales (2025-2026)
-for (var i = 0; i < statistiquesData.length; i++) {
-    var stat = statistiquesData[i];
-    if (stat.annee_scolaire !== '2025-2026') continue;
-    
-    var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
-    var ligne = lignesTableau.find(function(l) { return l.key === key; });
-    
-    if (!ligne) {
-        ligne = {
-            key: key,
-            region: stat.region,
-            prefecture: stat.prefecture,
-            zone: stat.zone,
-            niveau: stat.niveau,
-            id: stat.id
-        };
-        lignesTableau.push(ligne);
-    }
-    
-    // Stats générales
-    ligne.scol_f = stat.taux_scolarisation_filles;
-    ligne.scol_g = stat.taux_scolarisation_garcons;
-    ligne.scol_t = stat.taux_scolarisation_total;
-    ligne.aban_f = stat.taux_abandon_filles;
-    ligne.aban_g = stat.taux_abandon_garcons;
-    ligne.aban_t = stat.taux_abandon_total;
-    ligne.ratio_ens = stat.ratio_eleves_enseignant;
-    ligne.ratio_classe = stat.ratio_eleves_classe;
-    ligne.distance = stat.distance_moyenne_ecole_domicile;
+// Ajouter stats générales 2025-2026
+for (var i = 0; i < dataStatsGenerales.length; i++) {
+    dataTableau.push(dataStatsGenerales[i]);
 }
 
-// 2️⃣ Ajouter Examens (2024-2025)
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    var exam = reussiteExamensData[i];
-    if (exam.annee_scolaire !== '2024-2025') continue;
-    
-    var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau;
-    var ligne = lignesTableau.find(function(l) { return l.key === key; });
-    
-    if (!ligne) {
-        ligne = {
-            key: key,
-            region: exam.region,
-            prefecture: exam.prefecture,
-            zone: exam.zone,
-            niveau: exam.niveau,
-            id: exam.id
-        };
-        lignesTableau.push(ligne);
-    }
-    
-    // Examens
-    ligne.cee_f = exam.taux_reussite_cee_filles;
-    ligne.cee_g = exam.taux_reussite_cee_garcons;
-    ligne.cee_t = exam.taux_reussite_cee_total;
-    ligne.bepc_f = exam.taux_reussite_bepc_filles;
-    ligne.bepc_g = exam.taux_reussite_bepc_garcons;
-    ligne.bepc_t = exam.taux_reussite_bepc_total;
-    ligne.bac_f = exam.taux_reussite_bac_filles;
-    ligne.bac_g = exam.taux_reussite_bac_garcons;
-    ligne.bac_t = exam.taux_reussite_bac_total;
+// Ajouter examens session 2025
+for (var i = 0; i < dataExamens2025.length; i++) {
+    dataTableau.push(dataExamens2025[i]);
 }
 
-// 3️⃣ Ajouter Alphabétisation (2025-2026)
-for (var i = 0; i < alphabetisationData.length; i++) {
-    var alpha = alphabetisationData[i];
-    if (alpha.annee_scolaire !== '2025-2026') continue;
-    
-    var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
-    var ligne = lignesTableau.find(function(l) { return l.key === key; });
-    
-    if (!ligne) {
-        ligne = {
-            key: key,
-            region: alpha.region,
-            prefecture: alpha.prefecture,
-            zone: alpha.zone,
-            niveau: alpha.niveau,
-            id: alpha.id
-        };
-        lignesTableau.push(ligne);
-    }
-    
-    // Alphabétisation
-    ligne.alpha_f = alpha.taux_alphabetisation_filles;
-    ligne.alpha_g = alpha.taux_alphabetisation_garcons;
-    ligne.alpha_t = alpha.taux_alphabetisation_total;
-    ligne.benef_f = alpha.beneficiaires_filles;
-    ligne.benef_g = alpha.beneficiaires_garcons;
-    ligne.benef_t = alpha.beneficiaires_total;
-}
+console.log('📋 Tableau combiné:', dataTableau.length, 'lignes');
 
-// ========== AFFICHER LES LIGNES ==========
-if (lignesTableau.length > 0) {
-    for (var i = 0; i < lignesTableau.length; i++) {
-        var ligne = lignesTableau[i];
-        
-        html += '<tr data-region="' + ligne.region + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '">';
-        html += '<td>' + ligne.region + '</td>';
-        html += '<td>' + ligne.prefecture + '</td>';
-        html += '<td>' + ligne.zone + '</td>';
-        html += '<td><span class="badge badge-blue">' + ligne.niveau + '</span></td>';
-        
-        // Scolarisation F/G/T
-        html += '<td>' + (ligne.scol_f !== null && ligne.scol_f !== undefined ? ligne.scol_f : '-') + '</td>';
-        html += '<td>' + (ligne.scol_g !== null && ligne.scol_g !== undefined ? ligne.scol_g : '-') + '</td>';
-        html += '<td>' + (ligne.scol_t !== null && ligne.scol_t !== undefined ? ligne.scol_t : '-') + '</td>';
-        
-        // Abandon F/G/T
-        html += '<td>' + (ligne.aban_f !== null && ligne.aban_f !== undefined ? ligne.aban_f : '-') + '</td>';
-        html += '<td>' + (ligne.aban_g !== null && ligne.aban_g !== undefined ? ligne.aban_g : '-') + '</td>';
-        html += '<td>' + (ligne.aban_t !== null && ligne.aban_t !== undefined ? ligne.aban_t : '-') + '</td>';
-        
-        // CEE F/G/T
-        html += '<td>' + (ligne.cee_f !== null && ligne.cee_f !== undefined ? ligne.cee_f : '-') + '</td>';
-        html += '<td>' + (ligne.cee_g !== null && ligne.cee_g !== undefined ? ligne.cee_g : '-') + '</td>';
-        html += '<td>' + (ligne.cee_t !== null && ligne.cee_t !== undefined ? ligne.cee_t : '-') + '</td>';
-        
-        // BEPC F/G/T
-        html += '<td>' + (ligne.bepc_f !== null && ligne.bepc_f !== undefined ? ligne.bepc_f : '-') + '</td>';
-        html += '<td>' + (ligne.bepc_g !== null && ligne.bepc_g !== undefined ? ligne.bepc_g : '-') + '</td>';
-        html += '<td>' + (ligne.bepc_t !== null && ligne.bepc_t !== undefined ? ligne.bepc_t : '-') + '</td>';
-        
-        // BAC F/G/T
-        html += '<td>' + (ligne.bac_f !== null && ligne.bac_f !== undefined ? ligne.bac_f : '-') + '</td>';
-        html += '<td>' + (ligne.bac_g !== null && ligne.bac_g !== undefined ? ligne.bac_g : '-') + '</td>';
-        html += '<td>' + (ligne.bac_t !== null && ligne.bac_t !== undefined ? ligne.bac_t : '-') + '</td>';
-        
-        // Alphabétisation F/G/T
-        html += '<td>' + (ligne.alpha_f !== null && ligne.alpha_f !== undefined ? ligne.alpha_f : '-') + '</td>';
-        html += '<td>' + (ligne.alpha_g !== null && ligne.alpha_g !== undefined ? ligne.alpha_g : '-') + '</td>';
-        html += '<td>' + (ligne.alpha_t !== null && ligne.alpha_t !== undefined ? ligne.alpha_t : '-') + '</td>';
-        
-        // Bénéficiaires F/G/T
-        html += '<td>' + (ligne.benef_f !== null && ligne.benef_f !== undefined ? ligne.benef_f : '-') + '</td>';
-        html += '<td>' + (ligne.benef_g !== null && ligne.benef_g !== undefined ? ligne.benef_g : '-') + '</td>';
-        html += '<td>' + (ligne.benef_t !== null && ligne.benef_t !== undefined ? ligne.benef_t : '-') + '</td>';
-        
-        // Ratios & Distance
-        html += '<td>' + (ligne.ratio_ens !== null && ligne.ratio_ens !== undefined ? ligne.ratio_ens : '-') + '</td>';
-        html += '<td>' + (ligne.ratio_classe !== null && ligne.ratio_classe !== undefined ? ligne.ratio_classe : '-') + '</td>';
-        html += '<td>' + (ligne.distance !== null && ligne.distance !== undefined ? ligne.distance : '-') + '</td>';
+if (dataTableau.length > 0) {
+    for (var i = 0; i < dataTableau.length; i++) {
+        var stat = dataTableau[i];
+
+        html += '<tr data-region="' + stat.region + '" data-prefecture="' + stat.prefecture + '" data-zone="' + stat.zone + '" data-niveau="' + stat.niveau + '" data-genre="' + stat.genre + '">';
+        html += '<td>' + stat.region + '</td>';
+        html += '<td>' + stat.prefecture + '</td>';
+        html += '<td>' + stat.zone + '</td>';
+        html += '<td><span class="badge badge-blue">' + stat.niveau + '</span></td>';
+        html += '<td><span class="badge badge-purple">' + stat.genre + '</span></td>';
+html += '<td>' + (stat.taux_scolarisation_filles !== null && stat.taux_scolarisation_filles !== undefined ? stat.taux_scolarisation_filles : '-') + '</td>';
+html += '<td>' + (stat.taux_scolarisation_garcons !== null && stat.taux_scolarisation_garcons !== undefined ? stat.taux_scolarisation_garcons : '-') + '</td>';
+html += '<td>' + (stat.taux_scolarisation_total !== null && stat.taux_scolarisation_total !== undefined ? stat.taux_scolarisation_total : '-') + '</td>';
+html += '<td>' + (stat.taux_abandon_filles !== null && stat.taux_abandon_filles !== undefined ? stat.taux_abandon_filles : '-') + '</td>';
+html += '<td>' + (stat.taux_abandon_garcons !== null && stat.taux_abandon_garcons !== undefined ? stat.taux_abandon_garcons : '-') + '</td>';
+html += '<td>' + (stat.taux_abandon_total !== null && stat.taux_abandon_total !== undefined ? stat.taux_abandon_total : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_cee !== null && stat.taux_reussite_cee !== undefined ? stat.taux_reussite_cee : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_bepc !== null && stat.taux_reussite_bepc !== undefined ? stat.taux_reussite_bepc : '-') + '</td>';
+        html += '<td>' + (stat.taux_reussite_bac !== null && stat.taux_reussite_bac !== undefined ? stat.taux_reussite_bac : '-') + '</td>';
+        html += '<td>' + (stat.taux_alphabetisation !== null && stat.taux_alphabetisation !== undefined ? stat.taux_alphabetisation : '-') + '</td>';
+        html += '<td>' + (stat.ratio_eleves_enseignant !== null && stat.ratio_eleves_enseignant !== undefined ? stat.ratio_eleves_enseignant : '-') + '</td>';
+        html += '<td>' + (stat.ratio_eleves_classe !== null && stat.ratio_eleves_classe !== undefined ? stat.ratio_eleves_classe : '-') + '</td>';
+        html += '<td>' + (stat.distance_moyenne_ecole_domicile !== null && stat.distance_moyenne_ecole_domicile !== undefined ? stat.distance_moyenne_ecole_domicile : '-') + '</td>';
         
         if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
-            html += '<td style="text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + ligne.id + ')">Supprimer</button></td>';
+            html += '<td style="text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + stat.id + ')">Supprimer</button></td>';
         }
         
         html += '</tr>';
     }
 } else {
-    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '29' : '28';
+    var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '15' : '14';
     html += '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique enregistrée</td></tr>';
 }
 
@@ -6046,7 +5914,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
 
 
 
