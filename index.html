@@ -4624,17 +4624,16 @@ if (activeTab === 'statistiques') {
             html += '<td class="col-cee-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.cee_g !== null && ligne.cee_g !== undefined ? ligne.cee_g : '-') + '</td>';
             html += '<td class="col-cee-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.cee_t !== null && ligne.cee_t !== undefined ? ligne.cee_t : '-') + '</td>';
             
-            // BEPC F/G/T
-            html += '<td class="col-bepc-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_f !== null && ligne.bepc_f !== undefined ? ligne.bepc_f : '-') + '</td>';
-            html += '<td class="col-bepc-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_g !== null && ligne.bepc_g !== undefined ? ligne.bepc_g : '-') + '</td>';
-            html += '<td class="col-bepc-t" style="padding: 10px; border;
-text-align: center;">' + (ligne.bepc_t !== null && ligne.bepc_t !== undefined ? ligne.bepc_t : '-') + '</td>';
-        
-            // BAC F/G/T
-            html += '<td class="col-bac-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_f !== null && ligne.bac_f !== undefined ? ligne.bac_f : '-') + '</td>';
-            html += '<td class="col-bac-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_g !== null && ligne.bac_g !== undefined ? ligne.bac_g : '-') + '</td>';
-            html += '<td class="col-bac-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_t !== null && ligne.bac_t !== undefined ? ligne.bac_t : '-') + '</td>';
-            
+           // BEPC F/G/T
+html += '<td class="col-bepc-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_f !== null && ligne.bepc_f !== undefined ? ligne.bepc_f : '-') + '</td>';
+html += '<td class="col-bepc-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_g !== null && ligne.bepc_g !== undefined ? ligne.bepc_g : '-') + '</td>';
+html += '<td class="col-bepc-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_t !== null && ligne.bepc_t !== undefined ? ligne.bepc_t : '-') + '</td>';
+
+// BAC F/G/T
+html += '<td class="col-bac-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_f !== null && ligne.bac_f !== undefined ? ligne.bac_f : '-') + '</td>';
+html += '<td class="col-bac-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_g !== null && ligne.bac_g !== undefined ? ligne.bac_g : '-') + '</td>';
+html += '<td class="col-bac-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_t !== null && ligne.bac_t !== undefined ? ligne.bac_t : '-') + '</td>';
+
             // Alpha F/G/T
             html += '<td class="col-alpha-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.alpha_f !== null && ligne.alpha_f !== undefined ? ligne.alpha_f : '-') + '</td>';
             html += '<td class="col-alpha-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.alpha_g !== null && ligne.alpha_g !== undefined ? ligne.alpha_g : '-') + '</td>';
@@ -5941,6 +5940,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
