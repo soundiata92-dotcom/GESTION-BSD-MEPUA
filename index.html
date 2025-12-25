@@ -4353,209 +4353,193 @@ html += '</div></div>';
             }
 // ========== ONGLET 8 : STATISTIQUES ==========
 if (activeTab === 'statistiques') {
-html += '📊 Statistiques Éducatives';
-// 🔥 SOUS-MENU avec 3 boutons selon permissions
-html += '<div style="background-color: white; padding: 16px; margin-bottom: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
-html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
+    html += '<h2 style="margin-bottom: 16px;">📊 Statistiques Éducatives</h2>';
+    
+    // 🔥 SOUS-MENU avec 3 boutons selon permissions
+    html += '<div style="background-color: white; padding: 16px; margin-bottom: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
 
-// Bouton 1 : Stats Générales (BSD)
-if (canSaisirStatsGenerales() || currentUser.role === 'chefdept') {
-    var styleGeneral = 'background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
-    html += '<button onclick="showStatistiquesModal()" style="' + styleGeneral + '">📊 Stats Générales (BSD)</button>';
-}
-
-// Bouton 2 : Réussite Examens (DGECS)
-if (canSaisirExamens() || currentUser.role === 'chefdept') {
-    var styleExamens = 'background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
-    html += '<button onclick="showReussiteExamensModal()" style="' + styleExamens + '">✅ Réussite Examens (DGECS)</button>';
-}
-
-// Bouton 3 : Alphabétisation (DNAENFP-LN)
-if (canSaisirAlphabetisation() || currentUser.role === 'chefdept') {
-    var styleAlpha = 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
-    html += '<button onclick="showAlphabetisationModal()" style="' + styleAlpha + '">✍️ Alphabétisation (DNAENFP-LN)</button>';
-}
-
-html += '</div></div>';
-// Filtres
-html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-html += '<h3 style="margin-bottom: 12px;">Filtres</h3>';
-html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
-
-// 2️⃣ RÉGION
-html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
-html += '<select id="filter-stats-region" class="form-control" onchange="appliquerFiltresStatistiques(); updateStatsPrefectureDropdown();">';
-html += '<option value="">Toutes</option>';
-for (var i = 0; i < regionsData.length; i++) {
-    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
-}
-html += '</select></div>';
-
-// 3️⃣ PRÉFECTURE
-html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏛️ Préfecture</label>';
-html += '<select id="filter-stats-prefecture" class="form-control" onchange="appliquerFiltresStatistiques()">';
-html += '<option value="">Toutes</option>';
-html += '</select></div>';
-
-// 4️⃣ ZONE
-html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏘️ Zone</label>';
-html += '<select id="filter-stats-zone" class="form-control" onchange="appliquerFiltresStatistiques()">';
-html += '<option value="">Toutes</option>';
-html += '<option value="Urbaine">Urbaine</option>';
-html += '<option value="Rurale">Rurale</option>';
-html += '</select></div>';
-// 5️⃣ NIVEAU UNIFIÉ (Éducation formelle + Alphabétisation)
-html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
-html += '<select id="filter-stats-niveau" class="form-control" onchange="appliquerFiltresStatistiques()">';
-html += '<option value="">Tous</option>';
-html += '<option value="Prescolaire">Préscolaire</option>';
-html += '<option value="Primaire">Primaire</option>';
-html += '<option value="Collège">Collège</option>';
-html += '<option value="Lycée">Lycée</option>';
-html += '<option value="Debutant">Débutant (Alpha)</option>';
-html += '<option value="Intermediaire">Intermédiaire (Alpha)</option>';
-html += '<option value="Avance">Avancé (Alpha)</option>';
-html += '</select></div>';
-
-// 6️⃣ GENRE
-html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">👤 Genre</label>';
-html += '<select id="filter-stats-genre" class="form-control" onchange="appliquerFiltresStatistiques()">';
-html += '<option value="">Tous</option>';
-html += '<option value="Filles">🔴 Filles</option>';
-html += '<option value="Garcons">🟡 Garçons</option>';
-html += '<option value="Total">🟢 Total</option>';
-html += '</select></div>';
-html += '</div></div>';
-                
-             // Cartes d'indicateurs (10 cartes au total)
-html += '<div class="cards-fixed">';
-// 🔥 CALCUL DES MOYENNES POUR LES CARTES
-console.log('📊 Calcul des indicateurs pour les cartes...');
-
-// Stats générales depuis statistiques_educatives (année 2025-2026)
-var dataStatsGenerales = [];
-for (var i = 0; i < statistiquesData.length; i++) {
-    var stat = statistiquesData[i];
-    if (stat.annee_scolaire === '2025-2026') {
-        dataStatsGenerales.push(stat);
+    if (canSaisirStatsGenerales() || currentUser.role === 'chefdept') {
+        var styleGeneral = 'background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+        html += '<button onclick="showStatistiquesModal()" style="' + styleGeneral + '">📊 Stats Générales (BSD)</button>';
     }
-}
 
-// Examens depuis reussiteExamensData (Session 2024-2025)
-var dataExamens2025 = [];
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    if (reussiteExamensData[i].annee_scolaire === '2024-2025') {
-        dataExamens2025.push(reussiteExamensData[i]);
+    if (canSaisirExamens() || currentUser.role === 'chefdept') {
+        var styleExamens = 'background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+        html += '<button onclick="showReussiteExamensModal()" style="' + styleExamens + '">✅ Réussite Examens (DGECS)</button>';
     }
-}
 
-// Alphabétisation depuis alphabetisationData (année 2025-2026)
-var dataAlpha2026 = [];
-for (var i = 0; i < alphabetisationData.length; i++) {
-    if (alphabetisationData[i].annee_scolaire === '2025-2026') {
-        dataAlpha2026.push(alphabetisationData[i]);
+    if (canSaisirAlphabetisation() || currentUser.role === 'chefdept') {
+        var styleAlpha = 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+        html += '<button onclick="showAlphabetisationModal()" style="' + styleAlpha + '">✍️ Alphabétisation (DNAENFP-LN)</button>';
     }
-}
 
-console.log('✅ Stats générales:', dataStatsGenerales.length);
-console.log('✅ Examens 2024-2025:', dataExamens2025.length);
-console.log('✅ Alphabétisation 2025-2026:', dataAlpha2026.length);
+    html += '</div></div>';
+    
+    // 🔥 5 FILTRES
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+    html += '<h3 style="margin-bottom: 12px;">🔍 Filtres</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
 
-// 🎯 RÉCUPÉRER LE FILTRE GENRE ACTUEL
-var genreFilterActuel = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
+    // Filtre 1 : Région
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
+    html += '<select id="filter-stats-region" class="form-control" onchange="appliquerFiltresStatistiques(); updateStatsPrefectureDropdown();">';
+    html += '<option value="">Toutes</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
 
-console.log('🎯 Calcul des moyennes avec genre:', genreFilterActuel);
+    // Filtre 2 : Préfecture
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏛️ Préfecture</label>';
+    html += '<select id="filter-stats-prefecture" class="form-control" onchange="appliquerFiltresStatistiques()">';
+    html += '<option value="">Toutes</option>';
+    html += '</select></div>';
 
-// Calculer les moyennes selon le genre sélectionné
-var moyenneScolarisation = calculerMoyenne(dataStatsGenerales, 'taux_scolarisation', genreFilterActuel);
-var moyenneAbandon = calculerMoyenne(dataStatsGenerales, 'taux_abandon', genreFilterActuel);
-var moyenneAlphabetisation = calculerMoyenne(dataAlpha2026, 'taux_alphabetisation', genreFilterActuel);
+    // Filtre 3 : Zone
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏘️ Zone</label>';
+    html += '<select id="filter-stats-zone" class="form-control" onchange="appliquerFiltresStatistiques()">';
+    html += '<option value="">Toutes</option>';
+    html += '<option value="Urbaine">Urbaine</option>';
+    html += '<option value="Rurale">Rurale</option>';
+    html += '</select></div>';
 
-// Ratios et distance (toujours Total - pas de distinction F/G)
-var moyenneRatioEnseignant = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_enseignant', 'Total');
-var moyenneRatioClasse = calculerMoyenne(dataStatsGenerales, 'ratio_eleves_classe', 'Total');
-var moyenneDistance = calculerMoyenne(dataStatsGenerales, 'distance_moyenne_ecole_domicile', 'Total');
+    // Filtre 4 : Niveau
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
+    html += '<select id="filter-stats-niveau" class="form-control" onchange="appliquerFiltresStatistiques()">';
+    html += '<option value="">Tous</option>';
+    html += '<option value="Prescolaire">Préscolaire</option>';
+    html += '<option value="Primaire">Primaire</option>';
+    html += '<option value="Collège">Collège</option>';
+    html += '<option value="Lycée">Lycée</option>';
+    html += '<option value="Debutant">Débutant (Alpha)</option>';
+    html += '<option value="Intermediaire">Intermédiaire (Alpha)</option>';
+    html += '<option value="Avance">Avancé (Alpha)</option>';
+    html += '</select></div>';
 
-// 🔥 Examens depuis reussiteExamensData
-var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_cee', genreFilterActuel);
-var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bepc', genreFilterActuel);
-var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025, 'taux_reussite_bac', genreFilterActuel);
+    // Filtre 5 : Genre
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">👤 Genre</label>';
+    html += '<select id="filter-stats-genre" class="form-control" onchange="appliquerFiltresStatistiques()">';
+    html += '<option value="">Tous</option>';
+    html += '<option value="Filles">🔴 Filles</option>';
+    html += '<option value="Garcons">🟡 Garçons</option>';
+    html += '<option value="Total">🟢 Total</option>';
+    html += '</select></div>';
 
-console.log('📊 Moyennes calculées:');
-console.log('  Scolarisation:', moyenneScolarisation, '%');
-console.log('  Abandon:', moyenneAbandon, '%');
-console.log('  CEE:', moyenneReussiteCEE, '% | BEPC:', moyenneReussiteBEPC, '% | BAC:', moyenneReussiteBAC, '%');
-console.log('  Alphabétisation:', moyenneAlphabetisation, '%');
-// ========== 10 CARTES EN 2 LIGNES (5+5) ==========
+    html += '</div></div>';
+    
+    // 🔥 RECALCULER LES DONNÉES FILTRÉES
+    var filterRegion = '';
+    var filterPrefecture = '';
+    var filterZone = '';
+    var filterNiveau = '';
+    var filterGenre = 'Total';
+    
+    // Stats générales (année 2025-2026)
+    var dataStatsGeneralesFiltrees = [];
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        if (stat.annee_scolaire !== '2025-2026') continue;
+        dataStatsGeneralesFiltrees.push(stat);
+    }
+    
+    // Examens (Session 2024-2025)
+    var dataExamens2025Filtrees = [];
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire === '2024-2025') {
+            dataExamens2025Filtrees.push(exam);
+        }
+    }
+    
+    // Alphabétisation (année 2025-2026)
+    var dataAlpha2026Filtrees = [];
+    for (var i = 0; i < alphabetisationData.length; i++) {
+        var alpha = alphabetisationData[i];
+        if (alpha.annee_scolaire === '2025-2026') {
+            dataAlpha2026Filtrees.push(alpha);
+        }
+    }
+    
+    // 🔥 CALCULER LES MOYENNES
+    var moyenneScolarisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_scolarisation', filterGenre || 'Total');
+    var moyenneAbandon = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_abandon', filterGenre || 'Total');
+    var moyenneAlphabetisation = calculerMoyenne(dataAlpha2026Filtrees, 'taux_alphabetisation', filterGenre || 'Total');
+    var moyenneRatioEnseignant = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_enseignant', 'Total');
+    var moyenneRatioClasse = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_classe', 'Total');
+    var moyenneDistance = calculerMoyenne(dataStatsGeneralesFiltrees, 'distance_moyenne_ecole_domicile', 'Total');
+    var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_cee', filterGenre || 'Total');
+    var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_bepc', filterGenre || 'Total');
+    var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_bac', filterGenre || 'Total');
+    
+    // Bénéficiaires
+    var totalBeneficiaires = 0;
+    for (var i = 0; i < dataAlpha2026Filtrees.length; i++) {
+        var alpha = dataAlpha2026Filtrees[i];
+        var benef = alpha.beneficiaires_total || 0;
+        totalBeneficiaires += benef;
+    }
+    
+    // 🔥 10 CARTES EN 2 LIGNES (5+5)
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 14px; margin-top: 20px;">';
+    
+    // Ligne 1 : Scolarisation, Abandon, CEE, BEPC, BAC
+    html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #1e40af; margin-bottom: 6px; text-align: center;">📊 Scolarisation</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #1e40af; text-align: center;">' + moyenneScolarisation + '%</div>';
+    html += '</div>';
+    
+    html += '<div style="background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); border-left: 4px solid #ea580c; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #9a3412; margin-bottom: 6px; text-align: center;">📉 Abandon</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #9a3412; text-align: center;">' + moyenneAbandon + '%</div>';
+    html += '</div>';
+    
+    html += '<div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #065f46; margin-bottom: 6px; text-align: center;">✅ Réussite CEE</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #065f46; text-align: center;">' + moyenneReussiteCEE + '%</div>';
+    html += '</div>';
+    
+    html += '<div style="background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%); border-left: 4px solid #16a34a; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #14532d; margin-bottom: 6px; text-align: center;">✅ Réussite BEPC</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #14532d; text-align: center;">' + moyenneReussiteBEPC + '%</div>';
+    html += '</div>';
+    
+    html += '<div style="background: linear-gradient(135deg, #86efac 0%, #4ade80 100%); border-left: 4px solid #22c55e; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #14532d; margin-bottom: 6px; text-align: center;">✅ Réussite BAC</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #14532d; text-align: center;">' + moyenneReussiteBAC + '%</div>';
+    html += '</div>';
+    
+    html += '</div>'; // Fin ligne 1
+    
+    // Ligne 2 : Alphabétisation, Bénéficiaires, Ratios, Distance
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px;">';
+    
+    html += '<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #92400e; margin-bottom: 6px; text-align: center;">✍️ Alphabétisation</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #92400e; text-align: center;">' + moyenneAlphabetisation + '%</div>';
+    html += '</div>';
+    
+    html += '<div style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border-left: 4px solid #a855f7; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #6b21a8; margin-bottom: 6px; text-align: center;">👥 Bénéficiaires</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #6b21a8; text-align: center;">' + totalBeneficiaires.toLocaleString() + '</div>';
+    html += '</div>';
+    
+    html += '<div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 4px solid #ec4899; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #9f1239; margin-bottom: 6px; text-align: center;">👨‍🏫 Ratio Ens.</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #9f1239; text-align: center;">' + moyenneRatioEnseignant + '</div>';
+    html += '</div>';
+    
+    html += '<div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #ef4444; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #991b1b; margin-bottom: 6px; text-align: center;">🏫 Ratio Classe</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #991b1b; text-align: center;">' + moyenneRatioClasse + '</div>';
+    html += '</div>';
+    
+    html += '<div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border-left: 4px solid #6366f1; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
+    html += '<div style="font-size: 11px; font-weight: bold; color: #312e81; margin-bottom: 6px; text-align: center;">📍 Distance</div>';
+    html += '<div class="card-value-stat" style="font-size: 32px; font-weight: bold; color: #312e81; text-align: center;">' + moyenneDistance + ' km</div>';
+    html += '</div>';
+    html += '</div>'; 
 
-// LIGNE 1 : Scolarisation, Abandon, CEE, BEPC, BAC
-html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 14px; margin-top: 20px;">';
-
-// 1. Scolarisation
-html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #1e40af; margin-bottom: 6px; text-align: center;">📊 Scolarisation</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #1e40af; text-align: center;">' + moyenneScolarisation + '%</div>';
-html += '</div>';
-
-// 2. Abandon
-html += '<div style="background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); border-left: 4px solid #ea580c; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #9a3412; margin-bottom: 6px; text-align: center;">📉 Abandon</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #9a3412; text-align: center;">' + moyenneAbandon + '%</div>';
-html += '</div>';
-
-// 3. CEE
-html += '<div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #065f46; margin-bottom: 6px; text-align: center;">✅ Réussite CEE</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #065f46; text-align: center;">' + moyenneReussiteCEE + '%</div>';
-html += '</div>';
-
-// 4. BEPC
-html += '<div style="background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%); border-left: 4px solid #16a34a; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #14532d; margin-bottom: 6px; text-align: center;">✅ Réussite BEPC</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #14532d; text-align: center;">' + moyenneReussiteBEPC + '%</div>';
-html += '</div>';
-
-// 5. BAC
-html += '<div style="background: linear-gradient(135deg, #86efac 0%, #4ade80 100%); border-left: 4px solid #22c55e; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #14532d; margin-bottom: 6px; text-align: center;">✅ Réussite BAC</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #14532d; text-align: center;">' + moyenneReussiteBAC + '%</div>';
-html += '</div>';
-
-html += '</div>'; // Fin ligne 1
-
-// LIGNE 2 : Alphabétisation, Bénéficiaires, Ratios, Distance
-html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px;">';
-
-// 6. Alphabétisation
-html += '<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #92400e; margin-bottom: 6px; text-align: center;">✍️ Alphabétisation</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #92400e; text-align: center;">' + moyenneAlphabetisation + '%</div>';
-html += '</div>';
-
-// 7. Bénéficiaires
-html += '<div style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border-left: 4px solid #a855f7; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #6b21a8; margin-bottom: 6px; text-align: center;">👥 Bénéficiaires</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #6b21a8; text-align: center;">0</div>';
-html += '</div>';
-
-// 8. Ratio Enseignant
-html += '<div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 4px solid #ec4899; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #9f1239; margin-bottom: 6px; text-align: center;">👨‍🏫 Ratio Ens.</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #9f1239; text-align: center;">' + moyenneRatioEnseignant + '</div>';
-html += '</div>';
-
-// 9. Ratio Classe
-html += '<div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #ef4444; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #991b1b; margin-bottom: 6px; text-align: center;">🏫 Ratio Classe</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #991b1b; text-align: center;">' + moyenneRatioClasse + '</div>';
-html += '</div>';
-
-// 10. Distance
-html += '<div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border-left: 4px solid #6366f1; border-radius: 8px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: center;">';
-html += '<div style="font-size: 11px; font-weight: bold; color: #312e81; margin-bottom: 6px; text-align: center;">📍 Distance</div>';
-html += '<div style="font-size: 32px; font-weight: bold; color: #312e81; text-align: center;">' + moyenneDistance + ' km</div>';
-html += '</div>';
-html += '</div>';
 // ========== TABLEAU UNIFIÉ AVEC COULEURS F/G/T ==========
 html += '<div class="table-container" style="overflow-x: auto; margin-top: 20px;"><table style="width: 100%; min-width: 2000px;"><thead><tr>';
 
@@ -6049,6 +6033,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
