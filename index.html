@@ -2389,77 +2389,67 @@ function filterStatsFormRows() {
 }
 
 function showStatistiquesModal() {
-    var modalContainer = document.getElementById('modal-container');
+var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">📊 Saisir les statistiques nationales</h2>';
     
-    // ========== SÉLECTION ANNÉE ==========
-    html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
-    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
-    html += '<select id="global-annee-stats" class="form-control" style="font-size: 14px; padding: 10px; font-weight: bold;" onchange="chargerDonneesStats()">';
-    html += '<option value="2025-2026">Année 2025-2026</option>';
-    html += '<option value="2024-2025">Année 2024-2025</option>';
-    html += '<option value="2023-2024">Année 2023-2024</option>';
-    html += '</select></div>';
-    html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Saisissez les données par année. Le tableau affichera automatiquement les données de l\'année la plus récente.</p>';
-    html += '</div>';
-    
-    // ========== FILTRES (5 FILTRES) ==========
-    html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
-    html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+    // ========== EN-TÊTE avec Année et Période ==========
+   html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
+html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
+html += '<input type="text" id="global-annee" class="form-control" value="2025-2026" style="font-weight: bold;">';
+html += '</div>';
+html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Les statistiques générales sont saisies pour l\'année en cours uniquement.</p>';
+html += '</div>';
 
-    // Filtre 1 : Région
-    html += '<div class="form-group"><label>Région</label><select id="filter-stats-form-region" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option>';
-    for (var i = 0; i < regionsData.length; i++) {
-        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
-    }
-    html += '</select></div>';
+    // ========== FILTRES COMPLETS (5 filtres) ==========
+html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
+html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
+html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
 
-    // Filtre 2 : Préfecture
-    html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-form-prefecture" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option></select></div>';
+// Filtre 1 : Région
+html += '<div class="form-group"><label>Région</label><select id="filter-stats-form-region" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option>';
+for (var i = 0; i < regionsData.length; i++) {
+    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+}
+html += '</select></div>';
 
-    // Filtre 3 : Zone
-    html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+// Filtre 2 : Préfecture
+html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-form-prefecture" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option></select></div>';
 
-    // Filtre 4 : Niveau
-    html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
+// Filtre 3 : Zone
+html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
 
-    // Filtre 5 : Genre
-    html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+// Filtre 4 : Niveau
+html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
 
-    html += '</div></div>';
-    
-    // ========== TABLEAU DE SAISIE ==========
+// Filtre 5 : Genre
+html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+
+html += '</div></div>';
+    // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
     html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Région</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Préfecture</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Zone</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Niveau</th>';
-    
-    // Scolarisation F/G/T
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Scol. F (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Scol. G (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Scol. T (%)</th>';
-    
-    // Abandon F/G/T
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Aban. F (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Aban. G (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Aban. T (%)</th>';
-    
+    // Scolarisation F/G/T (3 colonnes)
+html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Scol. F (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Scol. G (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Scol. T (%)</th>';
+// Abandon F/G/T (3 colonnes)
+html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Aban. F (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Aban. G (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Aban. T (%)</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Ens</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Classe</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Distance (km)</th>';
-    html += '</tr></thead><tbody>';
-    
-    var rowIndex = 0;
-    var zones = ['Urbaine', 'Rurale'];
-    var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
-    
+    html += '</tr></thead><tbody>'; 
+var rowIndex = 0;
+var zones = ['Urbaine', 'Rurale'];
+var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];    
     // Générer les lignes
     for (var r = 0; r < regionsData.length; r++) {
-        var region = regionsData[r];
-        
+        var region = regionsData[r];  
         var prefecturesRegion = [];
         for (var p = 0; p < prefecturesData.length; p++) {
             if (prefecturesData[p].region_id == region.id) {
@@ -2483,20 +2473,20 @@ function showStatistiquesModal() {
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + niveau + '</td>';
 
-                    // Scolarisation F/G/T
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_garcons" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+// Taux scolarisation (F/G/T - 3 inputs)
+html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_garcons" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
 
-                    // Abandon F/G/T
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_garcons" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+// Taux abandon (F/G/T - 3 inputs)
+html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_garcons" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
                     
                     // Ratios et distance
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_classe" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="distance" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_classe" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="distance" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
                     
                     html += '</tr>';
                     rowIndex++;
@@ -2508,27 +2498,23 @@ function showStatistiquesModal() {
     html += '</tbody></table></div>';
     
     // ========== BOUTONS D'ACTION ==========
-    html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
+    html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
+    html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
+    html += '<div style="display: flex; gap: 10px;">';
     html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)">💾 Enregistrer nouvelles</button>';
     html += '<button class="btn btn-warning" onclick="submitStatistiquesTableau(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
     html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
-    html += '</div>';
+    html += '</div></div>';
     
     html += '</div></div>';
     modalContainer.innerHTML = html;
-    
-    // 🔥 CHARGER LES DONNÉES EXISTANTES
-    setTimeout(function() {
-        chargerDonneesStats();
-    }, 100);
-}
-async function chargerDonneesStats() {
-    var annee = document.getElementById('global-annee-stats').value;
-    
-    console.log('📥 Chargement Stats Générales pour', annee);
+// ========== CHARGER LES DONNÉES EXISTANTES ==========
+setTimeout(async function() {
+    var annee = document.getElementById('global-annee').value.trim();
+    if (!annee) return;
     
     try {
-        const { data: statsData, error } = await supabase
+        const { data: existingData, error } = await supabase
             .from('statistiques_educatives')
             .select('*')
             .eq('annee_scolaire', annee)
@@ -2536,13 +2522,16 @@ async function chargerDonneesStats() {
         
         if (error) throw error;
         
-        if (statsData && statsData.length > 0) {
-            console.log('✅ Stats chargées:', statsData.length);
+        if (existingData && existingData.length > 0) {
+            console.log('📥 Chargement de ' + existingData.length + ' données existantes...');
             
-            for (var i = 0; i < statsData.length; i++) {
-                var stat = statsData[i];
+            var loaded = 0;
+            
+            // Pour chaque donnée existante
+            for (var i = 0; i < existingData.length; i++) {
+                var stat = existingData[i];
                 
-                // Trouver l'index de ligne
+                // Trouver l'index de ligne correspondant
                 var rowIndex = 0;
                 var found = false;
                 
@@ -2560,60 +2549,133 @@ async function chargerDonneesStats() {
                         var prefecture = prefecturesRegion[p];
                         
                         if (prefecture.nom !== stat.prefecture) {
-                            rowIndex += 8; // 2 zones × 4 niveaux
+                            rowIndex += 6; // 2 zones × 3 niveaux
                             continue;
                         }
                         
                         var zones = ['Urbaine', 'Rurale'];
                         for (var z = 0; z < zones.length && !found; z++) {
-                            if (zones[z] !== stat.zone) {
-                                rowIndex += 4;
+                            var zone = zones[z];
+                            
+                            if (zone !== stat.zone) {
+                                rowIndex += 3; // 3 niveaux
                                 continue;
                             }
                             
-                            var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
+                            var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
                             for (var n = 0; n < niveaux.length && !found; n++) {
                                 if (niveaux[n] === stat.niveau) {
-                                    // Charger Scolarisation F/G/T
+                                    // 🔥 CHARGER SCOLARISATION F/G/T
                                     if (stat.taux_scolarisation_filles !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_filles"]');
-                                        if (input) input.value = stat.taux_scolarisation_filles;
+                                        if (input) {
+                                            input.value = stat.taux_scolarisation_filles;
+                                            input.style.background = '#fce7f3';
+                                            input.style.borderColor = '#db2777';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
                                     }
+                                    
                                     if (stat.taux_scolarisation_garcons !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_garcons"]');
-                                        if (input) input.value = stat.taux_scolarisation_garcons;
+                                        if (input) {
+                                            input.value = stat.taux_scolarisation_garcons;
+                                            input.style.background = '#dbeafe';
+                                            input.style.borderColor = '#2563eb';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
                                     }
+                                    
                                     if (stat.taux_scolarisation_total !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_total"]');
-                                        if (input) input.value = stat.taux_scolarisation_total;
+                                        if (input) {
+                                            input.value = stat.taux_scolarisation_total;
+                                            input.style.background = '#d1fae5';
+                                            input.style.borderColor = '#10b981';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
                                     }
                                     
-                                    // Charger Abandon F/G/T
+                                    // 🔥 CHARGER ABANDON F/G/T
                                     if (stat.taux_abandon_filles !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_filles"]');
-                                        if (input) input.value = stat.taux_abandon_filles;
-                                    }
-                                    if (stat.taux_abandon_garcons !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_garcons"]');
-                                        if (input) input.value = stat.taux_abandon_garcons;
-                                    }
-                                    if (stat.taux_abandon_total !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_total"]');
-                                        if (input) input.value = stat.taux_abandon_total;
+                                        if (input) {
+                                            input.value = stat.taux_abandon_filles;
+                                            input.style.background = '#fce7f3';
+                                            input.style.borderColor = '#db2777';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
                                     }
                                     
-                                    // Charger Ratios
+                                    if (stat.taux_abandon_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_garcons"]');
+                                        if (input) {
+                                            input.value = stat.taux_abandon_garcons;
+                                            input.style.background = '#dbeafe';
+                                            input.style.borderColor = '#2563eb';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    if (stat.taux_abandon_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_total"]');
+                                        if (input) {
+                                            input.value = stat.taux_abandon_total;
+                                            input.style.background = '#d1fae5';
+                                            input.style.borderColor = '#10b981';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
+                                    }
+                                    
+                                    // Ratio enseignant
                                     if (stat.ratio_eleves_enseignant !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"]');
-                                        if (input) input.value = stat.ratio_eleves_enseignant;
+                                        if (input) {
+                                            input.value = stat.ratio_eleves_enseignant;
+                                            input.style.background = '#e8f5e9';
+                                            input.style.borderColor = '#4caf50';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
                                     }
+                                    
+                                    // Ratio classe
                                     if (stat.ratio_eleves_classe !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"]');
-                                        if (input) input.value = stat.ratio_eleves_classe;
+                                        if (input) {
+                                            input.value = stat.ratio_eleves_classe;
+                                            input.style.background = '#e8f5e9';
+                                            input.style.borderColor = '#4caf50';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
                                     }
+                                    
+                                    // Distance
                                     if (stat.distance_moyenne_ecole_domicile !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"]');
-                                        if (input) input.value = stat.distance_moyenne_ecole_domicile;
+                                        if (input) {
+                                            input.value = stat.distance_moyenne_ecole_domicile;
+                                            input.style.background = '#e8f5e9';
+                                            input.style.borderColor = '#4caf50';
+                                            input.disabled = true;
+                                            input.setAttribute('data-saved', 'true');
+                                            loaded++;
+                                        }
                                     }
                                     
                                     found = true;
@@ -2626,12 +2688,36 @@ async function chargerDonneesStats() {
                 }
             }
             
-            console.log('✅ Données chargées dans le formulaire Stats');
+            if (loaded > 0) {
+                alert('📥 ' + loaded + ' champs déjà enregistrés ont été chargés (en vert).\n\nVous pouvez continuer la saisie des autres lignes.');
+            }
         }
     } catch (error) {
-        console.error('❌ Erreur chargement Stats:', error);
+        console.error('Erreur chargement:', error);
     }
+}, 500);
+    modalContainer.innerHTML = html;
+  // Initialiser les cartes avec toutes les données
+    setTimeout(function() {
+        updateCartesIndicateurs(['T1', 'T2', 'T3', 'T4', 'Annuel']);
+    }, 100);
 }
+  
+    // ========== DÉTECTER LES MODIFICATIONS POUR RÉACTIVER L'ENREGISTREMENT ==========
+    setTimeout(function() {
+        var allInputs = document.querySelectorAll('input[data-field]:not([disabled])');
+        for (var i = 0; i < allInputs.length; i++) {
+            allInputs[i].addEventListener('input', function() {
+                // Retirer le statut "sauvegardé" quand l'utilisateur modifie
+                if (this.getAttribute('data-saved') === 'true') {
+                    this.removeAttribute('data-saved');
+                    this.style.background = '';
+                    this.style.borderColor = '';
+                    this.disabled = false;
+                }
+            });
+        }
+    }, 600);
 function rechargerFormulaireStatistiques() {
     console.log('🔄 Rechargement du formulaire...');
     
@@ -2725,9 +2811,10 @@ function updatePreuveActivites() {
 async function submitStatistiquesTableau(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
-    var annee = document.getElementById('global-annee-stats').value.trim();     
+    var annee = document.getElementById('global-annee').value.trim();
+    
     if (!annee) {
-alert('⚠️ Veuillez sélectionner une année scolaire');
+        alert('⚠️ Veuillez saisir une année scolaire');
         return;
     }
     
@@ -5295,15 +5382,14 @@ function showAlphabetisationModal() {
     var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">✍️ Saisir les taux d\'alphabétisation</h2>';
     
-    // ========== SÉLECTION ANNÉE ==========
+    // ========== FILTRE SESSION ==========
     html += '<div style="background-color: #fef3c7; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #f59e0b;">';
     html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
-    html += '<select id="alpha-annee" class="form-control" style="font-size: 14px; padding: 10px; font-weight: bold;" onchange="chargerDonneesAlpha()">';
-    html += '<option value="2025-2026">Année 2025-2026</option>';
-    html += '<option value="2024-2025">Année 2024-2025</option>';
-    html += '<option value="2023-2024">Année 2023-2024</option>';
+    html += '<select id="alpha-annee" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireAlphabetisation()">';
+    html += '<option value="2025-2026">2025-2026</option>';
+    html += '<option value="2024-2025">2024-2025</option>';
+    html += '<option value="2023-2024">2023-2024</option>';
     html += '</select></div>';
-    html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #92400e;"><strong>ℹ️ Note :</strong> Saisissez les données par année. Le tableau affichera automatiquement les données de l\'année la plus récente.</p>';
     html += '</div>';
 
     // ========== FILTRES (5 FILTRES) ==========
