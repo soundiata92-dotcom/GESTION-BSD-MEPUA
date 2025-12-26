@@ -2265,16 +2265,16 @@ function filterTableRows() {
     console.log('================');
 }
 function filterStatsFormRows() {
-    var regionId = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-form-region').value : '';
-    var prefectureNom = document.getElementById('filter-stats-form-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
-    var zoneFilter = document.getElementById('filter-form-zone') ? document.getElementById('filter-stats-form-zone').value : '';
-    var niveauFilter = document.getElementById('filter-stats-form-niveau') ? document.getElementById('filter-stats-niveau').value : '';
-    var genreFilter = document.getElementById('filter-stats-form-genre') ? document.getElementById('filter-stats-genre').value : '';
+    var regionId = document.getElementById('filter-stats-form-region') ? document.getElementById('filter-stats-form-region').value : '';
+    var prefectureNom = document.getElementById('filter-stats-form-prefecture') ? document.getElementById('filter-stats-form-prefecture').value : '';
+    var zoneFilter = document.getElementById('filter-stats-form-zone') ? document.getElementById('filter-stats-form-zone').value : '';
+    var niveauFilter = document.getElementById('filter-stats-form-niveau') ? document.getElementById('filter-stats-form-niveau').value : '';
+    var genreFilter = document.getElementById('filter-stats-form-genre') ? document.getElementById('filter-stats-form-genre').value : '';
     
     console.log('🔍 Filtrage formulaire Stats:', regionId, prefectureNom, zoneFilter, niveauFilter, genreFilter);
     
     // Mettre à jour les préfectures selon la région
-    var prefectureSelect = document.getElementById('filter-examens-prefecture');
+    var prefectureSelect = document.getElementById('filter-stats-form-prefecture');
     if (regionId && regionId !== '' && prefectureSelect) {
         var currentValue = prefectureSelect.value;
         prefectureSelect.innerHTML = '<option value="">Toutes</option>';
@@ -2292,9 +2292,7 @@ function filterStatsFormRows() {
     }
     
     // Filtrer les lignes du tableau
-    var rows = document.querySelectorAll('.statistiques-row');
-    var table = document.getElementById('statistiques-table');
-    var headers = table ? table.querySelectorAll('thead th') : [];
+    var rows = document.querySelectorAll('.stat-row');
     var visibleCount = 0;
     
     for (var i = 0; i < rows.length; i++) {
@@ -2396,31 +2394,31 @@ var modalContainer = document.getElementById('modal-container');
     
     // ========== FILTRE SESSION ==========
     html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
-    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Session de Stats *</label>';
-    html += '<select id="Stats-session" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireStats()">';
-    html += '<option value="2024-2025">2025</option>';
-    html += '<option value="2023-2024">2024</option>';
-    html += '<option value="2022-2023">2023</option>';
+    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Session des Statistiques *</label>';
+    html += '<select id="Statistique-session" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireStatistiques generales()">';
+    html += '<option value="2024-2025">Session 2025</option>';
+    html += '<option value="2023-2024">Session 2024</option>';
+    html += '<option value="2022-2023">Session 2023</option>';
     html += '</select></div>';
     html += '</div>';
 
     // ========== FILTRES COMPLETS (5 filtres) ==========
-    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
-    html += '<h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
-    
-    // Filtre 1 : Région
-    html += '<div class="form-group"><label>Région</label><select id="filter-stats-region" class="form-control" onchange="updateStatsFilters()"><option value="">Toutes</option>';
-    for (var i = 0; i < regionsData.length; i++) {
-        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
-    }
-    html += '</select></div>';
-    
-    // Filtre 2 : Préfecture
-    html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-prefecture" class="form-control" onchange="filterStatsRows()"><option value="">Toutes</option></select></div>';
-    
-    // Filtre 3 : Zone
-    html += '<div class="form-group"><label>Zone</label><select id="filter- stats -zone" class="form-control" onchange="filterStatsRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';    
+html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
+html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
+html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+
+// Filtre 1 : Région
+html += '<div class="form-group"><label>Région</label><select id="filter-stats-form-region" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option>';
+for (var i = 0; i < regionsData.length; i++) {
+    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+}
+html += '</select></div>';
+
+// Filtre 2 : Préfecture
+html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-form-prefecture" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option></select></div>';
+
+// Filtre 3 : Zone
+html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
 
 // Filtre 4 : Niveau
 html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
@@ -2429,14 +2427,13 @@ html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-f
 html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
 
 html += '</div></div>';
-
     // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
-    html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #059669; color: white; z-index: 10;"><tr>';
-    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Région</th>';
-    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Préfecture</th>';
-    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Zone</th>';
-    html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Niveau</th>';
+    html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Région</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Préfecture</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Zone</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Niveau</th>';
 
     // Scolarisation F/G/T (3 colonnes)
 html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Scol. F (%)</th>';
@@ -2508,15 +2505,13 @@ html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="numbe
     html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
     html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
     html += '<div style="display: flex; gap: 10px;">';
-    html += '<button class="btn btn-primary" onclick="submitStatsTableau(false)">💾 Enregistrer nouvelles</button>';
+    html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)">💾 Enregistrer nouvelles</button>';
     html += '<button class="btn btn-warning" onclick="submitStatistiquesTableau(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
     html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
     html += '</div></div>';
     
     html += '</div></div>';
     modalContainer.innerHTML = html;
-}
-
 // ========== CHARGER LES DONNÉES EXISTANTES ==========
 setTimeout(async function() {
     var annee = document.getElementById('global-annee').value.trim();
@@ -2705,11 +2700,12 @@ setTimeout(async function() {
         console.error('Erreur chargement:', error);
     }
 }, 500);
-        
+    modalContainer.innerHTML = html;
   // Initialiser les cartes avec toutes les données
     setTimeout(function() {
         updateCartesIndicateurs(['T1', 'T2', 'T3', 'T4', 'Annuel']);
     }, 100);
+}
   
     // ========== DÉTECTER LES MODIFICATIONS POUR RÉACTIVER L'ENREGISTREMENT ==========
     setTimeout(function() {
@@ -5948,8 +5944,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
-
 
 
 
