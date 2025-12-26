@@ -2394,31 +2394,31 @@ var modalContainer = document.getElementById('modal-container');
     
     // ========== FILTRE SESSION ==========
     html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
-    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Session de Statistiques generales *</label>';
-    html += '<select id="Statistique generales-session" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireStatistiques generales()">';
-    html += '<option value="2024-2025">Session 2025</option>';
-    html += '<option value="2023-2024">Session 2024</option>';
-    html += '<option value="2022-2023">Session 2023</option>';
+    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Session de Stats *</label>';
+    html += '<select id="Stats-session" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireStats()">';
+    html += '<option value="2024-2025">2025</option>';
+    html += '<option value="2023-2024">2024</option>';
+    html += '<option value="2022-2023">2023</option>';
     html += '</select></div>';
     html += '</div>';
 
     // ========== FILTRES COMPLETS (5 filtres) ==========
-html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
-html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
-html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
-
-// Filtre 1 : Région
-html += '<div class="form-group"><label>Région</label><select id="filter-stats-form-region" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option>';
-for (var i = 0; i < regionsData.length; i++) {
-    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
-}
-html += '</select></div>';
-
-// Filtre 2 : Préfecture
-html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-form-prefecture" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option></select></div>';
-
-// Filtre 3 : Zone
-html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
+    html += '<h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+    
+    // Filtre 1 : Région
+    html += '<div class="form-group"><label>Région</label><select id="filter-stats-region" class="form-control" onchange="updateStatsFilters()"><option value="">Toutes</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
+    
+    // Filtre 2 : Préfecture
+    html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-prefecture" class="form-control" onchange="filterStatsRows()"><option value="">Toutes</option></select></div>';
+    
+    // Filtre 3 : Zone
+    html += '<div class="form-group"><label>Zone</label><select id="filter- stats -zone" class="form-control" onchange="filterStatsRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';    
 
 // Filtre 4 : Niveau
 html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
@@ -2427,6 +2427,7 @@ html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-f
 html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
 
 html += '</div></div>';
+
     // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
     html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
