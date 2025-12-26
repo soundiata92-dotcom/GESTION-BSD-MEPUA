@@ -2392,13 +2392,15 @@ function showStatistiquesModal() {
 var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">📊 Saisir les statistiques nationales</h2>';
     
-    // ========== EN-TÊTE avec Année et Période ==========
-   html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
-html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
-html += '<input type="text" id="global-annee" class="form-control" value="2025-2026" style="font-weight: bold;">';
-html += '</div>';
-html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Les statistiques générales sont saisies pour l\'année en cours uniquement.</p>';
-html += '</div>';
+    // ========== FILTRE SESSION ==========
+    html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
+    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Session des Statistiques *</label>';
+    html += '<select id="examens-session" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireStatistiques generales()">';
+    html += '<option value="2024-2025">Session 2025</option>';
+    html += '<option value="2023-2024">Session 2024</option>';
+    html += '<option value="2022-2023">Session 2023</option>';
+    html += '</select></div>';
+    html += '</div>';
 
     // ========== FILTRES COMPLETS (5 filtres) ==========
 html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
