@@ -5583,6 +5583,7 @@ function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
     
     return moyenne;
 }
+        // ========== INITIALISATION ==========
 function chargerDonneesStats() {
     var anneeSelect = document.getElementById('stats-annee');
     if (!anneeSelect) {
@@ -5662,6 +5663,224 @@ function chargerDonneesStats() {
     }
     
     console.log('✅ Stats générales chargées:', donneesChargees, 'lignes');
+}
+function showStatistiquesModal() {
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">📊 Saisir les statistiques générales (BSD)</h2>';
+    
+    // ========== FILTRE ANNÉE ==========
+    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
+    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
+    html += '<select id="stats-annee" class="form-control" style="font-size: 14px; padding: 10px; font-weight: bold;" onchange="chargerDonneesStats()">';
+    html += '<option value="2025-2026">Année 2025-2026</option>';
+    html += '<option value="2024-2025">Année 2024-2025</option>';
+    html += '<option value="2023-2024">Année 2023-2024</option>';
+    html += '</select></div>';
+    html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #1e40af;">💡 Les données se chargent automatiquement selon l\'année</p>';
+    html += '</div>';
+    
+    // ========== FILTRES D'AFFICHAGE ==========
+    html += '<div style="background-color: #e0e7ff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #4f46e5;">';
+    html += '<h3 style="margin: 0 0 12px 0; color: #3730a3; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+    
+    html += '<div class="form-group"><label>Région</label><select id="filter-stats-region" class="form-control" onchange="filterStatsRows()"><option value="">Toutes</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
+    
+    html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-prefecture" class="form-control" onchange="filterStatsRows()"><option value="">Toutes</option></select></div>';
+    html += '<div class="form-group"><label>Zone</label><select id="filter-stats-zone" class="form-control" onchange="filterStatsRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+    html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-niveau" class="form-control" onchange="filterStatsRows()"><option value="">Tous</option><option value="Prescolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
+    html += '<div class="form-group"><label>Genre</label><select id="filter-stats-genre" class="form-control" onchange="filterStatsRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+    
+    html += '</div></div>';
+    
+    // ========== TABLEAU ==========
+    html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
+    html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af;">Région</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af;">Préfecture</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af;">Zone</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af;">Niveau</th>';
+    
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px; background-color: #dc2626;">Scol. F(%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px; background-color: #fbbf24; color: #000;">Scol. G(%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px; background-color: #16a34a;">Scol. T(%)</th>';
+    
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px; background-color: #dc2626;">Aban. F(%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px; background-color: #fbbf24; color: #000;">Aban. G(%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px; background-color: #16a34a;">Aban. T(%)</th>';
+    
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px;">Ratio E/Ens</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px;">Ratio E/Cl</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; width: 70px;">Distance (km)</th>';
+    html += '</tr></thead><tbody>';
+    
+    var rowIndex = 0;
+    var zones = ['Urbaine', 'Rurale'];
+    var niveaux = ['Prescolaire', 'Primaire', 'Collège', 'Lycée'];
+    
+    for (var r = 0; r < regionsData.length; r++) {
+        var region = regionsData[r];
+        var prefecturesRegion = [];
+        for (var p = 0; p < prefecturesData.length; p++) {
+            if (prefecturesData[p].region_id == region.id) {
+                prefecturesRegion.push(prefecturesData[p]);
+            }
+        }
+        
+        for (var p = 0; p < prefecturesRegion.length; p++) {
+            var prefecture = prefecturesRegion[p];
+            for (var z = 0; z < zones.length; z++) {
+                var zone = zones[z];
+                for (var n = 0; n < niveaux.length; n++) {
+                    var niveau = niveaux[n];
+                    var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
+                    
+                    html += '<tr class="stats-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + region.nom + '</td>';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + prefecture.nom + '</td>';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb;">' + zone + '</td>';
+                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb;"><strong>' + niveau + '</strong></td>';
+                    
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scol_filles" style="width: 100%; font-size: 11px;" min="0" max="100"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scol_garcons" style="width: 100%; font-size: 11px;" min="0" max="100"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scol_total" style="width: 100%; font-size: 11px;" min="0" max="100"></td>';
+                    
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="aban_filles" style="width: 100%; font-size: 11px;" min="0" max="100"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="aban_garcons" style="width: 100%; font-size: 11px;" min="0" max="100"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="aban_total" style="width: 100%; font-size: 11px;" min="0" max="100"></td>';
+                    
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" style="width: 100%; font-size: 11px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" class="form-control" data-row="' + rowIndex + '" data-field="ratio_classe" style="width: 100%; font-size: 11px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.1" class="form-control" data-row="' + rowIndex + '" data-field="distance" style="width: 100%; font-size: 11px;" min="0"></td>';
+                    
+                    html += '</tr>';
+                    rowIndex++;
+                }
+            }
+        }
+    }
+    
+    html += '</tbody></table></div>';
+    
+    html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
+    html += '<button class="btn btn-primary" onclick="submitStatsGenerales()">💾 Enregistrer</button>';
+    html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+    html += '</div>';
+    
+    html += '</div></div>';
+    modalContainer.innerHTML = html;
+    
+    // 🔥 CHARGER LES DONNÉES AU DÉMARRAGE
+    setTimeout(function() {
+        chargerDonneesStats();
+    }, 200);
+}
+function filterStatsRows() {
+    var regionId = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
+    var prefectureNom = document.getElementById('filter-stats-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
+    var zoneFilter = document.getElementById('filter-stats-zone') ? document.getElementById('filter-stats-zone').value : '';
+    var niveauFilter = document.getElementById('filter-stats-niveau') ? document.getElementById('filter-stats-niveau').value : '';
+    var genreFilter = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : '';
+    
+    // Mettre à jour préfectures
+    var prefectureSelect = document.getElementById('filter-stats-prefecture');
+    if (regionId && regionId !== '' && prefectureSelect) {
+        var currentValue = prefectureSelect.value;
+        prefectureSelect.innerHTML = '<option value="">Toutes</option>';
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+        if (currentValue) prefectureSelect.value = currentValue;
+    }
+    
+    // Filtrer lignes
+    var rows = document.querySelectorAll('.stats-row');
+    var table = document.getElementById('stats-table');
+    var headers = table ? table.querySelectorAll('thead th') : [];
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var rowRegion = row.getAttribute('data-region');
+        var rowPrefecture = row.getAttribute('data-prefecture');
+        var rowZone = row.getAttribute('data-zone');
+        var rowNiveau = row.getAttribute('data-niveau');
+        
+        var showRow = true;
+        if (regionId && regionId !== '' && rowRegion != regionId) showRow = false;
+        if (prefectureNom && prefectureNom !== '' && rowPrefecture != prefectureNom) showRow = false;
+        if (zoneFilter && zoneFilter !== '' && rowZone != zoneFilter) showRow = false;
+        if (niveauFilter && niveauFilter !== '' && rowNiveau != niveauFilter) showRow = false;
+        
+        row.style.display = showRow ? '' : 'none';
+        
+        // Gérer colonnes genre
+        var cells = row.querySelectorAll('td');
+        if (genreFilter === 'Filles') {
+            if (cells[4]) cells[4].style.display = '';
+            if (cells[5]) cells[5].style.display = 'none';
+            if (cells[6]) cells[6].style.display = 'none';
+            if (cells[7]) cells[7].style.display = '';
+            if (cells[8]) cells[8].style.display = 'none';
+            if (cells[9]) cells[9].style.display = 'none';
+        } else if (genreFilter === 'Garcons') {
+            if (cells[4]) cells[4].style.display = 'none';
+            if (cells[5]) cells[5].style.display = '';
+            if (cells[6]) cells[6].style.display = 'none';
+            if (cells[7]) cells[7].style.display = 'none';
+            if (cells[8]) cells[8].style.display = '';
+            if (cells[9]) cells[9].style.display = 'none';
+        } else if (genreFilter === 'Total') {
+            if (cells[4]) cells[4].style.display = 'none';
+            if (cells[5]) cells[5].style.display = 'none';
+            if (cells[6]) cells[6].style.display = '';
+            if (cells[7]) cells[7].style.display = 'none';
+            if (cells[8]) cells[8].style.display = 'none';
+            if (cells[9]) cells[9].style.display = '';
+        } else {
+            for (var c = 4; c <= 9; c++) {
+                if (cells[c]) cells[c].style.display = '';
+            }
+        }
+    }
+    
+    // Gérer en-têtes
+    if (headers.length >= 10) {
+        if (genreFilter === 'Filles') {
+            if (headers[4]) headers[4].style.display = '';
+            if (headers[5]) headers[5].style.display = 'none';
+            if (headers[6]) headers[6].style.display = 'none';
+            if (headers[7]) headers[7].style.display = '';
+            if (headers[8]) headers[8].style.display = 'none';
+            if (headers[9]) headers[9].style.display = 'none';
+        } else if (genreFilter === 'Garcons') {
+            if (headers[4]) headers[4].style.display = 'none';
+            if (headers[5]) headers[5].style.display = '';
+            if (headers[6]) headers[6].style.display = 'none';
+            if (headers[7]) headers[7].style.display = 'none';
+            if (headers[8]) headers[8].style.display = '';
+            if (headers[9]) headers[9].style.display = 'none';
+        } else if (genreFilter === 'Total') {
+            if (headers[4]) headers[4].style.display = 'none';
+            if (headers[5]) headers[5].style.display = 'none';
+            if (headers[6]) headers[6].style.display = '';
+            if (headers[7]) headers[7].style.display = 'none';
+            if (headers[8]) headers[8].style.display = 'none';
+            if (headers[9]) headers[9].style.display = '';
+        } else {
+            for (var h = 4; h <= 9; h++) {
+                if (headers[h]) headers[h].style.display = '';
+            }
+        }
+    }
 }
 async function submitStatsGenerales() {
     var annee = document.getElementById('stats-annee').value;
@@ -5769,7 +5988,6 @@ async function submitStatsGenerales() {
         console.error('❌ Erreur:', error);
         alert('❌ Erreur : ' + error.message);
 
-        // ========== INITIALISATION ==========
 async function init() {
     try {
         console.log('🎬 Initialisation de l\'application...');
