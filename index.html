@@ -2389,67 +2389,77 @@ function filterStatsFormRows() {
 }
 
 function showStatistiquesModal() {
-var modalContainer = document.getElementById('modal-container');
+    var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">📊 Saisir les statistiques nationales</h2>';
     
-    // ========== EN-TÊTE avec Année et Période ==========
-   html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
-html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
-html += '<input type="text" id="global-annee" class="form-control" value="2025-2026" style="font-weight: bold;">';
-html += '</div>';
-html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Les statistiques générales sont saisies pour l\'année en cours uniquement.</p>';
-html += '</div>';
+    // ========== SÉLECTION ANNÉE ==========
+    html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
+    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
+    html += '<select id="global-annee-stats" class="form-control" style="font-size: 14px; padding: 10px; font-weight: bold;" onchange="chargerDonneesStats()">';
+    html += '<option value="2025-2026">Année 2025-2026</option>';
+    html += '<option value="2024-2025">Année 2024-2025</option>';
+    html += '<option value="2023-2024">Année 2023-2024</option>';
+    html += '</select></div>';
+    html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #065f46;"><strong>ℹ️ Note :</strong> Saisissez les données par année. Le tableau affichera automatiquement les données de l\'année la plus récente.</p>';
+    html += '</div>';
+    
+    // ========== FILTRES (5 FILTRES) ==========
+    html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
+    html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
 
-    // ========== FILTRES COMPLETS (5 filtres) ==========
-html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
-html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
-html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+    // Filtre 1 : Région
+    html += '<div class="form-group"><label>Région</label><select id="filter-stats-form-region" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
 
-// Filtre 1 : Région
-html += '<div class="form-group"><label>Région</label><select id="filter-stats-form-region" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option>';
-for (var i = 0; i < regionsData.length; i++) {
-    html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
-}
-html += '</select></div>';
+    // Filtre 2 : Préfecture
+    html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-form-prefecture" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option></select></div>';
 
-// Filtre 2 : Préfecture
-html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-form-prefecture" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option></select></div>';
+    // Filtre 3 : Zone
+    html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
 
-// Filtre 3 : Zone
-html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+    // Filtre 4 : Niveau
+    html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
 
-// Filtre 4 : Niveau
-html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
+    // Filtre 5 : Genre
+    html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
 
-// Filtre 5 : Genre
-html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
-
-html += '</div></div>';
-    // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
+    html += '</div></div>';
+    
+    // ========== TABLEAU DE SAISIE ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
     html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Région</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Préfecture</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Zone</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; background-color: #2563eb !important; color: white !important; font-weight: bold;">Niveau</th>';
-    // Scolarisation F/G/T (3 colonnes)
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Scol. F (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Scol. G (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Scol. T (%)</th>';
-// Abandon F/G/T (3 colonnes)
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Aban. F (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Aban. G (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Aban. T (%)</th>';
+    
+    // Scolarisation F/G/T
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Scol. F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Scol. G (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Scol. T (%)</th>';
+    
+    // Abandon F/G/T
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Aban. F (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Aban. G (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Aban. T (%)</th>';
+    
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Ens</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Ratio E/Classe</th>';
     html += '<th style="padding: 8px; border: 1px solid #1e40af; white-space: nowrap; width: 70px; background-color: #2563eb; color: white; font-weight: bold;">Distance (km)</th>';
-    html += '</tr></thead><tbody>'; 
-var rowIndex = 0;
-var zones = ['Urbaine', 'Rurale'];
-var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];    
+    html += '</tr></thead><tbody>';
+    
+    var rowIndex = 0;
+    var zones = ['Urbaine', 'Rurale'];
+    var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
+    
     // Générer les lignes
     for (var r = 0; r < regionsData.length; r++) {
-        var region = regionsData[r];  
+        var region = regionsData[r];
+        
         var prefecturesRegion = [];
         for (var p = 0; p < prefecturesData.length; p++) {
             if (prefecturesData[p].region_id == region.id) {
@@ -2473,20 +2483,20 @@ var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + niveau + '</td>';
 
-// Taux scolarisation (F/G/T - 3 inputs)
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_garcons" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    // Scolarisation F/G/T
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_garcons" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
 
-// Taux abandon (F/G/T - 3 inputs)
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_garcons" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+                    // Abandon F/G/T
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_garcons" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
                     
                     // Ratios et distance
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_classe" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="distance" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_classe" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
+                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="distance" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
                     
                     html += '</tr>';
                     rowIndex++;
@@ -2498,13 +2508,11 @@ html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="numbe
     html += '</tbody></table></div>';
     
     // ========== BOUTONS D'ACTION ==========
-    html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
-    html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
-    html += '<div style="display: flex; gap: 10px;">';
+    html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
     html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)">💾 Enregistrer nouvelles</button>';
     html += '<button class="btn btn-warning" onclick="submitStatistiquesTableau(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
     html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
-    html += '</div></div>';
+    html += '</div>';
     
     html += '</div></div>';
     modalContainer.innerHTML = html;
@@ -4462,34 +4470,34 @@ if (activeTab === 'statistiques') {
     html += '<th style="background-color: #2563eb; color: white; padding: 12px; border: 1px solid #1e40af;">Niveau</th>';
     
     // Scolarisation F/G/T
-    html += '<th class="col-scol-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">Scol. F (%)</th>';
-    html += '<th class="col-scol-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">Scol. G (%)</th>';
-    html += '<th class="col-scol-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">Scol. T (%)</th>';
+    html += '<th class="col-scol-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">Scol. F(%)</th>';
+    html += '<th class="col-scol-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">Scol. G(%)</th>';
+    html += '<th class="col-scol-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">Scol. T(%)</th>';
     
     // Abandon F/G/T
-    html += '<th class="col-aban-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">Aban. F (%)</th>';
-    html += '<th class="col-aban-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">Aban. G (%)</th>';
-    html += '<th class="col-aban-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">Aban. T (%)</th>';
+    html += '<th class="col-aban-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">Aban. F(%)</th>';
+    html += '<th class="col-aban-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">Aban. G(%)</th>';
+    html += '<th class="col-aban-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">Aban. T(%)</th>';
     
     // CEE F/G/T
-    html += '<th class="col-cee-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">CEE F (%)</th>';
+    html += '<th class="col-cee-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">CEE F(%)</th>';
     html += '<th class="col-cee-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">CEE G(%)</th>';
-    html += '<th class="col-cee-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">CEE T (%)</th>';
+    html += '<th class="col-cee-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">CEE T(%)</th>';
     
     // BEPC F/G/T
-    html += '<th class="col-bepc-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">BEPC F (%)</th>';
-    html += '<th class="col-bepc-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">BEPC G (%)</th>';
-    html += '<th class="col-bepc-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">BEPC T (%)</th>';
+    html += '<th class="col-bepc-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">BEPC F(%)</th>';
+    html += '<th class="col-bepc-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">BEPC G(%)</th>';
+    html += '<th class="col-bepc-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">BEPC T(%)</th>';
     
     // BAC F/G/T
-    html += '<th class="col-bac-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">BAC F (%)</th>';
-    html += '<th class="col-bac-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">BAC G (%)</th>';
-    html += '<th class="col-bac-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">BAC T (%)</th>';
+    html += '<th class="col-bac-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">BAC F(%)</th>';
+    html += '<th class="col-bac-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">BAC G(%)</th>';
+    html += '<th class="col-bac-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">BAC T(%)</th>';
     
     // Alpha F/G/T
-    html += '<th class="col-alpha-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">Alpha F (%)</th>';
-    html += '<th class="col-alpha-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">Alpha G (%)</th>';
-    html += '<th class="col-alpha-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">Alpha T (%)</th>';
+    html += '<th class="col-alpha-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">Alpha F(%)</th>';
+    html += '<th class="col-alpha-g" style="background-color: #fbbf24; color: #000; padding: 12px; border: 1px solid #f59e0b;">Alpha G(%)</th>';
+    html += '<th class="col-alpha-t" style="background-color: #16a34a; color: white; padding: 12px; border: 1px solid #15803d;">Alpha T(%)</th>';
     
     // Bénéf F/G/T
     html += '<th class="col-benef-f" style="background-color: #dc2626; color: white; padding: 12px; border: 1px solid #b91c1c;">Bénéf. F</th>';
@@ -4713,17 +4721,17 @@ html += '<div class="form-group"><label>Genre</label><select id="filter-examens-
     html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; background-color: #059669 !important; color: white !important; font-weight: bold;">Niveau</th>';
     
     // CEE F/G/T
-html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">CEE F (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">CEE F(%)</th>';
 html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">CEE G(%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">CEE T (%)</th>';    
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">CEE T(%)</th>';    
     // BEPC F/G/T
-html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">BEPC F (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">BEPC G (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">BEPC T (%)</th>'; 
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">BEPC F(%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">BEPC G(%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">BEPC T(%)</th>'; 
     // BAC F/G/T
-html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">BAC F (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">BAC G (%)</th>';
-html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">BAC T (%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">BAC F(%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">BAC G(%)</th>';
+html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">BAC T(%)</th>';
     
     html += '</tr></thead><tbody>';
     
@@ -5427,9 +5435,9 @@ function showAlphabetisationModal() {
     html += '<th style="padding: 8px; border: 1px solid #d97706; white-space: nowrap; background-color: #f59e0b !important; color: white !important; font-weight: bold;">Niveau</th>';
 
 // Taux alphabétisation F/G/T
-    html += '<th style="padding: 8px; border: 1px solid #d97706; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Alpha F (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #d97706; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Alpha G (%)</th>';
-    html += '<th style="padding: 8px; border: 1px solid #d97706; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Alpha T (%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #d97706; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Alpha F(%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #d97706; white-space: nowrap; width: 70px; background-color: #fbbf24; color: #000; font-weight: bold;">Alpha G(%)</th>';
+    html += '<th style="padding: 8px; border: 1px solid #d97706; white-space: nowrap; width: 70px; background-color: #16a34a; color: white; font-weight: bold;">Alpha T(%)</th>';
     
     // Bénéficiaires F/G/T
     html += '<th style="padding: 8px; border: 1px solid #d97706; white-space: nowrap; width: 70px; background-color: #dc2626; color: white; font-weight: bold;">Bénéf. F</th>';
@@ -5940,6 +5948,7 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
+
 
 
 
