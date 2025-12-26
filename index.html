@@ -4702,116 +4702,6 @@ function showReussiteExamensModal() {
         chargerDonneesExamens();
     }, 100);
 }
-async function chargerDonneesExamens() {
-    var annee = document.getElementById('examens-session').value;
-    
-    console.log('📥 Chargement des examens pour', annee);
-    
-    try {
-        const { data: examensData, error } = await supabase
-            .from('reussite_examens')
-            .select('*')
-            .eq('annee_scolaire', annee);
-        
-        if (error) throw error;
-        
-        if (examensData && examensData.length > 0) {
-            console.log('✅ Données chargées:', examensData.length);
-            
-            for (var i = 0; i < examensData.length; i++) {
-                var exam = examensData[i];
-                
-                // Trouver l'index de ligne
-                var rowIndex = 0;
-                var found = false;
-                
-                for (var r = 0; r < regionsData.length && !found; r++) {
-                    var region = regionsData[r];
-                    
-                    var prefecturesRegion = [];
-                    for (var p = 0; p < prefecturesData.length; p++) {
-                        if (prefecturesData[p].region_id == region.id) {
-                            prefecturesRegion.push(prefecturesData[p]);
-                        }
-                    }
-                    
-                    for (var p = 0; p < prefecturesRegion.length && !found; p++) {
-                        var prefecture = prefecturesRegion[p];
-                        
-                        if (prefecture.nom !== exam.prefecture) {
-                            rowIndex += 6; // 2 zones × 3 niveaux
-                            continue;
-                        }
-                        
-                        var zones = ['Urbaine', 'Rurale'];
-                        for (var z = 0; z < zones.length && !found; z++) {
-                            if (zones[z] !== exam.zone) {
-                                rowIndex += 3;
-                                continue;
-                            }
-                            
-                            var niveaux = ['Primaire', 'Collège', 'Lycée'];
-                            for (var n = 0; n < niveaux.length && !found; n++) {
-                                if (niveaux[n] === exam.niveau) {
-                                    // Charger les données
-                                    if (exam.taux_reussite_cee_filles !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_filles"]');
-                                        if (input) input.value = exam.taux_reussite_cee_filles;
-                                    }
-                                    if (exam.taux_reussite_cee_garcons !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_garcons"]');
-                                        if (input) input.value = exam.taux_reussite_cee_garcons;
-                                    }
-                                    if (exam.taux_reussite_cee_total !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_total"]');
-                                        if (input) input.value = exam.taux_reussite_cee_total;
-                                    }
-                                    
-                                    if (exam.taux_reussite_bepc_filles !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_filles"]');
-                                        if (input) input.value = exam.taux_reussite_bepc_filles;
-                                    }
-                                    if (exam.taux_reussite_bepc_garcons !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_garcons"]');
-                                        if (input) input.value = exam.taux_reussite_bepc_garcons;
-                                    }
-                                    if (exam.taux_reussite_bepc_total !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_total"]');
-                                        if (input) input.value = exam.taux_reussite_bepc_total;
-                                    }
-                                    
-                                    if (exam.taux_reussite_bac_filles !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_filles"]');
-                                        if (input) input.value = exam.taux_reussite_bac_filles;
-                                    }
-                                    if (exam.taux_reussite_bac_garcons !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_garcons"]');
-                                        if (input) input.value = exam.taux_reussite_bac_garcons;
-                                    }
-                                    if (exam.taux_reussite_bac_total !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_total"]');
-                                        if (input) input.value = exam.taux_reussite_bac_total;
-                                    }
-                                    
-                                    found = true;
-                                    break;
-                                }
-                                rowIndex++;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            console.log('✅ Données chargées dans le formulaire');
-        }
-    } catch (error) {
-        console.error('❌ Erreur chargement:', error);
-    }
-}
-
-function rechargerFormulaireExamens() {
-    console.log('🔄 Rechargement du formulaire examens...');
     
     // Récupérer la session sélectionnée
     var session = document.getElementById('examens-session') ? document.getElementById('examens-session').value : '2024-2025';
@@ -5408,6 +5298,7 @@ function showAlphabetisationModal() {
     html += '<option value="2024-2025">Année 2024-2025</option>';
     html += '<option value="2023-2024">Année 2023-2024</option>';
     html += '</select></div>';
+    html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #92400e;"><strong>
     html += '</div>';
 
     // ========== FILTRES (5 FILTRES) ==========
@@ -5514,88 +5405,6 @@ function showAlphabetisationModal() {
     
     html += '</div></div>';
     modalContainer.innerHTML = html;
-}
-async function chargerDonneesAlpha() {
-    var annee = document.getElementById('alpha-annee').value;
-    
-    console.log('📥 Chargement Alphabétisation pour', annee);
-    
-    try {
-        const { data: alphaData, error } = await supabase
-            .from('alphabetisation')
-            .select('*')
-            .eq('annee_scolaire', annee)
-            .eq('periode', 'Annuel');
-        
-        if (error) throw error;
-        
-        if (alphaData && alphaData.length > 0) {
-            console.log('✅ Alpha chargée:', alphaData.length);
-            
-            // ... logique de chargement similaire à chargerDonneesStats ...
-            // (à compléter selon la structure exacte)
-        }
-    } catch (error) {
-        console.error('❌ Erreur chargement Alpha:', error);
-    }
-}
-
-// ========== FONCTIONS DE CALCUL DE MOYENNES ==========
-function calculerMoyenne(dataArray, fieldBase, genre) {
-    if (!dataArray || dataArray.length === 0) {
-        console.warn('⚠️ calculerMoyenne: tableau vide pour', fieldBase);
-        return 0;
-    }
-    
-    // 🔥 Champs qui n'ont PAS de distinction F/G (toujours Total)
-    var champsTotal = [
-        'ratio_eleves_enseignant',
-        'ratio_eleves_classe',
-        'distance_moyenne_ecole_domicile',
-        'taux_alphabetisation'
-    ];
-    
-    // Déterminer le champ exact
-    var field;
-    if (champsTotal.indexOf(fieldBase) !== -1) {
-        // Ces champs n'ont pas de suffixe _filles/_garcons/_total
-        field = fieldBase;
-    } else {
-        // Champs avec distinction F/G/T
-        if (genre === 'Garcons') {
-            field = fieldBase + '_garcons';
-        } else {
-            field = fieldBase + '_' + genre.toLowerCase();
-        }
-    }
-    
-    console.log('📊 Calcul moyenne pour:', field, '(genre demandé:', genre + ')');
-    console.log('   Nombre de lignes reçues:', dataArray.length);
-    
-    var sum = 0;
-    var count = 0;
-    var valeurs = [];
-    
-    for (var i = 0; i < dataArray.length; i++) {
-        var ligne = dataArray[i];
-        var value = ligne[field];
-        
-        if (value !== null && value !== undefined && !isNaN(value)) {
-            sum += parseFloat(value);
-            count++;
-            valeurs.push(value);
-            console.log('   ✓ Ligne', i + 1, ':', value, '| Région:', ligne.region, '| Préf:', ligne.prefecture);
-        }
-    }
-    
-    var moyenne = count > 0 ? Math.round((sum / count) * 100) / 100 : 0;
-    
-    console.log('   📈 Valeurs utilisées:', valeurs.join(', '));
-    console.log('   🧮 Somme:', sum, '/ Nombre:', count);
-    console.log('   ➜ MOYENNE FINALE:', moyenne);
-    console.log('');
-    
-    return moyenne;
 }
 function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
     if (!dataArray || dataArray.length === 0) return 0;
@@ -5982,9 +5791,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
-
-
 
 
 
