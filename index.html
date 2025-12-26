@@ -2424,9 +2424,9 @@ html += '<div class="form-group"><label>Zone</label><select id="filter-stats-for
 html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
 
 // Filtre 5 : Genre
-html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+html += '<div class="form-group"><label>Genre</label><select id="filter-examens-genre" class="form-control" onchange="filterExamensRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+    html += '</div></div>';
 
-html += '</div></div>';
     // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
     html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
     html += '<table id="stats-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #2563eb; color: white; z-index: 10;"><tr>';
