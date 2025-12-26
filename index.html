@@ -2265,16 +2265,16 @@ function filterTableRows() {
     console.log('================');
 }
 function filterStatsFormRows() {
-    var regionId = document.getElementById('filter-stats-form-region') ? document.getElementById('filter-stats-form-region').value : '';
-    var prefectureNom = document.getElementById('filter-stats-form-prefecture') ? document.getElementById('filter-stats-form-prefecture').value : '';
-    var zoneFilter = document.getElementById('filter-stats-form-zone') ? document.getElementById('filter-stats-form-zone').value : '';
-    var niveauFilter = document.getElementById('filter-stats-form-niveau') ? document.getElementById('filter-stats-form-niveau').value : '';
-    var genreFilter = document.getElementById('filter-stats-form-genre') ? document.getElementById('filter-stats-form-genre').value : '';
+    var regionId = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-form-region').value : '';
+    var prefectureNom = document.getElementById('filter-stats-form-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
+    var zoneFilter = document.getElementById('filter-form-zone') ? document.getElementById('filter-stats-form-zone').value : '';
+    var niveauFilter = document.getElementById('filter-stats-form-niveau') ? document.getElementById('filter-stats-niveau').value : '';
+    var genreFilter = document.getElementById('filter-stats-form-genre') ? document.getElementById('filter-stats-genre').value : '';
     
     console.log('🔍 Filtrage formulaire Stats:', regionId, prefectureNom, zoneFilter, niveauFilter, genreFilter);
     
     // Mettre à jour les préfectures selon la région
-    var prefectureSelect = document.getElementById('filter-stats-form-prefecture');
+    var prefectureSelect = document.getElementById('filter-examens-prefecture');
     if (regionId && regionId !== '' && prefectureSelect) {
         var currentValue = prefectureSelect.value;
         prefectureSelect.innerHTML = '<option value="">Toutes</option>';
@@ -2292,7 +2292,9 @@ function filterStatsFormRows() {
     }
     
     // Filtrer les lignes du tableau
-    var rows = document.querySelectorAll('.stat-row');
+    var rows = document.querySelectorAll('.stats-row');
+    var table = document.getElementById('stats-table');
+    var headers = table ? table.querySelectorAll('thead th') : [];
     var visibleCount = 0;
     
     for (var i = 0; i < rows.length; i++) {
@@ -2506,13 +2508,15 @@ html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="numbe
     html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">';
     html += '<span id="progression-saisie" style="color: #666; font-size: 0.9em; font-weight: bold;"></span>';
     html += '<div style="display: flex; gap: 10px;">';
-    html += '<button class="btn btn-primary" onclick="submitStatistiquesTableau(false)">💾 Enregistrer nouvelles</button>';
+    html += '<button class="btn btn-primary" onclick="submitStatsTableau(false)">💾 Enregistrer nouvelles</button>';
     html += '<button class="btn btn-warning" onclick="submitStatistiquesTableau(true)" style="background-color: #f59e0b; color: white;">🔄 Mettre à jour</button>';
     html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
     html += '</div></div>';
     
     html += '</div></div>';
     modalContainer.innerHTML = html;
+}
+
 // ========== CHARGER LES DONNÉES EXISTANTES ==========
 setTimeout(async function() {
     var annee = document.getElementById('global-annee').value.trim();
