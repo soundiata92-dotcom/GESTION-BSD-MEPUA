@@ -5300,7 +5300,7 @@ function showAlphabetisationModal() {
     html += '<option value="2024-2025">Année 2024-2025</option>';
     html += '<option value="2023-2024">Année 2023-2024</option>';
     html += '</select></div>';
-       html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #92400e;"><strong>ℹ️ Note :</strong> Saisissez les données par année. Le tableau affichera automatiquement les données de l\'année la plus récente.</p>';
+    html += '<p style="margin: 8px 0 0 0; font-size: 12px; color: #92400e;"><strong>
     html += '</div>';
 
     // ========== FILTRES (5 FILTRES) ==========
@@ -5494,6 +5494,141 @@ function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
     
     return moyenne;
 }
+// ========== CHARGER DONNÉES EXAMENS SELON L'ANNÉE ==========
+function chargerDonneesExamens() {
+    var annee = document.getElementById('examens-session').value;
+    console.log('📊 Chargement examens pour:', annee);
+    
+    // Vider tous les inputs
+    var inputs = document.querySelectorAll('#examens-table input[type="number"]');
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].value = '';
+    }
+    
+    // Remplir avec les données de l'année sélectionnée
+    var rows = document.querySelectorAll('.examens-row');
+    
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire !== annee) continue;
+        
+        for (var r = 0; r < rows.length; r++) {
+            var row = rows[r];
+            var rowRegionId = row.getAttribute('data-region');
+            var rowPrefecture = row.getAttribute('data-prefecture');
+            var rowZone = row.getAttribute('data-zone');
+            var rowNiveau = row.getAttribute('data-niveau');
+            
+            // Trouver le nom de la région
+            var rowRegionNom = '';
+            for (var reg = 0; reg < regionsData.length; reg++) {
+                if (regionsData[reg].id == rowRegionId) {
+                    rowRegionNom = regionsData[reg].nom;
+                    break;
+                }
+            }
+            
+            if (exam.region === rowRegionNom && exam.prefecture === rowPrefecture && 
+                exam.zone === rowZone && exam.niveau === rowNiveau) {
+                
+                var rowIndex = row.querySelector('input').getAttribute('data-row');
+                
+                // Remplir CEE (Primaire)
+                if (rowNiveau === 'Primaire') {
+                    var ceeF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_filles"]');
+                    var ceeG = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_garcons"]');
+                    var ceeT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_total"]');
+                    if (ceeF && exam.taux_reussite_cee_filles !== null) ceeF.value = exam.taux_reussite_cee_filles;
+                    if (ceeG && exam.taux_reussite_cee_garcons !== null) ceeG.value = exam.taux_reussite_cee_garcons;
+                    if (ceeT && exam.taux_reussite_cee_total !== null) ceeT.value = exam.taux_reussite_cee_total;
+                }
+                
+                // Remplir BEPC (Collège)
+                if (rowNiveau === 'Collège') {
+                    var bepcF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_filles"]');
+                    var bepcG = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_garcons"]');
+                    var bepcT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_total"]');
+                    if (bepcF && exam.taux_reussite_bepc_filles !== null) bepcF.value = exam.taux_reussite_bepc_filles;
+                    if (bepcG && exam.taux_reussite_bepc_garcons !== null) bepcG.value = exam.taux_reussite_bepc_garcons;
+                    if (bepcT && exam.taux_reussite_bepc_total !== null) bepcT.value = exam.taux_reussite_bepc_total;
+                }
+                
+                // Remplir BAC (Lycée)
+                if (rowNiveau === 'Lycée') {
+                    var bacF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_filles"]');
+                    var bacG = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_garcons"]');
+                    var bacT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_total"]');
+                    if (bacF && exam.taux_reussite_bac_filles !== null) bacF.value = exam.taux_reussite_bac_filles;
+                    if (bacG && exam.taux_reussite_bac_garcons !== null) bacG.value = exam.taux_reussite_bac_garcons;
+                    if (bacT && exam.taux_reussite_bac_total !== null) bacT.value = exam.taux_reussite_bac_total;
+                }
+                break;
+            }
+        }
+    }
+    console.log('✅ Données examens chargées');
+}
+
+// ========== CHARGER DONNÉES ALPHABÉTISATION SELON L'ANNÉE ==========
+function chargerDonneesAlpha() {
+    var annee = document.getElementById('alpha-annee').value;
+    console.log('📊 Chargement alphabétisation pour:', annee);
+    
+    // Vider tous les inputs
+    var inputs = document.querySelectorAll('#alpha-table input[type="number"]');
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].value = '';
+    }
+    
+    // Remplir avec les données de l'année sélectionnée
+    var rows = document.querySelectorAll('.alpha-row');
+    
+    for (var i = 0; i < alphabetisationData.length; i++) {
+        var alpha = alphabetisationData[i];
+        if (alpha.annee_scolaire !== annee) continue;
+        
+        for (var r = 0; r < rows.length; r++) {
+            var row = rows[r];
+            var rowRegionId = row.getAttribute('data-region');
+            var rowPrefecture = row.getAttribute('data-prefecture');
+            var rowZone = row.getAttribute('data-zone');
+            var rowNiveau = row.getAttribute('data-niveau');
+            
+            // Trouver le nom de la région
+            var rowRegionNom = '';
+            for (var reg = 0; reg < regionsData.length; reg++) {
+                if (regionsData[reg].id == rowRegionId) {
+                    rowRegionNom = regionsData[reg].nom;
+                    break;
+                }
+            }
+            
+            if (alpha.region === rowRegionNom && alpha.prefecture === rowPrefecture && 
+                alpha.zone === rowZone && alpha.niveau === rowNiveau) {
+                
+                var rowIndex = row.querySelector('input').getAttribute('data-row');
+                
+                var alphaF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_filles"]');
+                var alphaG = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_garcons"]');
+                var alphaT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_total"]');
+                var benefF = document.querySelector('input[data-row="' + rowIndex + '"][data-field="benef_filles"]');
+                var benefG = document.querySelector('input[data-row="' + rowIndex + '"][data-field="benef_garcons"]');
+                var benefT = document.querySelector('input[data-row="' + rowIndex + '"][data-field="benef_total"]');
+                
+                if (alphaF && alpha.taux_alphabetisation_filles !== null) alphaF.value = alpha.taux_alphabetisation_filles;
+                if (alphaG && alpha.taux_alphabetisation_garcons !== null) alphaG.value = alpha.taux_alphabetisation_garcons;
+                if (alphaT && alpha.taux_alphabetisation_total !== null) alphaT.value = alpha.taux_alphabetisation_total;
+                if (benefF && alpha.beneficiaires_filles !== null) benefF.value = alpha.beneficiaires_filles;
+                if (benefG && alpha.beneficiaires_garcons !== null) benefG.value = alpha.beneficiaires_garcons;
+                if (benefT && alpha.beneficiaires_total !== null) benefT.value = alpha.beneficiaires_total;
+                
+                break;
+            }
+        }
+    }
+    console.log('✅ Données alphabétisation chargées');
+}
+
         // ========== INITIALISATION ==========
 async function init() {
     try {
@@ -5851,7 +5986,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
 
 
 
