@@ -2408,23 +2408,23 @@ html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 F
 html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
 
 // Filtre 1 : Région
-html += '<div class="form-group"><label>Région</label><select id="filter-stats-form-region" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option>';
+html += '<div class="form-group"><label>Région</label><select id="filter-region" class="form-control" onchange="updateFormFilters()"><option value="">Toutes</option>';
 for (var i = 0; i < regionsData.length; i++) {
     html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
 }
 html += '</select></div>';
 
 // Filtre 2 : Préfecture
-html += '<div class="form-group"><label>Préfecture</label><select id="filter-stats-form-prefecture" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option></select></div>';
+html += '<div class="form-group"><label>Préfecture</label><select id="filter-prefecture" class="form-control" onchange="filterTableRows()"><option value="">Toutes</option></select></div>';
 
 // Filtre 3 : Zone
-html += '<div class="form-group"><label>Zone</label><select id="filter-stats-form-zone" class="form-control" onchange="filterStatsFormRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
+html += '<div class="form-group"><label>Zone</label><select id="filter-zone" class="form-control" onchange="filterTableRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
 
 // Filtre 4 : Niveau
-html += '<div class="form-group"><label>Niveau</label><select id="filter-stats-form-niveau" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
+html += '<div class="form-group"><label>Niveau</label><select id="filter-niveau" class="form-control" onchange="filterTableRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
 
 // Filtre 5 : Genre
-html += '<div class="form-group"><label>Genre</label><select id="filter-stats-form-genre" class="form-control" onchange="filterStatsFormRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
+html += '<div class="form-group"><label>Genre</label><select id="filter-genre" class="form-control" onchange="filterTableRows()"><option value="">Tous</option><option value="Filles">🔴 Filles</option><option value="Garcons">🟡 Garçons</option><option value="Total">🟢 Total</option></select></div>';
 
 html += '</div></div>';
     // ========== TABLEAU DE SAISIE (SANS taux_reussite et alphabétisation) ==========
@@ -2471,11 +2471,11 @@ var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
                     var niveau = niveaux[n];
                     var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
                     
-                    html += '<tr class="examens-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 700;">' + niveau + '</td>';
+html += '<tr class="stat-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
+ html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
+ html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
+ html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
+ html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 700;">' + niveau + '</td>';
 
 // Taux scolarisation (F/G/T - 3 inputs)
 html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
