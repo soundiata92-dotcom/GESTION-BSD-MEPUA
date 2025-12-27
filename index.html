@@ -2212,52 +2212,39 @@ function filterTableRows() {
         }
     }
     
-// Gérer le filtre Genre (masquer/afficher colonnes selon les couleurs)
-var table = document.getElementById('stats-table');
-if (table) {
-    if (genreFilter === 'Filles') {
-        // 🔴 Afficher uniquement colonnes ROUGES (F) + les 4 premières
-        // Masquer toutes les colonnes avec classes
-        document.querySelectorAll('.col-scol-g, .col-scol-t, .col-aban-g, .col-aban-t').forEach(function(el) {
-            el.style.display = 'none';
-        });
-        // Afficher colonnes F
-        document.querySelectorAll('.col-scol-f, .col-aban-f').forEach(function(el) {
-            el.style.display = '';
-        });
-        
-    } else if (genreFilter === 'Garcons') {
-        // 🟡 Afficher uniquement colonnes JAUNES (G) + les 4 premières
-        // Masquer F et T
-        document.querySelectorAll('.col-scol-f, .col-scol-t, .col-aban-f, .col-aban-t').forEach(function(el) {
-            el.style.display = 'none';
-        });
-        // Afficher colonnes G
-        document.querySelectorAll('.col-scol-g, .col-aban-g').forEach(function(el) {
-            el.style.display = '';
-        });
-        
-    } else if (genreFilter === 'Total') {
-        // 🟢 Afficher uniquement colonnes VERTES (T) + les 4 premières
-        // Masquer F et G
-        document.querySelectorAll('.col-scol-f, .col-scol-g, .col-aban-f, .col-aban-g').forEach(function(el) {
-            el.style.display = 'none';
-        });
-        // Afficher colonnes T
-        document.querySelectorAll('.col-scol-t, .col-aban-t').forEach(function(el) {
-            el.style.display = '';
-        });
-        
-    } else {
-        // 🎨 TOUS : Afficher toutes les colonnes
-        document.querySelectorAll('.col-scol-f, .col-scol-g, .col-scol-t, .col-aban-f, .col-aban-g, .col-aban-t').forEach(function(el) {
-            el.style.display = '';
-        });
-    }
-}
+// Gérer le filtre Genre (masquer/afficher colonnes)
+if (genreFilter === 'Filles') {
+    // 🔴 Afficher uniquement colonnes ROUGES (F)
+    document.querySelectorAll('.col-scol-g, .col-scol-t, .col-aban-g, .col-aban-t').forEach(function(el) {
+        el.style.display = 'none';
+    });
+    document.querySelectorAll('.col-scol-f, .col-aban-f').forEach(function(el) {
+        el.style.display = '';
+    });
     
-    console.log('Lignes visibles:', visibleCount);
-    console.log('================');
+} else if (genreFilter === 'Garcons') {
+    // 🟡 Afficher uniquement colonnes JAUNES (G)
+    document.querySelectorAll('.col-scol-f, .col-scol-t, .col-aban-f, .col-aban-t').forEach(function(el) {
+        el.style.display = 'none';
+    });
+    document.querySelectorAll('.col-scol-g, .col-aban-g').forEach(function(el) {
+        el.style.display = '';
+    });
+    
+} else if (genreFilter === 'Total') {
+    // 🟢 Afficher uniquement colonnes VERTES (T)
+    document.querySelectorAll('.col-scol-f, .col-scol-g, .col-aban-f, .col-aban-g').forEach(function(el) {
+        el.style.display = 'none';
+    });
+    document.querySelectorAll('.col-scol-t, .col-aban-t').forEach(function(el) {
+        el.style.display = '';
+    });
+    
+} else {
+    // 🎨 Afficher TOUTES les colonnes
+    document.querySelectorAll('.col-scol-f, .col-scol-g, .col-scol-t, .col-aban-f, .col-aban-g, .col-aban-t').forEach(function(el) {
+        el.style.display = '';
+    });
 }
 function filterStatsFormRows() {
     var regionId = document.getElementById('filter-stats-form-region') ? document.getElementById('filter-stats-form-region').value : '';
@@ -2472,15 +2459,15 @@ html += '<tr class="stat-row" data-region="' + region.id + '" data-prefecture="'
  html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
  html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 700;">' + niveau + '</td>';
 
-// Taux scolarisation (F/G/T - 3 inputs)
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_garcons" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+// Taux scolarisation (F/G/T - 3 inputs) - AVEC CLASSES
+html += '<td class="col-scol-f" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+html += '<td class="col-scol-g" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_garcons" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+html += '<td class="col-scol-t" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="scolarisation_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
 
-// Taux abandon (F/G/T - 3 inputs)
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_garcons" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
+// Taux abandon (F/G/T - 3 inputs) - AVEC CLASSES
+html += '<td class="col-aban-f" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_filles" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
+html += '<td class="col-aban-g" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_garcons" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
+html += '<td class="col-aban-t" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="abandon_total" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
                     
                     // Ratios et distance
                     html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="ratio_ens" data-type="niveau" style="width: 100%; font-size: 11px; padding: 4px;" min="0"></td>';
