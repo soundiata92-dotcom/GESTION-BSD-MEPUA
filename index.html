@@ -2218,89 +2218,89 @@ if (table) {
     var headers = table.querySelectorAll('thead th');
     var allRows = table.querySelectorAll('tbody tr');
     
-    // Structure : 0:Région | 1:Préfecture | 2:Zone | 3:Niveau
-    // 4:Scol F | 5:Scol G | 6:Scol T
-    // 7:Aban F | 8:Aban G | 9:Aban T
-    // 10:Ratio Ens | 11:Ratio Classe | 12:Distance
+    // Structure : 0:Région | 1:Préfecture | 2:Zone | 3:Niveau | 4:Ratio Ens
+    // 5:Scol F | 6:Scol G | 7:Scol T
+    // 8:Aban F | 9:Aban G | 10:Aban T
+    // 11:Ratio Classe | 12:Distance
     
     if (genreFilter === 'Filles') {
-        // Afficher F, masquer G et T
+        // Afficher F (colonnes 5 et 8), masquer G et T
         for (var i = 0; i < allRows.length; i++) {
             var cells = allRows[i].querySelectorAll('td');
-            if (cells.length >= 10) {
-                cells[4].style.display = '';     // Scol F
-                cells[5].style.display = 'none'; // Scol G
-                cells[6].style.display = 'none'; // Scol T
-                cells[7].style.display = '';     // Aban F
-                cells[8].style.display = 'none'; // Aban G
-                cells[9].style.display = 'none'; // Aban T
+            if (cells.length >= 11) {
+                cells[5].style.display = '';     // Scol F
+                cells[6].style.display = 'none'; // Scol G
+                cells[7].style.display = 'none'; // Scol T
+                cells[8].style.display = '';     // Aban F
+                cells[9].style.display = 'none'; // Aban G
+                cells[10].style.display = 'none'; // Aban T
             }
         }
         
-        if (headers.length >= 10) {
-            headers[4].style.display = '';     // Scol F
-            headers[5].style.display = 'none'; // Scol G
-            headers[6].style.display = 'none'; // Scol T
-            headers[7].style.display = '';     // Aban F
-            headers[8].style.display = 'none'; // Aban G
-            headers[9].style.display = 'none'; // Aban T
+        if (headers.length >= 11) {
+            headers[5].style.display = '';     // Scol F
+            headers[6].style.display = 'none'; // Scol G
+            headers[7].style.display = 'none'; // Scol T
+            headers[8].style.display = '';     // Aban F
+            headers[9].style.display = 'none'; // Aban G
+            headers[10].style.display = 'none'; // Aban T
         }
         
     } else if (genreFilter === 'Garcons') {
-        // Afficher G, masquer F et T
+        // Afficher G (colonnes 6 et 9), masquer F et T
         for (var i = 0; i < allRows.length; i++) {
             var cells = allRows[i].querySelectorAll('td');
-            if (cells.length >= 10) {
-                cells[4].style.display = 'none'; // Scol F
-                cells[5].style.display = '';     // Scol G
-                cells[6].style.display = 'none'; // Scol T
-                cells[7].style.display = 'none'; // Aban F
-                cells[8].style.display = '';     // Aban G
-                cells[9].style.display = 'none'; // Aban T
+            if (cells.length >= 11) {
+                cells[5].style.display = 'none'; // Scol F
+                cells[6].style.display = '';     // Scol G
+                cells[7].style.display = 'none'; // Scol T
+                cells[8].style.display = 'none'; // Aban F
+                cells[9].style.display = '';     // Aban G
+                cells[10].style.display = 'none'; // Aban T
             }
         }
         
-        if (headers.length >= 10) {
-            headers[4].style.display = 'none'; // Scol F
-            headers[5].style.display = '';     // Scol G
-            headers[6].style.display = 'none'; // Scol T
-            headers[7].style.display = 'none'; // Aban F
-            headers[8].style.display = '';     // Aban G
-            headers[9].style.display = 'none'; // Aban T
+        if (headers.length >= 11) {
+            headers[5].style.display = 'none'; // Scol F
+            headers[6].style.display = '';     // Scol G
+            headers[7].style.display = 'none'; // Scol T
+            headers[8].style.display = 'none'; // Aban F
+            headers[9].style.display = '';     // Aban G
+            headers[10].style.display = 'none'; // Aban T
         }
         
     } else if (genreFilter === 'Total') {
-        // Afficher T, masquer F et G
+        // Afficher T (colonnes 7 et 10), masquer F et G
         for (var i = 0; i < allRows.length; i++) {
             var cells = allRows[i].querySelectorAll('td');
-            if (cells.length >= 10) {
-                cells[4].style.display = 'none'; // Scol F
-                cells[5].style.display = 'none'; // Scol G
-                cells[6].style.display = '';     // Scol T
-                cells[7].style.display = 'none'; // Aban F
-                cells[8].style.display = 'none'; // Aban G
-                cells[9].style.display = '';     // Aban T
+            if (cells.length >= 11) {
+                cells[5].style.display = 'none'; // Scol F
+                cells[6].style.display = 'none'; // Scol G
+                cells[7].style.display = '';     // Scol T
+                cells[8].style.display = 'none'; // Aban F
+                cells[9].style.display = 'none'; // Aban G
+                cells[10].style.display = '';    // Aban T
             }
         }
         
-        if (headers.length >= 10) {
-            headers[4].style.display = 'none'; // Scol F
-            headers[5].style.display = 'none'; // Scol G
-            headers[6].style.display = '';     // Scol T
-            headers[7].style.display = 'none'; // Aban F
-            headers[8].style.display = 'none'; // Aban G
-            headers[9].style.display = '';     // Aban T
+        if (headers.length >= 11) {
+            headers[5].style.display = 'none'; // Scol F
+            headers[6].style.display = 'none'; // Scol G
+            headers[7].style.display = '';     // Scol T
+            headers[8].style.display = 'none'; // Aban F
+            headers[9].style.display = 'none'; // Aban G
+            headers[10].style.display = '';    // Aban T
         }
         
     } else {
-        // Afficher toutes les colonnes
+        // Afficher toutes les colonnes (aucun filtre)
         for (var i = 0; i < allRows.length; i++) {
             var cells = allRows[i].querySelectorAll('td');
-            for (var j = 4; j <= 9 && j < cells.length; j++) {
+            for (var j = 5; j <= 10 && j < cells.length; j++) {
                 cells[j].style.display = '';
             }
         }
-        for (var j = 4; j <= 9 && j < headers.length; j++) {
+        for (var j = 5; j <= 10 && j < headers.length; j++) {
             headers[j].style.display = '';
         }
     }
