@@ -4332,12 +4332,23 @@ if (activeTab === 'statistiques') {
 
     html += '</div></div>';
     
-    // 🔥 5 FILTRES
-    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3 style="margin-bottom: 12px;">🔍 Filtres</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+    // 🔥 FILTRE PRINCIPAL : ANNÉE
+html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #0284c7;">';
+html += '<div style="display: flex; align-items: center; gap: 16px;">';
+html += '<label style="font-weight: bold; font-size: 16px; color: #0c4a6e;">📅 Année des données :</label>';
+html += '<select id="filter-annee-principale" class="form-control" style="max-width: 200px; font-size: 15px; padding: 10px; font-weight: bold;" onchange="appliquerFiltresStatistiques()">';
+html += '<option value="2025-2026" selected>2025-2026</option>';
+html += '<option value="2024-2025">2024-2025</option>';
+html += '<option value="2023-2024">2023-2024</option>';
+html += '</select>';
+html += '</div></div>';
 
-    // Filtre 1 : Région
+// 🔥 5 FILTRES SECONDAIRES
+html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+html += '<h3 style="margin-bottom: 12px;">🔍 Filtres de détail</h3>';
+html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+
+  // Filtre 1 : Région
     html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
     html += '<select id="filter-stats-region" class="form-control" onchange="appliquerFiltresStatistiques(); updateStatsPrefectureDropdown();">';
     html += '<option value="">Toutes</option>';
