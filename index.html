@@ -3125,13 +3125,13 @@ function updateStatsPrefectureDropdown() {
 function appliquerFiltresStatistiques() {
     console.log('🎯 Début du filtrage statistiques...');
  
-    // 🔥 RÉCUPÉRER LES VALEURS DES FILTRES
+    // 🔥 RÉCUPÉRER LES VALEURS DES FILTRES (+ ANNÉE)
+    var filterAnnee = document.getElementById('filter-annee-principale') ? document.getElementById('filter-annee-principale').value : '2025-2026';
     var filterRegion = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
     var filterPrefecture = document.getElementById('filter-stats-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
     var filterZone = document.getElementById('filter-stats-zone') ? document.getElementById('filter-stats-zone').value : '';
     var filterNiveau = document.getElementById('filter-stats-niveau') ? document.getElementById('filter-stats-niveau').value : '';
     var filterGenre = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
-    
     console.log('📋 Filtres actifs:');
     console.log('  - Région:', filterRegion);
     console.log('  - Préfecture:', filterPrefecture);
@@ -3141,83 +3141,25 @@ function appliquerFiltresStatistiques() {
     
     // 🔥 FILTRER LES 3 SOURCES DE DONNÉES
     
-    // 1️⃣ Stats Générales
-    var dataStatsGeneralesFiltrees = [];
-    for (var i = 0; i < statistiquesData.length; i++) {
-        var stat = statistiquesData[i];
-        if (stat.annee_scolaire !== '2025-2026') continue;
-        
-        var regionId = '';
-        for (var r = 0; r < regionsData.length; r++) {
-            if (regionsData[r].nom === stat.region) {
-                regionId = regionsData[r].id.toString();
-                break;
-            }
-        }
-        
-        var inclure = true;
-        
-        if (filterRegion && filterRegion !== '' && regionId !== filterRegion) inclure = false;
-        if (inclure && filterPrefecture && filterPrefecture !== '' && stat.prefecture !== filterPrefecture) inclure = false;
-        if (inclure && filterZone && filterZone !== '' && stat.zone !== filterZone) inclure = false;
-        
-        if (inclure && filterNiveau && filterNiveau !== '') {
-            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
-                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                    if (stat.niveau !== 'Secondaire') inclure = false;
-                } else {
-                    if (stat.niveau !== filterNiveau) inclure = false;
-                }
-            } else {
-                inclure = false;
-            }
-        }
-        
-        if (inclure) dataStatsGeneralesFiltrees.push(stat);
-    }
-    
-    // 2️⃣ Examens
-    var dataExamens2025Filtrees = [];
-    for (var i = 0; i < reussiteExamensData.length; i++) {
-        var exam = reussiteExamensData[i];
-        if (exam.annee_scolaire !== '2024-2025') continue;
-        
-        var examRegionId = '';
-        for (var r = 0; r < regionsData.length; r++) {
-            if (regionsData[r].nom === exam.region) {
-                examRegionId = regionsData[r].id.toString();
-                break;
-            }
-        }
-        
-        var inclure = true;
-        
-        if (filterRegion && filterRegion !== '' && examRegionId !== filterRegion) inclure = false;
-        if (inclure && filterPrefecture && filterPrefecture !== '' && exam.prefecture !== filterPrefecture) inclure = false;
-        if (inclure && filterZone && filterZone !== '' && exam.zone !== filterZone) inclure = false;
-        
-        if (inclure && filterNiveau && filterNiveau !== '') {
-            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
-                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                    if (exam.niveau !== 'Secondaire') inclure = false;
-                } else if (filterNiveau === 'Primaire') {
-                    if (exam.niveau !== 'Primaire') inclure = false;
-                } else {
-                    inclure = false;
-                }
-            } else {
-                inclure = false;
-            }
-        }
-        
-        if (inclure) dataExamens2025Filtrees.push(exam);
-    }
-    
-    // 3️⃣ Alphabétisation
-    var dataAlpha2026Filtrees = [];
-    for (var i = 0; i < alphabetisationData.length; i++) {
-        var alpha = alphabetisationData[i];
-        if (alpha.annee_scolaire !== '2025-2026') continue;
+// 1️⃣ Stats Générales - FILTRER PAR ANNÉE DYNAMIQUE
+var dataStatsGeneralesFiltrees = [];
+for (var i = 0; i < statistiquesData.length; i++) {
+    var stat = statistiquesData[i];
+    if (stat.annee_scolaire !== filterAnnee) continue;
+// 2️⃣ Examens - FILTRER PAR ANNÉE DYNAMIQUE
+// 🔥 Convertir l'année Stats (2025-2026) en année Examens (2024-2025)
+var anneeExamens = filterAnnee === '2025-2026' ? '2024-2025' : 
+                   filterAnnee === '2024-2025' ? '2023-2024' : '2022-2023';
+
+var dataExamens2025Filtrees = [];
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    var exam = reussiteExamensData[i];
+    if (exam.annee_scolaire !== anneeExamens) continue;
+// 3️⃣ Alphabétisation - FILTRER PAR ANNÉE DYNAMIQUE
+var dataAlpha2026Filtrees = [];
+for (var i = 0; i < alphabetisationData.length; i++) {
+    var alpha = alphabetisationData[i];
+    if (alpha.annee_scolaire !== filterAnnee) continue;
         
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
