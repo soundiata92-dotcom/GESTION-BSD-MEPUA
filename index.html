@@ -2212,54 +2212,99 @@ function filterTableRows() {
         }
     }
     
-    // Gérer le filtre Genre (masquer/afficher colonnes)
-    var table = document.getElementById('stats-table');
-    if (table) {
-        var headers = table.querySelectorAll('thead th');
-        var allRows = table.querySelectorAll('tbody tr');
-        
-        if (genreFilter === 'Total') {
-            // Masquer colonnes Filles (indices peuvent varier, adapte si besoin)
-            for (var i = 0; i < allRows.length; i++) {
-                var cells = allRows[i].querySelectorAll('td');
-                // Colonnes Filles : abandon_filles, scolarisation_filles
-                if (cells.length >= 8) {
-                    cells[5].style.display = 'none'; // Abandon F
-                    cells[7].style.display = 'none'; // Scolarisation F
-                }
-            }
-            // Masquer en-têtes correspondants
-            if (headers.length >= 8) {
-                headers[5].style.display = 'none'; // Abandon F (%)
-                headers[7].style.display = 'none'; // Scolarisa. F (%)
-            }
-        } else if (genreFilter === 'Filles') {
-            // Masquer colonnes Total
-            for (var i = 0; i < allRows.length; i++) {
-                var cells = allRows[i].querySelectorAll('td');
-                if (cells.length >= 8) {
-                    cells[4].style.display = 'none'; // Abandon T
-                    cells[6].style.display = 'none'; // Scolarisation T
-                }
-            }
-            // Masquer en-têtes
-            if (headers.length >= 8) {
-                headers[4].style.display = 'none'; // Abandon T (%)
-                headers[6].style.display = 'none'; // Scolarisa. T (%)
-            }
-        } else {
-            // Afficher toutes les colonnes
-            for (var i = 0; i < allRows.length; i++) {
-                var cells = allRows[i].querySelectorAll('td');
-                for (var j = 0; j < cells.length; j++) {
-                    cells[j].style.display = '';
-                }
-            }
-            for (var j = 0; j < headers.length; j++) {
-                headers[j].style.display = '';
+// Gérer le filtre Genre (masquer/afficher colonnes)
+var table = document.getElementById('stats-table');
+if (table) {
+    var headers = table.querySelectorAll('thead th');
+    var allRows = table.querySelectorAll('tbody tr');
+    
+    // Structure : 0:Région | 1:Préfecture | 2:Zone | 3:Niveau
+    // 4:Scol F | 5:Scol G | 6:Scol T
+    // 7:Aban F | 8:Aban G | 9:Aban T
+    // 10:Ratio Ens | 11:Ratio Classe | 12:Distance
+    
+    if (genreFilter === 'Filles') {
+        // Afficher F, masquer G et T
+        for (var i = 0; i < allRows.length; i++) {
+            var cells = allRows[i].querySelectorAll('td');
+            if (cells.length >= 10) {
+                cells[4].style.display = '';     // Scol F
+                cells[5].style.display = 'none'; // Scol G
+                cells[6].style.display = 'none'; // Scol T
+                cells[7].style.display = '';     // Aban F
+                cells[8].style.display = 'none'; // Aban G
+                cells[9].style.display = 'none'; // Aban T
             }
         }
+        
+        if (headers.length >= 10) {
+            headers[4].style.display = '';     // Scol F
+            headers[5].style.display = 'none'; // Scol G
+            headers[6].style.display = 'none'; // Scol T
+            headers[7].style.display = '';     // Aban F
+            headers[8].style.display = 'none'; // Aban G
+            headers[9].style.display = 'none'; // Aban T
+        }
+        
+    } else if (genreFilter === 'Garcons') {
+        // Afficher G, masquer F et T
+        for (var i = 0; i < allRows.length; i++) {
+            var cells = allRows[i].querySelectorAll('td');
+            if (cells.length >= 10) {
+                cells[4].style.display = 'none'; // Scol F
+                cells[5].style.display = '';     // Scol G
+                cells[6].style.display = 'none'; // Scol T
+                cells[7].style.display = 'none'; // Aban F
+                cells[8].style.display = '';     // Aban G
+                cells[9].style.display = 'none'; // Aban T
+            }
+        }
+        
+        if (headers.length >= 10) {
+            headers[4].style.display = 'none'; // Scol F
+            headers[5].style.display = '';     // Scol G
+            headers[6].style.display = 'none'; // Scol T
+            headers[7].style.display = 'none'; // Aban F
+            headers[8].style.display = '';     // Aban G
+            headers[9].style.display = 'none'; // Aban T
+        }
+        
+    } else if (genreFilter === 'Total') {
+        // Afficher T, masquer F et G
+        for (var i = 0; i < allRows.length; i++) {
+            var cells = allRows[i].querySelectorAll('td');
+            if (cells.length >= 10) {
+                cells[4].style.display = 'none'; // Scol F
+                cells[5].style.display = 'none'; // Scol G
+                cells[6].style.display = '';     // Scol T
+                cells[7].style.display = 'none'; // Aban F
+                cells[8].style.display = 'none'; // Aban G
+                cells[9].style.display = '';     // Aban T
+            }
+        }
+        
+        if (headers.length >= 10) {
+            headers[4].style.display = 'none'; // Scol F
+            headers[5].style.display = 'none'; // Scol G
+            headers[6].style.display = '';     // Scol T
+            headers[7].style.display = 'none'; // Aban F
+            headers[8].style.display = 'none'; // Aban G
+            headers[9].style.display = '';     // Aban T
+        }
+        
+    } else {
+        // Afficher toutes les colonnes
+        for (var i = 0; i < allRows.length; i++) {
+            var cells = allRows[i].querySelectorAll('td');
+            for (var j = 4; j <= 9 && j < cells.length; j++) {
+                cells[j].style.display = '';
+            }
+        }
+        for (var j = 4; j <= 9 && j < headers.length; j++) {
+            headers[j].style.display = '';
+        }
     }
+}
     
     console.log('Lignes visibles:', visibleCount);
     console.log('================');
