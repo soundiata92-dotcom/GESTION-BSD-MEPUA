@@ -2498,6 +2498,17 @@ html += '<td class="col-aban-t" style="padding: 2px; border: 1px solid #e5e7eb;"
     html += '</div></div>';
     modalContainer.innerHTML = html;
 // ========== CHARGER LES DONNÉES EXISTANTES ==========
+setTimeout(async function() {
+    var annee = document.getElementById('global-annee').value.trim();
+    if (!annee) return;
+    
+    try {
+        const { data: existingData, error } = await supabase
+            .from('statistiques_educatives')
+            .select('*')
+            .eq('annee_scolaire', annee)
+            .eq('periode', 'Annuel');
+REMPLACER TOUTE CETTE SECTION (jusqu'à }, 500);) PAR :
 // ========== CHARGER LES DONNÉES EXISTANTES ==========
 setTimeout(async function() {
     var anneeSelect = document.getElementById('Statistique-Année');
