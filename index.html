@@ -2212,97 +2212,47 @@ function filterTableRows() {
         }
     }
     
-// Gérer le filtre Genre (masquer/afficher colonnes)
+// Gérer le filtre Genre (masquer/afficher colonnes selon les couleurs)
 var table = document.getElementById('stats-table');
 if (table) {
-    var headers = table.querySelectorAll('thead th');
-    var allRows = table.querySelectorAll('tbody tr');
-    
-    // Structure : 0:Région | 1:Préfecture | 2:Zone | 3:Niveau | 4:Ratio Ens
-    // 5:Scol F | 6:Scol G | 7:Scol T
-    // 8:Aban F | 9:Aban G | 10:Aban T
-    // 11:Ratio Classe | 12:Distance
-    
     if (genreFilter === 'Filles') {
-        // Afficher F (colonnes 5 et 8), masquer G et T
-        for (var i = 0; i < allRows.length; i++) {
-            var cells = allRows[i].querySelectorAll('td');
-            if (cells.length >= 11) {
-                cells[5].style.display = '';     // Scol F
-                cells[6].style.display = 'none'; // Scol G
-                cells[7].style.display = 'none'; // Scol T
-                cells[8].style.display = '';     // Aban F
-                cells[9].style.display = 'none'; // Aban G
-                cells[10].style.display = 'none'; // Aban T
-            }
-        }
-        
-        if (headers.length >= 11) {
-            headers[5].style.display = '';     // Scol F
-            headers[6].style.display = 'none'; // Scol G
-            headers[7].style.display = 'none'; // Scol T
-            headers[8].style.display = '';     // Aban F
-            headers[9].style.display = 'none'; // Aban G
-            headers[10].style.display = 'none'; // Aban T
-        }
+        // 🔴 Afficher uniquement colonnes ROUGES (F) + les 4 premières
+        // Masquer toutes les colonnes avec classes
+        document.querySelectorAll('.col-scol-g, .col-scol-t, .col-aban-g, .col-aban-t').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        // Afficher colonnes F
+        document.querySelectorAll('.col-scol-f, .col-aban-f').forEach(function(el) {
+            el.style.display = '';
+        });
         
     } else if (genreFilter === 'Garcons') {
-        // Afficher G (colonnes 6 et 9), masquer F et T
-        for (var i = 0; i < allRows.length; i++) {
-            var cells = allRows[i].querySelectorAll('td');
-            if (cells.length >= 11) {
-                cells[5].style.display = 'none'; // Scol F
-                cells[6].style.display = '';     // Scol G
-                cells[7].style.display = 'none'; // Scol T
-                cells[8].style.display = 'none'; // Aban F
-                cells[9].style.display = '';     // Aban G
-                cells[10].style.display = 'none'; // Aban T
-            }
-        }
-        
-        if (headers.length >= 11) {
-            headers[5].style.display = 'none'; // Scol F
-            headers[6].style.display = '';     // Scol G
-            headers[7].style.display = 'none'; // Scol T
-            headers[8].style.display = 'none'; // Aban F
-            headers[9].style.display = '';     // Aban G
-            headers[10].style.display = 'none'; // Aban T
-        }
+        // 🟡 Afficher uniquement colonnes JAUNES (G) + les 4 premières
+        // Masquer F et T
+        document.querySelectorAll('.col-scol-f, .col-scol-t, .col-aban-f, .col-aban-t').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        // Afficher colonnes G
+        document.querySelectorAll('.col-scol-g, .col-aban-g').forEach(function(el) {
+            el.style.display = '';
+        });
         
     } else if (genreFilter === 'Total') {
-        // Afficher T (colonnes 7 et 10), masquer F et G
-        for (var i = 0; i < allRows.length; i++) {
-            var cells = allRows[i].querySelectorAll('td');
-            if (cells.length >= 11) {
-                cells[5].style.display = 'none'; // Scol F
-                cells[6].style.display = 'none'; // Scol G
-                cells[7].style.display = '';     // Scol T
-                cells[8].style.display = 'none'; // Aban F
-                cells[9].style.display = 'none'; // Aban G
-                cells[10].style.display = '';    // Aban T
-            }
-        }
-        
-        if (headers.length >= 11) {
-            headers[5].style.display = 'none'; // Scol F
-            headers[6].style.display = 'none'; // Scol G
-            headers[7].style.display = '';     // Scol T
-            headers[8].style.display = 'none'; // Aban F
-            headers[9].style.display = 'none'; // Aban G
-            headers[10].style.display = '';    // Aban T
-        }
+        // 🟢 Afficher uniquement colonnes VERTES (T) + les 4 premières
+        // Masquer F et G
+        document.querySelectorAll('.col-scol-f, .col-scol-g, .col-aban-f, .col-aban-g').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        // Afficher colonnes T
+        document.querySelectorAll('.col-scol-t, .col-aban-t').forEach(function(el) {
+            el.style.display = '';
+        });
         
     } else {
-        // Afficher toutes les colonnes (aucun filtre)
-        for (var i = 0; i < allRows.length; i++) {
-            var cells = allRows[i].querySelectorAll('td');
-            for (var j = 5; j <= 10 && j < cells.length; j++) {
-                cells[j].style.display = '';
-            }
-        }
-        for (var j = 5; j <= 10 && j < headers.length; j++) {
-            headers[j].style.display = '';
-        }
+        // 🎨 TOUS : Afficher toutes les colonnes
+        document.querySelectorAll('.col-scol-f, .col-scol-g, .col-scol-t, .col-aban-f, .col-aban-g, .col-aban-t').forEach(function(el) {
+            el.style.display = '';
+        });
     }
 }
     
