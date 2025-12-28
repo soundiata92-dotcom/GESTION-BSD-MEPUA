@@ -2799,13 +2799,21 @@ function updatePreuveActivites() {
 async function submitStatistiquesTableau(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
-    var annee = document.getElementById('global-annee').value.trim();
-    
-    if (!annee) {
-        alert('⚠️ Veuillez saisir une année scolaire');
+    var anneeSelect = document.getElementById('Statistique-Année');
+    if (!anneeSelect) {
+        alert('❌ Erreur : Impossible de trouver le sélecteur d\'année');
+        console.error('❌ Element "Statistique-Année" non trouvé');
         return;
     }
     
+    var annee = anneeSelect.value.trim();
+    
+    console.log('💾 Enregistrement pour année:', annee);
+    
+    if (!annee) {
+        alert('⚠️ Veuillez sélectionner une année scolaire');
+        return;
+    }
     var zones = ['Urbaine', 'Rurale'];
     var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
     var dataToInsert = [];
