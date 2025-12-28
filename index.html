@@ -4797,6 +4797,132 @@ html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap
     html += '</div>';
     
     html += '</div></div>';
+modalContainer.innerHTML = html;
+
+// ========== CHARGER LES DONNÉES EXISTANTES ==========
+setTimeout(async function() {
+    var anneeSelect = document.getElementById('examens-session');
+    if (!anneeSelect) return;
+    
+    var annee = anneeSelect.value.trim();
+    console.log('📥 Chargement examens pour session:', annee);
+    
+    if (!annee) return;
+    
+    try {
+        const { data: existingData, error } = await supabase
+            .from('reussite_examens')
+            .select('*')
+            .eq('annee_scolaire', annee)
+            .eq('periode', 'Annuel');
+        
+        if (error) throw error;
+        
+        if (existingData && existingData.length > 0) {
+            console.log('📥 Chargement de ' + existingData.length + ' données examens existantes...');
+            
+            var loaded = 0;
+            var zones = ['Urbaine', 'Rurale'];
+            var niveaux = ['Primaire', 'Collège', 'Lycée'];
+            
+            for (var i = 0; i < existingData.length; i++) {
+                var exam = existingData[i];
+                
+                var rowIndex = 0;
+                var found = false;
+                
+                for (var r = 0; r < regionsData.length && !found; r++) {
+                    var region = regionsData[r];
+                    
+                    var prefecturesRegion = [];
+                    for (var p = 0; p < prefecturesData.length; p++) {
+                        if (prefecturesData[p].region_id == region.id) {
+                            prefecturesRegion.push(prefecturesData[p]);
+                        }
+                    }
+                    
+                    for (var p = 0; p < prefecturesRegion.length && !found; p++) {
+                        var prefecture = prefecturesRegion[p];
+                        
+                        if (prefecture.nom !== exam.prefecture) {
+                            rowIndex += 6; // 2 zones × 3 niveaux
+                            continue;
+                        }
+                        
+                        for (var z = 0; z < zones.length && !found; z++) {
+                            var zone = zones[z];
+                            
+                            if (zone !== exam.zone) {
+                                rowIndex += 3; // 3 niveaux
+                                continue;
+                            }
+                            
+                            for (var n = 0; n < niveaux.length && !found; n++) {
+                                if (niveaux[n] === exam.niveau) {
+                                    // CEE F/G/T
+                                    if (exam.taux_reussite_cee_filles !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_filles"]');
+                                        if (input) { input.value = exam.taux_reussite_cee_filles; input.style.background = '#fce7f3'; loaded++; }
+                                    }
+                                    if (exam.taux_reussite_cee_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_garcons"]');
+                                        if (input) { input.value = exam.taux_reussite_cee_garcons; input.style.background = '#fef3c7'; loaded++; }
+                                    }
+                                    if (exam.taux_reussite_cee_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="cee_total"]');
+                                        if (input) { input.value = exam.taux_reussite_cee_total; input.style.background = '#d1fae5'; loaded++; }
+                                    }
+                                    
+                                    // BEPC F/G/T
+                                    if (exam.taux_reussite_bepc_filles !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_filles"]');
+                                        if (input) { input.value = exam.taux_reussite_bepc_filles; input.style.background = '#fce7f3'; loaded++; }
+                                    }
+                                    if (exam.taux_reussite_bepc_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_garcons"]');
+                                        if (input) { input.value = exam.taux_reussite_bepc_garcons; input.style.background = '#fef3c7'; loaded++; }
+                                    }
+                                    if (exam.taux_reussite_bepc_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bepc_total"]');
+                                        if (input) { input.value = exam.taux_reussite_bepc_total; input.style.background = '#d1fae5'; loaded++; }
+                                    }
+                                    
+                                    // BAC F/G/T
+                                    if (exam.taux_reussite_bac_filles !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_filles"]');
+                                        if (input) { input.value = exam.taux_reussite_bac_filles; input.style.background = '#fce7f3'; loaded++; }
+                                    }
+                                    if (exam.taux_reussite_bac_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_garcons"]');
+                                        if (input) { input.value = exam.taux_reussite_bac_garcons; input.style.background = '#fef3c7'; loaded++; }
+                                    }
+                                    if (exam.taux_reussite_bac_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="bac_total"]');
+                                        if (input) { input.value = exam.taux_reussite_bac_total; input.style.background = '#d1fae5'; loaded++; }
+                                    }
+                                    
+                                    found = true;
+                                    break;
+                                }
+                                rowIndex++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (loaded > 0) {
+                console.log('✅ ' + loaded + ' champs examens chargés');
+                alert('📥 ' + loaded + ' taux de réussite déjà enregistrés ont été chargés.');
+            }
+        } else {
+            console.log('📝 Formulaire vierge pour session ' + annee);
+        }
+    } catch (error) {
+        console.error('❌ Erreur chargement examens:', error);
+    }
+}, 500);
+
     modalContainer.innerHTML = html;
 }
 function rechargerFormulaireExamens() {
@@ -4809,7 +4935,10 @@ function rechargerFormulaireExamens() {
     var filterRegion = document.getElementById('filter-examens-region') ? document.getElementById('filter-examens-region').value : '';
     var filterPrefecture = document.getElementById('filter-examens-prefecture') ? document.getElementById('filter-examens-prefecture').value : '';
     var filterZone = document.getElementById('filter-examens-zone') ? document.getElementById('filter-examens-zone').value : '';
+    var filterNiveau = document.getElementById('filter-examens-niveau') ? document.getElementById('filter-examens-niveau').value : '';
     var filterGenre = document.getElementById('filter-examens-genre') ? document.getElementById('filter-examens-genre').value : '';
+    
+    console.log('📅 Session sélectionnée:', session);
     
     // Fermer et rouvrir le modal
     showReussiteExamensModal();
@@ -4818,6 +4947,7 @@ function rechargerFormulaireExamens() {
     setTimeout(function() {
         if (document.getElementById('examens-session')) {
             document.getElementById('examens-session').value = session;
+            console.log('✅ Session restaurée:', session);
         }
         if (document.getElementById('filter-examens-region')) {
             document.getElementById('filter-examens-region').value = filterRegion;
@@ -4829,13 +4959,15 @@ function rechargerFormulaireExamens() {
         if (document.getElementById('filter-examens-zone')) {
             document.getElementById('filter-examens-zone').value = filterZone;
         }
+        if (document.getElementById('filter-examens-niveau')) {
+            document.getElementById('filter-examens-niveau').value = filterNiveau;
+        }
         if (document.getElementById('filter-examens-genre')) {
             document.getElementById('filter-examens-genre').value = filterGenre;
             filterExamensRows();
         }
     }, 100);
 }
-
 function updateExamensFilters() {
     var regionSelect = document.getElementById('filter-examens-region');
     var prefectureSelect = document.getElementById('filter-examens-prefecture');
@@ -5270,11 +5402,18 @@ async function submitExamensData(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
     var annee = document.getElementById('examens-session').value;
+PAR :
+async function submitExamensData(forcerMiseAJour) {
+    forcerMiseAJour = forcerMiseAJour || false;
     
-    if (!annee) {
-        alert('⚠️ Veuillez sélectionner une année');
+    var anneeSelect = document.getElementById('examens-session');
+    if (!anneeSelect) {
+        alert('❌ Erreur : Impossible de trouver le sélecteur de session');
         return;
     }
+    
+    var annee = anneeSelect.value;
+    console.log('💾 Enregistrement examens pour session:', annee);
     
     var zones = ['Urbaine', 'Rurale'];
     var niveaux = ['Primaire', 'Collège', 'Lycée'];
