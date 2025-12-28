@@ -5274,13 +5274,15 @@ async function submitAlphabetisationData(forcerMiseAJour) {
         alert('❌ Erreur : Impossible de trouver le sélecteur d\'année');
         return;
     }
+    
     var annee = anneeSelect.value;
     console.log('💾 Enregistrement alphabétisation pour année:', annee);
     
     if (!annee) {
         alert('⚠️ Veuillez sélectionner une année');
         return;
-    } 
+    }
+    
     var zones = ['Urbaine', 'Rurale'];
     var niveaux = ['Debutant', 'Intermediaire', 'Avance'];
     var dataToInsert = [];
@@ -5322,21 +5324,21 @@ var alphaF = document.querySelector('input[data-row="' + rowIndex + '"][data-fie
                     
                     if (valAlphaF !== null || valAlphaG !== null || valAlphaT !== null || 
                         valBenefF !== null || valBenefG !== null || valBenefT !== null) {
-dataToInsert.push({
-    annee_scolaire: annee,
-    periode: 'Annuel',
-    region: region.nom,
-    prefecture: prefecture.nom,
-    zone: zone,
-    niveau: niveau,
-    Taux_alphabétisation_filles: valAlphaF,
-    Taux_alphabétisation_garçons: valAlphaG,
-    Taux_alphabétisation_total: valAlphaT,
-    beneficiaires_filles: valBenefF,
-    beneficiaires_garcons: valBenefG,
-    beneficiaires_total: valBenefT,
-    saisi_par: currentUser.nom
-});
+                        dataToInsert.push({
+                            annee_scolaire: annee,
+                            periode: 'Annuel',
+                            region: region.nom,
+                            prefecture: prefecture.nom,
+                            zone: zone,
+                            niveau: niveau,
+                            taux_alphabetisation_filles: valAlphaF,
+                            taux_alphabetisation_garcons: valAlphaG,
+                            taux_alphabetisation_total: valAlphaT,
+                            beneficiaires_filles: valBenefF,
+                            beneficiaires_garcons: valBenefG,
+                            beneficiaires_total: valBenefT,
+                            saisi_par: currentUser.nom
+                        });
                     }
                     rowIndex++;
                 }
@@ -5710,19 +5712,19 @@ setTimeout(async function() {
                             
                             for (var n = 0; n < niveaux.length && !found; n++) {
                                 if (niveaux[n] === alpha.niveau) {
-// Taux Alpha F/G/T - AVEC MAJUSCULES ET ACCENTS
-if (alpha.Taux_alphabétisation_filles !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_filles"]');
-    if (input) { input.value = alpha.Taux_alphabétisation_filles; input.style.background = '#fce7f3'; loaded++; }
-}
-if (alpha.Taux_alphabétisation_garçons !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_garçons"]');
-    if (input) { input.value = alpha.Taux_alphabétisation_garçons; input.style.background = '#fef3c7'; loaded++; }
-}
-if (alpha.Taux_alphabétisation_total !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_total"]');
-    if (input) { input.value = alpha.Taux_alphabétisation_total; input.style.background = '#d1fae5'; loaded++; }
-}
+                                    // Taux Alpha F/G/T
+                                    if (alpha.taux_alphabetisation_filles !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_filles"]');
+                                        if (input) { input.value = alpha.taux_alphabetisation_filles; input.style.background = '#fce7f3'; loaded++; }
+                                    }
+                                    if (alpha.taux_alphabetisation_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_garcons"]');
+                                        if (input) { input.value = alpha.taux_alphabetisation_garcons; input.style.background = '#fef3c7'; loaded++; }
+                                    }
+                                    if (alpha.taux_alphabetisation_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_total"]');
+                                        if (input) { input.value = alpha.taux_alphabetisation_total; input.style.background = '#d1fae5'; loaded++; }
+                                    }
                                     
                                     // Bénéficiaires F/G/T
                                     if (alpha.beneficiaires_filles !== null) {
@@ -5759,7 +5761,6 @@ if (alpha.Taux_alphabétisation_total !== null) {
         console.error('❌ Erreur chargement alphabétisation:', error);
     }
 }, 500);
-
 }
 
 // ========== FONCTIONS DE CALCUL DE MOYENNES ==========
