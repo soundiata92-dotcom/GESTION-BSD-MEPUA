@@ -5269,13 +5269,18 @@ function filterAlphabetisationRows() {
 async function submitAlphabetisationData(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
-    var annee = document.getElementById('alpha-annee').value;
+    var anneeSelect = document.getElementById('alpha-annee');
+    if (!anneeSelect) {
+        alert('❌ Erreur : Impossible de trouver le sélecteur d\'année');
+        return;
+    }
+    var annee = anneeSelect.value;
+    console.log('💾 Enregistrement alphabétisation pour année:', annee);
     
     if (!annee) {
         alert('⚠️ Veuillez sélectionner une année');
         return;
-    }
-    
+    } 
     var zones = ['Urbaine', 'Rurale'];
     var niveaux = ['Debutant', 'Intermediaire', 'Avance'];
     var dataToInsert = [];
@@ -5379,14 +5384,28 @@ function rechargerFormulaireAlphabetisation() {
     var filterNiveau = document.getElementById('filter-alpha-niveau') ? document.getElementById('filter-alpha-niveau').value : '';
     var filterGenre = document.getElementById('filter-alpha-genre') ? document.getElementById('filter-alpha-genre').value : '';
     
+    console.log('📅 Année sélectionnée:', annee);
+    
     showAlphabetisationModal();
     
     setTimeout(function() {
-        if (document.getElementById('alpha-annee')) document.getElementById('alpha-annee').value = annee;
-        if (document.getElementById('filter-alpha-region')) document.getElementById('filter-alpha-region').value = filterRegion;
-        if (document.getElementById('filter-alpha-prefecture')) document.getElementById('filter-alpha-prefecture').value = filterPrefecture;
-        if (document.getElementById('filter-alpha-zone')) document.getElementById('filter-alpha-zone').value = filterZone;
-        if (document.getElementById('filter-alpha-niveau')) document.getElementById('filter-alpha-niveau').value = filterNiveau;
+        if (document.getElementById('alpha-annee')) {
+            document.getElementById('alpha-annee').value = annee;
+            console.log('✅ Année restaurée:', annee);
+        }
+        if (document.getElementById('filter-alpha-region')) {
+            document.getElementById('filter-alpha-region').value = filterRegion;
+            filterAlphabetisationRows();
+        }
+        if (document.getElementById('filter-alpha-prefecture')) {
+            document.getElementById('filter-alpha-prefecture').value = filterPrefecture;
+        }
+        if (document.getElementById('filter-alpha-zone')) {
+            document.getElementById('filter-alpha-zone').value = filterZone;
+        }
+        if (document.getElementById('filter-alpha-niveau')) {
+            document.getElementById('filter-alpha-niveau').value = filterNiveau;
+        }
         if (document.getElementById('filter-alpha-genre')) {
             document.getElementById('filter-alpha-genre').value = filterGenre;
             filterAlphabetisationRows();
@@ -5520,7 +5539,7 @@ function showAlphabetisationModal() {
     // ========== FILTRE SESSION ==========
     html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
     html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Année d’alphabétisation *</label>';
-    html += '<select id="examens-session" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireAlphabetisation()">';
+html += '<select id="alpha-annee" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireAlphabetisation()">';
     html += '<option value="2024-2025">Session 2025</option>';
     html += '<option value="2023-2024">Session 2024</option>';
     html += '<option value="2022-2023">Session 2023</option>';
@@ -5631,6 +5650,116 @@ function showAlphabetisationModal() {
     
     html += '</div></div>';
     modalContainer.innerHTML = html;
+// ========== CHARGER LES DONNÉES EXISTANTES ==========
+setTimeout(async function() {
+    var anneeSelect = document.getElementById('alpha-annee');
+    if (!anneeSelect) return;
+    
+    var annee = anneeSelect.value.trim();
+    console.log('📥 Chargement alphabétisation pour année:', annee);
+    
+    if (!annee) return;
+    
+    try {
+        const { data: existingData, error } = await supabase
+            .from('alphabetisation')
+            .select('*')
+            .eq('annee_scolaire', annee)
+            .eq('periode', 'Annuel');
+        
+        if (error) throw error;
+        
+        if (existingData && existingData.length > 0) {
+            console.log('📥 Chargement de ' + existingData.length + ' données alphabétisation existantes...');
+            
+            var loaded = 0;
+            var zones = ['Urbaine', 'Rurale'];
+            var niveaux = ['Debutant', 'Intermediaire', 'Avance'];
+            
+            for (var i = 0; i < existingData.length; i++) {
+                var alpha = existingData[i];
+                
+                var rowIndex = 0;
+                var found = false;
+                
+                for (var r = 0; r < regionsData.length && !found; r++) {
+                    var region = regionsData[r];
+                    
+                    var prefecturesRegion = [];
+                    for (var p = 0; p < prefecturesData.length; p++) {
+                        if (prefecturesData[p].region_id == region.id) {
+                            prefecturesRegion.push(prefecturesData[p]);
+                        }
+                    }
+                    
+                    for (var p = 0; p < prefecturesRegion.length && !found; p++) {
+                        var prefecture = prefecturesRegion[p];
+                        
+                        if (prefecture.nom !== alpha.prefecture) {
+                            rowIndex += 6; // 2 zones × 3 niveaux
+                            continue;
+                        }
+                        
+                        for (var z = 0; z < zones.length && !found; z++) {
+                            var zone = zones[z];
+                            
+                            if (zone !== alpha.zone) {
+                                rowIndex += 3; // 3 niveaux
+                                continue;
+                            }
+                            
+                            for (var n = 0; n < niveaux.length && !found; n++) {
+                                if (niveaux[n] === alpha.niveau) {
+                                    // Taux Alpha F/G/T
+                                    if (alpha.taux_alphabetisation_filles !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_filles"]');
+                                        if (input) { input.value = alpha.taux_alphabetisation_filles; input.style.background = '#fce7f3'; loaded++; }
+                                    }
+                                    if (alpha.taux_alphabetisation_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_garcons"]');
+                                        if (input) { input.value = alpha.taux_alphabetisation_garcons; input.style.background = '#fef3c7'; loaded++; }
+                                    }
+                                    if (alpha.taux_alphabetisation_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_total"]');
+                                        if (input) { input.value = alpha.taux_alphabetisation_total; input.style.background = '#d1fae5'; loaded++; }
+                                    }
+                                    
+                                    // Bénéficiaires F/G/T
+                                    if (alpha.beneficiaires_filles !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="benef_filles"]');
+                                        if (input) { input.value = alpha.beneficiaires_filles; input.style.background = '#fce7f3'; loaded++; }
+                                    }
+                                    if (alpha.beneficiaires_garcons !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="benef_garcons"]');
+                                        if (input) { input.value = alpha.beneficiaires_garcons; input.style.background = '#fef3c7'; loaded++; }
+                                    }
+                                    if (alpha.beneficiaires_total !== null) {
+                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="benef_total"]');
+                                        if (input) { input.value = alpha.beneficiaires_total; input.style.background = '#d1fae5'; loaded++; }
+                                    }
+                                    
+                                    found = true;
+                                    break;
+                                }
+                                rowIndex++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (loaded > 0) {
+                console.log('✅ ' + loaded + ' champs alphabétisation chargés');
+                alert('📥 ' + loaded + ' données d\'alphabétisation déjà enregistrées ont été chargées.');
+            }
+        } else {
+            console.log('📝 Formulaire vierge pour année ' + annee);
+        }
+    } catch (error) {
+        console.error('❌ Erreur chargement alphabétisation:', error);
+    }
+}, 500);
+
 }
 
 // ========== FONCTIONS DE CALCUL DE MOYENNES ==========
