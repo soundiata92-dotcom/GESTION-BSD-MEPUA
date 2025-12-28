@@ -5322,21 +5322,21 @@ var alphaF = document.querySelector('input[data-row="' + rowIndex + '"][data-fie
                     
                     if (valAlphaF !== null || valAlphaG !== null || valAlphaT !== null || 
                         valBenefF !== null || valBenefG !== null || valBenefT !== null) {
-                        dataToInsert.push({
-                            annee_scolaire: annee,
-                            periode: 'Annuel',
-                            region: region.nom,
-                            prefecture: prefecture.nom,
-                            zone: zone,
-                            niveau: niveau,
-                            taux_alphabetisation_filles: valAlphaF,
-                            taux_alphabetisation_garcons: valAlphaG,
-                            taux_alphabetisation_total: valAlphaT,
-                            beneficiaires_filles: valBenefF,
-                            beneficiaires_garcons: valBenefG,
-                            beneficiaires_total: valBenefT,
-                            saisi_par: currentUser.nom
-                        });
+dataToInsert.push({
+    annee_scolaire: annee,
+    periode: 'Annuel',
+    region: region.nom,
+    prefecture: prefecture.nom,
+    zone: zone,
+    niveau: niveau,
+    Taux_alphabétisation_filles: valAlphaF,
+    Taux_alphabétisation_garcons: valAlphaG,
+    Taux_alphabétisation_total: valAlphaT,
+    beneficiaires_filles: valBenefF,
+    beneficiaires_garcons: valBenefG,
+    beneficiaires_total: valBenefT,
+    saisi_par: currentUser.nom
+});
                     }
                     rowIndex++;
                 }
