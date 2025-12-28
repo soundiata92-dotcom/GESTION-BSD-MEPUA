@@ -5330,7 +5330,7 @@ dataToInsert.push({
     zone: zone,
     niveau: niveau,
     Taux_alphabétisation_filles: valAlphaF,
-    Taux_alphabétisation_garcons: valAlphaG,
+    Taux_alphabétisation_garçons: valAlphaG,
     Taux_alphabétisation_total: valAlphaT,
     beneficiaires_filles: valBenefF,
     beneficiaires_garcons: valBenefG,
@@ -5715,9 +5715,9 @@ if (alpha.Taux_alphabétisation_filles !== null) {
     var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_filles"]');
     if (input) { input.value = alpha.Taux_alphabétisation_filles; input.style.background = '#fce7f3'; loaded++; }
 }
-if (alpha.Taux_alphabétisation_garcons !== null) {
-    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_garcons"]');
-    if (input) { input.value = alpha.Taux_alphabétisation_garcons; input.style.background = '#fef3c7'; loaded++; }
+if (alpha.Taux_alphabétisation_garçons !== null) {
+    var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_garçons"]');
+    if (input) { input.value = alpha.Taux_alphabétisation_garçons; input.style.background = '#fef3c7'; loaded++; }
 }
 if (alpha.Taux_alphabétisation_total !== null) {
     var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_total"]');
