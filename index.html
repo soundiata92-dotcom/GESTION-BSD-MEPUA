@@ -2499,7 +2499,12 @@ html += '<td class="col-aban-t" style="padding: 2px; border: 1px solid #e5e7eb;"
     modalContainer.innerHTML = html;
 // ========== CHARGER LES DONNÉES EXISTANTES ==========
 setTimeout(async function() {
-    var annee = document.getElementById('global-annee').value.trim();
+    var anneeSelect = document.getElementById('Statistique-Année');
+    if (!anneeSelect) return;
+    
+    var annee = anneeSelect.value.trim();
+    console.log('📥 Chargement données pour année:', annee);
+    
     if (!annee) return;
     
     try {
@@ -2538,7 +2543,7 @@ setTimeout(async function() {
                         var prefecture = prefecturesRegion[p];
                         
                         if (prefecture.nom !== stat.prefecture) {
-                            rowIndex += 6; // 2 zones × 3 niveaux
+                            rowIndex += 8; // 2 zones × 4 niveaux
                             continue;
                         }
                         
@@ -2547,11 +2552,11 @@ setTimeout(async function() {
                             var zone = zones[z];
                             
                             if (zone !== stat.zone) {
-                                rowIndex += 3; // 3 niveaux
+                                rowIndex += 4; // 4 niveaux
                                 continue;
                             }
                             
-                            var niveaux = ['Préscolaire', 'Primaire', 'Secondaire'];
+                            var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
                             for (var n = 0; n < niveaux.length && !found; n++) {
                                 if (niveaux[n] === stat.niveau) {
                                     // 🔥 CHARGER SCOLARISATION F/G/T
@@ -2561,8 +2566,6 @@ setTimeout(async function() {
                                             input.value = stat.taux_scolarisation_filles;
                                             input.style.background = '#fce7f3';
                                             input.style.borderColor = '#db2777';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
                                             loaded++;
                                         }
                                     }
@@ -2571,10 +2574,8 @@ setTimeout(async function() {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="scolarisation_garcons"]');
                                         if (input) {
                                             input.value = stat.taux_scolarisation_garcons;
-                                            input.style.background = '#dbeafe';
-                                            input.style.borderColor = '#2563eb';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
+                                            input.style.background = '#fef3c7';
+                                            input.style.borderColor = '#f59e0b';
                                             loaded++;
                                         }
                                     }
@@ -2585,8 +2586,6 @@ setTimeout(async function() {
                                             input.value = stat.taux_scolarisation_total;
                                             input.style.background = '#d1fae5';
                                             input.style.borderColor = '#10b981';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
                                             loaded++;
                                         }
                                     }
@@ -2598,8 +2597,6 @@ setTimeout(async function() {
                                             input.value = stat.taux_abandon_filles;
                                             input.style.background = '#fce7f3';
                                             input.style.borderColor = '#db2777';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
                                             loaded++;
                                         }
                                     }
@@ -2608,10 +2605,8 @@ setTimeout(async function() {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="abandon_garcons"]');
                                         if (input) {
                                             input.value = stat.taux_abandon_garcons;
-                                            input.style.background = '#dbeafe';
-                                            input.style.borderColor = '#2563eb';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
+                                            input.style.background = '#fef3c7';
+                                            input.style.borderColor = '#f59e0b';
                                             loaded++;
                                         }
                                     }
@@ -2622,47 +2617,37 @@ setTimeout(async function() {
                                             input.value = stat.taux_abandon_total;
                                             input.style.background = '#d1fae5';
                                             input.style.borderColor = '#10b981';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
                                             loaded++;
                                         }
                                     }
                                     
-                                    // Ratio enseignant
+                                    // Ratios et distance
                                     if (stat.ratio_eleves_enseignant !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_ens"]');
                                         if (input) {
                                             input.value = stat.ratio_eleves_enseignant;
-                                            input.style.background = '#e8f5e9';
-                                            input.style.borderColor = '#4caf50';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
+                                            input.style.background = '#e0e7ff';
+                                            input.style.borderColor = '#6366f1';
                                             loaded++;
                                         }
                                     }
                                     
-                                    // Ratio classe
                                     if (stat.ratio_eleves_classe !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="ratio_classe"]');
                                         if (input) {
                                             input.value = stat.ratio_eleves_classe;
-                                            input.style.background = '#e8f5e9';
-                                            input.style.borderColor = '#4caf50';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
+                                            input.style.background = '#e0e7ff';
+                                            input.style.borderColor = '#6366f1';
                                             loaded++;
                                         }
                                     }
                                     
-                                    // Distance
                                     if (stat.distance_moyenne_ecole_domicile !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="distance"]');
                                         if (input) {
                                             input.value = stat.distance_moyenne_ecole_domicile;
-                                            input.style.background = '#e8f5e9';
-                                            input.style.borderColor = '#4caf50';
-                                            input.disabled = true;
-                                            input.setAttribute('data-saved', 'true');
+                                            input.style.background = '#e0e7ff';
+                                            input.style.borderColor = '#6366f1';
                                             loaded++;
                                         }
                                     }
@@ -2678,11 +2663,16 @@ setTimeout(async function() {
             }
             
             if (loaded > 0) {
-                alert('📥 ' + loaded + ' champs déjà enregistrés ont été chargés (en vert).\n\nVous pouvez continuer la saisie des autres lignes.');
+                console.log('✅ ' + loaded + ' champs chargés');
+                alert('📥 ' + loaded + ' champs déjà enregistrés ont été chargés.\n\nVous pouvez continuer la saisie.');
+            } else {
+                console.log('⚠️ Aucune donnée trouvée pour ' + annee);
             }
+        } else {
+            console.log('📝 Formulaire vierge pour ' + annee);
         }
     } catch (error) {
-        console.error('Erreur chargement:', error);
+        console.error('❌ Erreur chargement:', error);
     }
 }, 500);
     modalContainer.innerHTML = html;
@@ -2708,38 +2698,46 @@ setTimeout(async function() {
         }
     }, 600);
 function rechargerFormulaireStatistiques() {
-    console.log('🔄 Rechargement du formulaire...');
+    console.log('🔄 Rechargement du formulaire Stats...');
     
     // Récupérer les valeurs actuelles
-    var annee = document.getElementById('global-annee') ? document.getElementById('global-annee').value : '2025-2026';
-    var periode = document.getElementById('global-periode') ? document.getElementById('global-periode').value : 'T1';
+    var annee = document.getElementById('Statistique-Année') ? document.getElementById('Statistique-Année').value : '2025-2026';
     var filterRegion = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var filterPrefecture = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
+    var filterZone = document.getElementById('filter-zone') ? document.getElementById('filter-zone').value : '';
+    var filterNiveau = document.getElementById('filter-niveau') ? document.getElementById('filter-niveau').value : '';
+    var filterGenre = document.getElementById('filter-genre') ? document.getElementById('filter-genre').value : '';
     
-    console.log('Période sélectionnée:', periode);
+    console.log('📅 Année sélectionnée:', annee);
     
-    // Fermer et rouvrir le modal avec les mêmes paramètres
+    // Fermer et rouvrir le modal
     showStatistiquesModal();
     
     // Restaurer les valeurs après rechargement
     setTimeout(function() {
-        if (document.getElementById('global-annee')) {
-            document.getElementById('global-annee').value = annee;
-        }
-        if (document.getElementById('global-periode')) {
-            document.getElementById('global-periode').value = periode;
+        if (document.getElementById('Statistique-Année')) {
+            document.getElementById('Statistique-Année').value = annee;
+            console.log('✅ Année restaurée:', annee);
         }
         if (document.getElementById('filter-region')) {
             document.getElementById('filter-region').value = filterRegion;
-            updateFormFilters(); // Mettre à jour les préfectures
+            updateFormFilters();
         }
         if (document.getElementById('filter-prefecture')) {
             document.getElementById('filter-prefecture').value = filterPrefecture;
+        }
+        if (document.getElementById('filter-zone')) {
+            document.getElementById('filter-zone').value = filterZone;
+        }
+        if (document.getElementById('filter-niveau')) {
+            document.getElementById('filter-niveau').value = filterNiveau;
+        }
+        if (document.getElementById('filter-genre')) {
+            document.getElementById('filter-genre').value = filterGenre;
             filterTableRows();
         }
     }, 100);
 }
-
 function updatePrefecturesDropdown() {
     var regionId = document.getElementById('stat-region').value;
     var prefectureSelect = document.getElementById('stat-prefecture');
@@ -2796,17 +2794,24 @@ function updatePreuveActivites() {
         activiteSelect.appendChild(option);
     }
 }
-
 async function submitStatistiquesTableau(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
-    var annee = document.getElementById('global-annee').value.trim();
-    
-    if (!annee) {
-        alert('⚠️ Veuillez saisir une année scolaire');
+    var anneeSelect = document.getElementById('Statistique-Année');
+    if (!anneeSelect) {
+        alert('❌ Erreur : Impossible de trouver le sélecteur d\'année');
+        console.error('❌ Element "Statistique-Année" non trouvé');
         return;
     }
     
+    var annee = anneeSelect.value.trim();
+    
+    console.log('💾 Enregistrement pour année:', annee);
+    
+    if (!annee) {
+        alert('⚠️ Veuillez sélectionner une année scolaire');
+        return;
+    }
     var zones = ['Urbaine', 'Rurale'];
     var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
     var dataToInsert = [];
@@ -5388,6 +5393,12 @@ function rechargerFormulaireAlphabetisation() {
         }
     }, 100);
 }
+
+async function submitExamensData(forcerMiseAJour) {
+    forcerMiseAJour = forcerMiseAJour || false;
+    
+    var annee = document.getElementById('examens-session').value;
+PAR :
 async function submitExamensData(forcerMiseAJour) {
     forcerMiseAJour = forcerMiseAJour || false;
     
@@ -6070,7 +6081,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
 
 
 
