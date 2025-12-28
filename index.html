@@ -2698,33 +2698,42 @@ setTimeout(async function() {
         }
     }, 600);
 function rechargerFormulaireStatistiques() {
-    console.log('🔄 Rechargement du formulaire...');
+    console.log('🔄 Rechargement du formulaire Stats...');
     
     // Récupérer les valeurs actuelles
-    var annee = document.getElementById('global-annee') ? document.getElementById('global-annee').value : '2025-2026';
-    var periode = document.getElementById('global-periode') ? document.getElementById('global-periode').value : 'T1';
+    var annee = document.getElementById('Statistique-Année') ? document.getElementById('Statistique-Année').value : '2025-2026';
     var filterRegion = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var filterPrefecture = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
+    var filterZone = document.getElementById('filter-zone') ? document.getElementById('filter-zone').value : '';
+    var filterNiveau = document.getElementById('filter-niveau') ? document.getElementById('filter-niveau').value : '';
+    var filterGenre = document.getElementById('filter-genre') ? document.getElementById('filter-genre').value : '';
     
-    console.log('Période sélectionnée:', periode);
+    console.log('📅 Année sélectionnée:', annee);
     
-    // Fermer et rouvrir le modal avec les mêmes paramètres
+    // Fermer et rouvrir le modal
     showStatistiquesModal();
     
     // Restaurer les valeurs après rechargement
     setTimeout(function() {
-        if (document.getElementById('global-annee')) {
-            document.getElementById('global-annee').value = annee;
-        }
-        if (document.getElementById('global-periode')) {
-            document.getElementById('global-periode').value = periode;
+        if (document.getElementById('Statistique-Année')) {
+            document.getElementById('Statistique-Année').value = annee;
+            console.log('✅ Année restaurée:', annee);
         }
         if (document.getElementById('filter-region')) {
             document.getElementById('filter-region').value = filterRegion;
-            updateFormFilters(); // Mettre à jour les préfectures
+            updateFormFilters();
         }
         if (document.getElementById('filter-prefecture')) {
             document.getElementById('filter-prefecture').value = filterPrefecture;
+        }
+        if (document.getElementById('filter-zone')) {
+            document.getElementById('filter-zone').value = filterZone;
+        }
+        if (document.getElementById('filter-niveau')) {
+            document.getElementById('filter-niveau').value = filterNiveau;
+        }
+        if (document.getElementById('filter-genre')) {
+            document.getElementById('filter-genre').value = filterGenre;
             filterTableRows();
         }
     }, 100);
