@@ -2381,7 +2381,7 @@ var modalContainer = document.getElementById('modal-container');
     // ========== FILTRE SESSION ==========
     html += '<div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">';
     html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">🎓 Année des Statistiques *</label>';
-html += '<select id="Statistique-Année-Affichage" class="form-control" style="font-size: 14px; padding: 10px;" onchange="appliquerFiltresStatistiques()">';
+    html += '<select id="Statistique-Année" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireStatistiques()">';
     html += '<option value="2024-2025">Session 2025</option>';
     html += '<option value="2023-2024">Session 2024</option>';
     html += '<option value="2022-2023">Session 2023</option>';
@@ -3144,24 +3144,14 @@ function appliquerFiltresStatistiques() {
     console.log('  - Niveau:', filterNiveau);
     console.log('  - Genre:', filterGenre);
     
-// 🔥 RÉCUPÉRER L'ANNÉE SÉLECTIONNÉE
-var filterAnneeSelect = document.getElementById('filter-annee-principale');
-var filterAnnee = filterAnneeSelect ? filterAnneeSelect.value : '2025';
-
-// Convertir l'année en format "YYYY-YYYY+1"
-var anneeDebut = parseInt(filterAnnee);
-var anneeFin = anneeDebut + 1;
-var anneeFormat = anneeDebut + '-' + anneeFin; // Ex: "2024-2025"
-
-console.log('📅 Année sélectionnée pour filtrage:', anneeFormat);
-
-// 🔥 FILTRER LES 3 SOURCES DE DONNÉES
-
-// 1️⃣ Stats Générales
-var dataStatsGeneralesFiltrees = [];
-for (var i = 0; i < statistiquesData.length; i++) {
-    var stat = statistiquesData[i];
-    if (stat.annee_scolaire !== anneeFormat) continue; 
+    // 🔥 FILTRER LES 3 SOURCES DE DONNÉES
+    
+    // 1️⃣ Stats Générales
+    var dataStatsGeneralesFiltrees = [];
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        if (stat.annee_scolaire !== '2025-2026') continue;
+        
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === stat.region) {
@@ -3191,11 +3181,12 @@ for (var i = 0; i < statistiquesData.length; i++) {
         if (inclure) dataStatsGeneralesFiltrees.push(stat);
     }
     
-// 2️⃣ Examens
-var dataExamens2025Filtrees = [];
-for (var i = 0; i < reussiteExamensData.length; i++) {
-    var exam = reussiteExamensData[i];
-    if (exam.annee_scolaire !== anneeFormat) continue;        
+    // 2️⃣ Examens
+    var dataExamens2025Filtrees = [];
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire !== '2024-2025') continue;
+        
         var examRegionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === exam.region) {
@@ -3227,11 +3218,12 @@ for (var i = 0; i < reussiteExamensData.length; i++) {
         if (inclure) dataExamens2025Filtrees.push(exam);
     }
     
-// 3️⃣ Alphabétisation
-var dataAlpha2026Filtrees = [];
-for (var i = 0; i < alphabetisationData.length; i++) {
-    var alpha = alphabetisationData[i];
-    if (alpha.annee_scolaire !== anneeFormat) continue;        
+    // 3️⃣ Alphabétisation
+    var dataAlpha2026Filtrees = [];
+    for (var i = 0; i < alphabetisationData.length; i++) {
+        var alpha = alphabetisationData[i];
+        if (alpha.annee_scolaire !== '2025-2026') continue;
+        
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === alpha.region) {
@@ -4676,14 +4668,6 @@ html += '<td class="col-bac-t" style="padding: 10px; border: 1px solid #e5e7eb; 
     html += '</tbody></table></div>';
     
 } 
-// 🔥 APPELER LE FILTRAGE AU CHARGEMENT INITIAL
-setTimeout(function() {
-    if (activeTab === 'statistiques') {
-        console.log('🎬 Initialisation automatique des filtres statistiques...');
-        appliquerFiltresStatistiques();
-    }
-}, 300);
-
             html += '</div><div id="modal-container"></div>';
             app.innerHTML = html;
         }
