@@ -3129,9 +3129,19 @@ function updateStatsPrefectureDropdown() {
 // ========== FILTRER LES LIGNES DU TABLEAU + COLONNES SELON GENRE ==========
 function appliquerFiltresStatistiques() {
     console.log('🎯 Début du filtrage statistiques...');
- 
-    // 🔥 RÉCUPÉRER LES VALEURS DES FILTRES
+ // 🔥 RÉCUPÉRER LE FILTRE ANNÉE
     var filterAnnee = document.getElementById('filter-annee-principale') ? document.getElementById('filter-annee-principale').value : '2025';
+    
+    console.log('📅 Année sélectionnée:', filterAnnee);
+    
+    // 🔥 Convertir l'année simple en format année scolaire
+    var anneeStats = filterAnnee + '-' + (parseInt(filterAnnee) + 1); // Ex: 2025 → 2025-2026
+    var anneeExamens = (parseInt(filterAnnee) - 1) + '-' + filterAnnee; // Ex: 2025 → 2024-2025
+    
+    console.log('  - Stats/Alpha:', anneeStats);
+    console.log('  - Examens:', anneeExamens);
+
+    // 🔥 RÉCUPÉRER LES VALEURS DES FILTRES
     var filterRegion = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
     var filterPrefecture = document.getElementById('filter-stats-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
     var filterZone = document.getElementById('filter-stats-zone') ? document.getElementById('filter-stats-zone').value : '';
@@ -3139,20 +3149,11 @@ function appliquerFiltresStatistiques() {
     var filterGenre = document.getElementById('filter-stats-genre') ? document.getElementById('filter-stats-genre').value : 'Total';
     
     console.log('📋 Filtres actifs:');
-    console.log('  - Année:', filterAnnee);
     console.log('  - Région:', filterRegion);
     console.log('  - Préfecture:', filterPrefecture);
     console.log('  - Zone:', filterZone);
     console.log('  - Niveau:', filterNiveau);
     console.log('  - Genre:', filterGenre);
-    
-    // 🔥 Convertir l'année simple en format année scolaire
-    var anneeStats = filterAnnee + '-' + (parseInt(filterAnnee) + 1); // Ex: 2025 → 2025-2026
-    var anneeExamens = (parseInt(filterAnnee) - 1) + '-' + filterAnnee; // Ex: 2025 → 2024-2025
-    
-    console.log('📅 Années converties:');
-    console.log('  - Stats/Alpha:', anneeStats);
-    console.log('  - Examens:', anneeExamens);
     
     // 🔥 FILTRER LES 3 SOURCES DE DONNÉES
     
@@ -3160,8 +3161,7 @@ function appliquerFiltresStatistiques() {
     var dataStatsGeneralesFiltrees = [];
     for (var i = 0; i < statistiquesData.length; i++) {
         var stat = statistiquesData[i];
-        if (stat.annee_scolaire !== anneeStats) continue;
-        
+if (stat.annee_scolaire !== anneeStats) continue;        
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === stat.region) {
@@ -3192,11 +3192,10 @@ function appliquerFiltresStatistiques() {
     }
     
     // 2️⃣ Examens
-    var dataExamensFiltrees = [];
+    var dataExamens2025Filtrees = [];
     for (var i = 0; i < reussiteExamensData.length; i++) {
         var exam = reussiteExamensData[i];
         if (exam.annee_scolaire !== anneeExamens) continue;
-        
         var examRegionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === exam.region) {
@@ -3225,15 +3224,14 @@ function appliquerFiltresStatistiques() {
             }
         }
         
-        if (inclure) dataExamensFiltrees.push(exam);
+        if (inclure) dataExamens2025Filtrees.push(exam);
     }
     
     // 3️⃣ Alphabétisation
-    var dataAlphaFiltrees = [];
+    var dataAlpha2026Filtrees = [];
     for (var i = 0; i < alphabetisationData.length; i++) {
         var alpha = alphabetisationData[i];
-        if (alpha.annee_scolaire !== anneeStats) continue;
-        
+        if (alpha.annee_scolaire !== anneeStats) continue;        
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === alpha.region) {
@@ -3256,28 +3254,28 @@ function appliquerFiltresStatistiques() {
             }
         }
         
-        if (inclure) dataAlphaFiltrees.push(alpha);
+        if (inclure) dataAlpha2026Filtrees.push(alpha);
     }
     
     console.log('✅ Données filtrées:');
     console.log('  Stats:', dataStatsGeneralesFiltrees.length);
-    console.log('  Examens:', dataExamensFiltrees.length);
-    console.log('  Alpha:', dataAlphaFiltrees.length);
+    console.log('  Examens:', dataExamens2025Filtrees.length);
+    console.log('  Alpha:', dataAlpha2026Filtrees.length);
     
     // 🔥 RECALCULER LES MOYENNES
     var moyenneScolarisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_scolarisation', filterGenre || 'Total');
     var moyenneAbandon = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_abandon', filterGenre || 'Total');
-    var moyenneAlphabetisation = calculerMoyenne(dataAlphaFiltrees, 'taux_alphabetisation', filterGenre || 'Total');
+    var moyenneAlphabetisation = calculerMoyenne(dataAlpha2026Filtrees, 'taux_alphabetisation', filterGenre || 'Total');
     var moyenneRatioEnseignant = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_enseignant', 'Total');
     var moyenneRatioClasse = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_classe', 'Total');
     var moyenneDistance = calculerMoyenne(dataStatsGeneralesFiltrees, 'distance_moyenne_ecole_domicile', 'Total');
-    var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamensFiltrees, 'taux_reussite_cee', filterGenre || 'Total');
-    var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamensFiltrees, 'taux_reussite_bepc', filterGenre || 'Total');
-    var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamensFiltrees, 'taux_reussite_bac', filterGenre || 'Total');
+    var moyenneReussiteCEE = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_cee', filterGenre || 'Total');
+    var moyenneReussiteBEPC = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_bepc', filterGenre || 'Total');
+    var moyenneReussiteBAC = calculerMoyenneParGenre(dataExamens2025Filtrees, 'taux_reussite_bac', filterGenre || 'Total');
     
     var totalBeneficiaires = 0;
-    for (var i = 0; i < dataAlphaFiltrees.length; i++) {
-        var alpha = dataAlphaFiltrees[i];
+    for (var i = 0; i < dataAlpha2026Filtrees.length; i++) {
+        var alpha = dataAlpha2026Filtrees[i];
         var benef = 0;
         if (filterGenre === 'Filles' && alpha.beneficiaires_filles) {
             benef = alpha.beneficiaires_filles;
@@ -3313,8 +3311,6 @@ function appliquerFiltresStatistiques() {
     if (carteDistance) carteDistance.textContent = moyenneDistance + ' km';
     
     console.log('✅ Cartes mises à jour');
-    console.log('✅ Filtrage terminé');
-}
     
     // 🔥 FILTRER LE TABLEAU (LIGNES)
     var rows = document.querySelectorAll('.stat-row');
@@ -3407,7 +3403,7 @@ function appliquerFiltresStatistiques() {
     }
     
     console.log('✅ Filtrage terminé - Lignes visibles:', visibleCount);
-        
+}
 function updateStatsPrefectureDropdown() {
     var regionSelect = document.getElementById('filter-stats-region');
     var prefectureSelect = document.getElementById('filter-stats-prefecture');
@@ -6217,7 +6213,6 @@ function renderAnalyseDecisions() {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
 
 
 
