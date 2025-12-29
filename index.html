@@ -3129,11 +3129,7 @@ function updateStatsPrefectureDropdown() {
 // ========== FILTRER LES LIGNES DU TABLEAU + COLONNES SELON GENRE ==========
 function appliquerFiltresStatistiques() {
     console.log('🎯 Début du filtrage statistiques...');
- // 🔥 RÉCUPÉRER LE FILTRE ANNÉE
-    var filterAnnee = document.getElementById('filter-annee-principale') ? document.getElementById('filter-annee-principale').value : '2025';
-    
-    console.log('📅 Année sélectionnée:', filterAnnee);
-    
+ 
     // 🔥 RÉCUPÉRER LES VALEURS DES FILTRES
     var filterRegion = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
     var filterPrefecture = document.getElementById('filter-stats-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
@@ -3154,7 +3150,8 @@ function appliquerFiltresStatistiques() {
     var dataStatsGeneralesFiltrees = [];
     for (var i = 0; i < statistiquesData.length; i++) {
         var stat = statistiquesData[i];
-if (stat.annee_scolaire !== anneeStats) continue;        
+        if (stat.annee_scolaire !== '2025-2026') continue;
+        
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === stat.region) {
@@ -3188,7 +3185,8 @@ if (stat.annee_scolaire !== anneeStats) continue;
     var dataExamens2025Filtrees = [];
     for (var i = 0; i < reussiteExamensData.length; i++) {
         var exam = reussiteExamensData[i];
-        if (exam.annee_scolaire !== anneeExamens) continue;
+        if (exam.annee_scolaire !== '2024-2025') continue;
+        
         var examRegionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === exam.region) {
@@ -3224,7 +3222,8 @@ if (stat.annee_scolaire !== anneeStats) continue;
     var dataAlpha2026Filtrees = [];
     for (var i = 0; i < alphabetisationData.length; i++) {
         var alpha = alphabetisationData[i];
-        if (alpha.annee_scolaire !== anneeStats) continue;        
+        if (alpha.annee_scolaire !== '2025-2026') continue;
+        
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
             if (regionsData[r].nom === alpha.region) {
