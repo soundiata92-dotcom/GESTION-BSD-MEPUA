@@ -3134,13 +3134,6 @@ function appliquerFiltresStatistiques() {
     
     console.log('📅 Année sélectionnée:', filterAnnee);
     
-    // 🔥 Convertir l'année simple en format année scolaire
-    var anneeStats = filterAnnee + '-' + (parseInt(filterAnnee) + 1); // Ex: 2025 → 2025-2026
-    var anneeExamens = (parseInt(filterAnnee) - 1) + '-' + filterAnnee; // Ex: 2025 → 2024-2025
-    
-    console.log('  - Stats/Alpha:', anneeStats);
-    console.log('  - Examens:', anneeExamens);
-
     // 🔥 RÉCUPÉRER LES VALEURS DES FILTRES
     var filterRegion = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
     var filterPrefecture = document.getElementById('filter-stats-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
