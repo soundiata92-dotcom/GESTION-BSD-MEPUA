@@ -3130,8 +3130,8 @@ function updateStatsPrefectureDropdown() {
 function appliquerFiltresStatistiques() {
     console.log('🎯 Début du filtrage statistiques...');
  
-    // 🔥 RÉCUPÉRER LE FILTRE ANNÉE PRINCIPAL
-    var anneeSelectionnee = document.getElementById('Statistique-Année') ? document.getElementById('Statistique-Année').value : '2025';
+    // 🔥 RÉCUPÉRER LE FILTRE ANNÉE PRINCIPAL (ID CORRECT)
+    var anneeSelectionnee = document.getElementById('filter-annee-principale') ? document.getElementById('filter-annee-principale').value : '2025';
     console.log('📅 Année sélectionnée:', anneeSelectionnee);
     
     // Convertir l'année en format annee_scolaire
@@ -3404,6 +3404,39 @@ function appliquerFiltresStatistiques() {
     
     console.log('✅ Filtrage terminé - Lignes visibles:', visibleCount);
 }
+function initialiserFiltreAnneeStatistiques() {
+    // ✅ UTILISER LE BON ID
+    var selectAnnee = document.getElementById('filter-annee-principale');
+    if (selectAnnee) {
+        selectAnnee.addEventListener('change', function() {
+            console.log('📅 Changement d\'année détecté:', this.value);
+            appliquerFiltresStatistiques();
+        });
+        console.log('✅ Événement change attaché au filtre année');
+    } else {
+        console.error('❌ Filtre année "filter-annee-principale" introuvable');
+    }
+    
+    // Attacher aussi les événements aux autres filtres (si pas déjà fait)
+    var filtres = [
+        'filter-stats-region',
+        'filter-stats-prefecture',
+        'filter-stats-zone',
+        'filter-stats-niveau',
+        'filter-stats-genre'
+    ];
+    
+    filtres.forEach(function(filtreId) {
+        var element = document.getElementById(filtreId);
+        if (element) {
+            element.addEventListener('change', function() {
+                console.log('🔄 Filtre', filtreId, 'changé');
+                appliquerFiltresStatistiques();
+            });
+        }
+    });
+}
+
 function updateStatsPrefectureDropdown() {
     var regionSelect = document.getElementById('filter-stats-region');
     var prefectureSelect = document.getElementById('filter-stats-prefecture');
