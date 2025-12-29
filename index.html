@@ -3129,7 +3129,18 @@ function updateStatsPrefectureDropdown() {
 // ========== FILTRER LES LIGNES DU TABLEAU + COLONNES SELON GENRE ==========
 function appliquerFiltresStatistiques() {
     console.log('🎯 Début du filtrage statistiques...');
- 
+ // 🔥 RÉCUPÉRER LE FILTRE ANNÉE
+    var filterAnnee = document.getElementById('filter-annee-principale') ? document.getElementById('filter-annee-principale').value : '2025';
+    
+    console.log('📅 Année sélectionnée:', filterAnnee);
+    
+    // 🔥 Convertir l'année simple en format année scolaire
+    var anneeStats = filterAnnee + '-' + (parseInt(filterAnnee) + 1); // Ex: 2025 → 2025-2026
+    var anneeExamens = (parseInt(filterAnnee) - 1) + '-' + filterAnnee; // Ex: 2025 → 2024-2025
+    
+    console.log('  - Stats/Alpha:', anneeStats);
+    console.log('  - Examens:', anneeExamens);
+
     // 🔥 RÉCUPÉRER LES VALEURS DES FILTRES
     var filterRegion = document.getElementById('filter-stats-region') ? document.getElementById('filter-stats-region').value : '';
     var filterPrefecture = document.getElementById('filter-stats-prefecture') ? document.getElementById('filter-stats-prefecture').value : '';
@@ -3150,7 +3161,7 @@ function appliquerFiltresStatistiques() {
     var dataStatsGeneralesFiltrees = [];
     for (var i = 0; i < statistiquesData.length; i++) {
         var stat = statistiquesData[i];
-        if (stat.annee_scolaire !== '2025-2026') continue;
+if (stat.annee_scolaire !== anneeStats) continue;
         
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
@@ -3185,7 +3196,7 @@ function appliquerFiltresStatistiques() {
     var dataExamens2025Filtrees = [];
     for (var i = 0; i < reussiteExamensData.length; i++) {
         var exam = reussiteExamensData[i];
-        if (exam.annee_scolaire !== '2024-2025') continue;
+      if (exam.annee_scolaire !== anneeExamens) continue;
         
         var examRegionId = '';
         for (var r = 0; r < regionsData.length; r++) {
@@ -3222,7 +3233,7 @@ function appliquerFiltresStatistiques() {
     var dataAlpha2026Filtrees = [];
     for (var i = 0; i < alphabetisationData.length; i++) {
         var alpha = alphabetisationData[i];
-        if (alpha.annee_scolaire !== '2025-2026') continue;
+       if (alpha.annee_scolaire !== anneeStats) continue;
         
         var regionId = '';
         for (var r = 0; r < regionsData.length; r++) {
@@ -4516,7 +4527,8 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     
     for (var i = 0; i < statistiquesData.length; i++) {
         var stat = statistiquesData[i];
-        if (stat.annee_scolaire !== '2025-2026') continue;
+     if (stat.annee_scolaire !== anneeStats) continue;
+
         var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
         
         if (!lignesTableau[key]) {
@@ -4542,7 +4554,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     
     for (var i = 0; i < reussiteExamensData.length; i++) {
         var exam = reussiteExamensData[i];
-        if (exam.annee_scolaire !== '2024-2025') continue;
+if (exam.annee_scolaire !== anneeExamens) continue;
         
         var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau;
         
@@ -4569,7 +4581,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     
     for (var i = 0; i < alphabetisationData.length; i++) {
         var alpha = alphabetisationData[i];
-        if (alpha.annee_scolaire !== '2025-2026') continue;
+       if (alpha.annee_scolaire !== anneeStats) continue;
         
         var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
         
