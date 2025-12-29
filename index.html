@@ -5869,7 +5869,6 @@ async function init() {
         if (saved) {
             currentUser = JSON.parse(saved);
             await loadRapportTextes();
-            
             var alreadyConnected = false;
             for (var i = 0; i < connectedUsers.length; i++) {
                 if (connectedUsers[i].user === currentUser.user) {
@@ -5895,37 +5894,6 @@ async function init() {
         console.error('❌ ERREUR CRITIQUE lors de l\'initialisation:', error);
         alert('❌ Erreur lors du démarrage de l\'application : ' + error.message);
     }
-}
-function initialiserFiltreAnneeStatistiques() {
-    var selectAnnee = document.getElementById('Statistique-Année');
-    if (selectAnnee) {
-        selectAnnee.addEventListener('change', function() {
-            console.log('📅 Changement d\'année détecté:', this.value);
-            appliquerFiltresStatistiques();
-        });
-        console.log('✅ Événement change attaché au filtre année');
-    } else {
-        console.error('❌ Filtre année "Statistique-Année" introuvable');
-    }
-    
-    // Attacher aussi les événements aux autres filtres (si pas déjà fait)
-    var filtres = [
-        'filter-stats-region',
-        'filter-stats-prefecture',
-        'filter-stats-zone',
-        'filter-stats-niveau',
-        'filter-stats-genre'
-    ];
-    
-    filtres.forEach(function(filtreId) {
-        var element = document.getElementById(filtreId);
-        if (element) {
-            element.addEventListener('change', function() {
-                console.log('🔄 Filtre', filtreId, 'changé');
-                appliquerFiltresStatistiques();
-            });
-        }
-    });
 }
         // ========== PERMISSIONS ONGLET STATISTIQUES ==========
 function canAccessStatistiques() {
