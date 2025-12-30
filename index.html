@@ -4385,7 +4385,7 @@ if (activeTab === 'statistiques') {
 html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #0284c7;">';
 html += '<div style="display: flex; align-items: center; gap: 16px;">';
 html += '<label style="font-weight: bold; font-size: 16px; color: #0c4a6e;">📅 Année des données :</label>';
-html += '<select id="filter-annee-principale" class="form-control" style="max-width: 200px; font-size: 15px; padding: 10px; font-weight: bold;" onchange="changeTab(\'statistiques\')">';
+html += '<select id="filter-annee-principale" class="form-control" style="max-width: 200px; font-size: 15px; padding: 10px; font-weight: bold;" onchange="appliquerFiltresStatistiques()">';
 html += '<option value="2025" selected>2025</option>';
 html += '<option value="2024">2024</option>';
 html += '<option value="2023">2023</option>';
@@ -4560,11 +4560,11 @@ var anneeSelectionnee = document.getElementById('filter-annee-principale')?.valu
 var anneeScolaireTableau = '';
 
 if (anneeSelectionnee === '2025') {
-    anneeScolaireTableau = '2025-2026';
-} else if (anneeSelectionnee === '2024') {
     anneeScolaireTableau = '2024-2025';
-} else if (anneeSelectionnee === '2023') {
+} else if (anneeSelectionnee === '2024') {
     anneeScolaireTableau = '2023-2024';
+} else if (anneeSelectionnee === '2023') {
+    anneeScolaireTableau = '2022-2023';
 }
 
 console.log('📅 Année tableau:', anneeScolaireTableau);
