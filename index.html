@@ -2387,6 +2387,8 @@ var modalContainer = document.getElementById('modal-container');
     html += '<option value="2022-2023">Session 2023</option>';
     html += '</select></div>';
     html += '</div>';
+// Récupérer l'année sélectionnée par défaut
+var anneeSelectionnee = '2024-2025'; // Année par défaut
 
     // ========== FILTRES COMPLETS (5 filtres) ==========
 html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
@@ -2702,7 +2704,7 @@ function rechargerFormulaireStatistiques() {
     console.log('🔄 Rechargement du formulaire Stats...');
     
     // Récupérer les valeurs actuelles
-    var annee = document.getElementById('Statistique-Année') ? document.getElementById('Statistique-Année').value : '2024-2025';
+    var annee = document.getElementById('Statistique-Année') ? document.getElementById('Statistique-Année').value : '2025-2026';
     var filterRegion = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var filterPrefecture = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
     var filterZone = document.getElementById('filter-zone') ? document.getElementById('filter-zone').value : '';
@@ -4558,7 +4560,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     
     for (var i = 0; i < statistiquesData.length; i++) {
         var stat = statistiquesData[i];
-        if (stat.annee_scolaire !== '2024-2025') continue;
+        if (stat.annee_scolaire !== '2025-2026') continue;
         var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
         
         if (!lignesTableau[key]) {
@@ -4611,7 +4613,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     
     for (var i = 0; i < alphabetisationData.length; i++) {
         var alpha = alphabetisationData[i];
-        if (alpha.annee_scolaire !== '2024-2025') continue;
+        if (alpha.annee_scolaire !== '2025-2026') continue;
         
         var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
         
@@ -4799,7 +4801,7 @@ html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap
                     var niveau = niveaux[n];
                     var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
                     
-                    html += '<tr class="examens-row" data-annee="' + anneeSelectionnee + '" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
+                    html += '<tr class="examens-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
@@ -5421,7 +5423,7 @@ var alphaF = document.querySelector('input[data-row="' + rowIndex + '"][data-fie
 function rechargerFormulaireAlphabetisation() {
     console.log('🔄 Rechargement formulaire Alphabétisation...');
     
-    var annee = document.getElementById('alpha-annee') ? document.getElementById('alpha-annee').value : '2024-2025';
+    var annee = document.getElementById('alpha-annee') ? document.getElementById('alpha-annee').value : '2025-2026';
     var filterRegion = document.getElementById('filter-alpha-region') ? document.getElementById('filter-alpha-region').value : '';
     var filterPrefecture = document.getElementById('filter-alpha-prefecture') ? document.getElementById('filter-alpha-prefecture').value : '';
     var filterZone = document.getElementById('filter-alpha-zone') ? document.getElementById('filter-alpha-zone').value : '';
@@ -5661,7 +5663,7 @@ html += '<select id="alpha-annee" class="form-control" style="font-size: 14px; p
                     var niveauLabel = niveau === 'Debutant' ? 'Débutant' : (niveau === 'Intermediaire' ? 'Intermédiaire' : 'Avancé');
                     var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
                     
-                    html += '<tr class="alpha-row" data-annee="' + anneeSelectionnee + '" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
+                    html += '<tr class="alpha-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
