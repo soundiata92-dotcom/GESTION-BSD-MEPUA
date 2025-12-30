@@ -2702,7 +2702,7 @@ function rechargerFormulaireStatistiques() {
     console.log('🔄 Rechargement du formulaire Stats...');
     
     // Récupérer les valeurs actuelles
-    var annee = document.getElementById('Statistique-Année') ? document.getElementById('Statistique-Année').value : '2025-2026';
+    var annee = document.getElementById('Statistique-Année') ? document.getElementById('Statistique-Année').value : '2024-2025';
     var filterRegion = document.getElementById('filter-region') ? document.getElementById('filter-region').value : '';
     var filterPrefecture = document.getElementById('filter-prefecture') ? document.getElementById('filter-prefecture').value : '';
     var filterZone = document.getElementById('filter-zone') ? document.getElementById('filter-zone').value : '';
@@ -4558,7 +4558,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     
     for (var i = 0; i < statistiquesData.length; i++) {
         var stat = statistiquesData[i];
-        if (stat.annee_scolaire !== '2025-2026') continue;
+        if (stat.annee_scolaire !== '2024-2025') continue;
         var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
         
         if (!lignesTableau[key]) {
@@ -4611,7 +4611,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     
     for (var i = 0; i < alphabetisationData.length; i++) {
         var alpha = alphabetisationData[i];
-        if (alpha.annee_scolaire !== '2025-2026') continue;
+        if (alpha.annee_scolaire !== '2024-2025') continue;
         
         var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
         
@@ -5421,7 +5421,7 @@ var alphaF = document.querySelector('input[data-row="' + rowIndex + '"][data-fie
 function rechargerFormulaireAlphabetisation() {
     console.log('🔄 Rechargement formulaire Alphabétisation...');
     
-    var annee = document.getElementById('alpha-annee') ? document.getElementById('alpha-annee').value : '2025-2026';
+    var annee = document.getElementById('alpha-annee') ? document.getElementById('alpha-annee').value : '2024-2025';
     var filterRegion = document.getElementById('filter-alpha-region') ? document.getElementById('filter-alpha-region').value : '';
     var filterPrefecture = document.getElementById('filter-alpha-prefecture') ? document.getElementById('filter-alpha-prefecture').value : '';
     var filterZone = document.getElementById('filter-alpha-zone') ? document.getElementById('filter-alpha-zone').value : '';
