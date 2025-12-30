@@ -2387,8 +2387,6 @@ var modalContainer = document.getElementById('modal-container');
     html += '<option value="2022-2023">Session 2023</option>';
     html += '</select></div>';
     html += '</div>';
-// Récupérer l'année sélectionnée par défaut
-var anneeSelectionnee = '2024-2025'; // Année par défaut
 
     // ========== FILTRES COMPLETS (5 filtres) ==========
 html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0284c7;">';
@@ -4652,7 +4650,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
             }
             
             var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb'; 
-            html += '<tr class="stat-row" data-region="' + regionId + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '" style="background-color: ' + bgColor + ';">';  
+            html += '<tr class="stat-row" data-annee="' + anneeSelectionnee + '" data-region ="' + regionId + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '" style="background-color: ' + bgColor + ';">';  
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + ligne.region + '</td>';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.prefecture + '</td>';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.zone + '</td>';
