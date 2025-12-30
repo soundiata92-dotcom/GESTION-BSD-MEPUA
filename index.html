@@ -3407,6 +3407,202 @@ function appliquerFiltresStatistiques() {
     
     console.log('✅ Filtrage terminé - Lignes visibles:', visibleCount);
 }
+function rechargerTableauStatistiques() {
+    console.log('🔄 Rechargement du tableau...');
+    
+    // Récupérer l'année sélectionnée
+    var anneeSelectionnee = document.getElementById('filter-annee-principale')?.value || '2025';
+    var anneeScolaireTableau = '';
+    
+    if (anneeSelectionnee === '2025') {
+        anneeScolaireTableau = '2024-2025';
+    } else if (anneeSelectionnee === '2024') {
+        anneeScolaireTableau = '2023-2024';
+    } else if (anneeSelectionnee === '2023') {
+        anneeScolaireTableau = '2022-2023';
+    }
+    
+    console.log('📅 Recharger pour année:', anneeScolaireTableau);
+    
+    // Reconstruire lignesTableau avec la nouvelle année
+    var lignesTableau = {};
+    
+    // Stats Générales
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        if (stat.annee_scolaire !== anneeScolaireTableau) continue;
+        
+        var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
+        
+        if (!lignesTableau[key]) {
+            lignesTableau[key] = {
+                region: stat.region,
+                prefecture: stat.prefecture,
+                zone: stat.zone,
+                niveau: stat.niveau,
+                annee: stat.annee_scolaire,
+                id: stat.id
+            };
+        }
+        
+        lignesTableau[key].scol_f = stat.taux_scolarisation_filles;
+        lignesTableau[key].scol_g = stat.taux_scolarisation_garcons;
+        lignesTableau[key].scol_t = stat.taux_scolarisation_total;
+        lignesTableau[key].aban_f = stat.taux_abandon_filles;
+        lignesTableau[key].aban_g = stat.taux_abandon_garcons;
+        lignesTableau[key].aban_t = stat.taux_abandon_total;
+        lignesTableau[key].ratio_ens = stat.ratio_eleves_enseignant;
+        lignesTableau[key].ratio_classe = stat.ratio_eleves_classe;
+        lignesTableau[key].distance = stat.distance_moyenne_ecole_domicile;
+    }
+    
+    // Examens
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire !== anneeScolaireTableau) continue;
+        
+        var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau;
+        
+        if (!lignesTableau[key]) {
+            lignesTableau[key] = {
+                region: exam.region,
+                prefecture: exam.prefecture,
+                zone: exam.zone,
+                niveau: exam.niveau,
+                annee: exam.annee_scolaire,
+                id: exam.id
+            };
+        }
+        
+        lignesTableau[key].cee_f = exam.taux_reussite_cee_filles;
+        lignesTableau[key].cee_g = exam.taux_reussite_cee_garcons;
+        lignesTableau[key].cee_t = exam.taux_reussite_cee_total;
+        lignesTableau[key].bepc_f = exam.taux_reussite_bepc_filles;
+        lignesTableau[key].bepc_g = exam.taux_reussite_bepc_garcons;
+        lignesTableau[key].bepc_t = exam.taux_reussite_bepc_total;
+        lignesTableau[key].bac_f = exam.taux_reussite_bac_filles;
+        lignesTableau[key].bac_g = exam.taux_reussite_bac_garcons;
+        lignesTableau[key].bac_t = exam.taux_reussite_bac_total;
+    }
+    
+    // Alphabétisation
+    for (var i = 0; i < alphabetisationData.length; i++) {
+        var alpha = alphabetisationData[i];
+        if (alpha.annee_scolaire !== anneeScolaireTableau) continue;
+        
+        var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
+        
+        if (!lignesTableau[key]) {
+            lignesTableau[key] = {
+                region: alpha.region,
+                prefecture: alpha.prefecture,
+                zone: alpha.zone,
+                niveau: alpha.niveau,
+                annee: alpha.annee_scolaire,
+                id: alpha.id
+            };
+        }
+        
+        lignesTableau[key].alpha_f = alpha.taux_alphabetisation_filles;
+        lignesTableau[key].alpha_g = alpha.taux_alphabetisation_garcons;
+        lignesTableau[key].alpha_t = alpha.taux_alphabetisation_total;
+        lignesTableau[key].benef_f = alpha.beneficiaires_filles;
+        lignesTableau[key].benef_g = alpha.beneficiaires_garcons;
+        lignesTableau[key].benef_t = alpha.beneficiaires_total;
+    }
+    
+    // Reconstruire le tbody
+    var tbody = document.querySelector('#stats-table tbody');
+    if (!tbody) {
+        console.error('❌ Tbody introuvable');
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    var lignesArray = [];
+    for (var key in lignesTableau) {
+        lignesArray.push(lignesTableau[key]);
+    }
+    
+    if (lignesArray.length > 0) {
+        for (var i = 0; i < lignesArray.length; i++) {
+            var ligne = lignesArray[i];
+            
+            // Trouver l'ID de la région
+            var regionId = '';
+            for (var r = 0; r < regionsData.length; r++) {
+                if (regionsData[r].nom === ligne.region) {
+                    regionId = regionsData[r].id;
+                    break;
+                }
+            }
+            
+            var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb';
+            
+            var tr = document.createElement('tr');
+            tr.className = 'stat-row';
+            tr.setAttribute('data-annee', ligne.annee);
+            tr.setAttribute('data-region', regionId);
+            tr.setAttribute('data-prefecture', ligne.prefecture);
+            tr.setAttribute('data-zone', ligne.zone);
+            tr.setAttribute('data-niveau', ligne.niveau);
+            tr.style.backgroundColor = bgColor;
+            
+            tr.innerHTML = '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + ligne.region + '</td>' +
+                '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.prefecture + '</td>' +
+                '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.zone + '</td>' +
+                '<td style="padding: 10px; border: 1px solid #e5e7eb;"><span class="badge badge-blue">' + ligne.niveau + '</span></td>' +
+                
+                '<td class="col-scol-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.scol_f !== null && ligne.scol_f !== undefined ? ligne.scol_f : '-') + '</td>' +
+                '<td class="col-scol-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.scol_g !== null && ligne.scol_g !== undefined ? ligne.scol_g : '-') + '</td>' +
+                '<td class="col-scol-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.scol_t !== null && ligne.scol_t !== undefined ? ligne.scol_t : '-') + '</td>' +
+                
+                '<td class="col-aban-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.aban_f !== null && ligne.aban_f !== undefined ? ligne.aban_f : '-') + '</td>' +
+                '<td class="col-aban-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.aban_g !== null && ligne.aban_g !== undefined ? ligne.aban_g : '-') + '</td>' +
+                '<td class="col-aban-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.aban_t !== null && ligne.aban_t !== undefined ? ligne.aban_t : '-') + '</td>' +
+                
+                '<td class="col-cee-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.cee_f !== null && ligne.cee_f !== undefined ? ligne.cee_f : '-') + '</td>' +
+                '<td class="col-cee-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.cee_g !== null && ligne.cee_g !== undefined ? ligne.cee_g : '-') + '</td>' +
+                '<td class="col-cee-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.cee_t !== null && ligne.cee_t !== undefined ? ligne.cee_t : '-') + '</td>' +
+                
+                '<td class="col-bepc-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_f !== null && ligne.bepc_f !== undefined ? ligne.bepc_f : '-') + '</td>' +
+                '<td class="col-bepc-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_g !== null && ligne.bepc_g !== undefined ? ligne.bepc_g : '-') + '</td>' +
+                '<td class="col-bepc-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bepc_t !== null && ligne.bepc_t !== undefined ? ligne.bepc_t : '-') + '</td>' +
+                
+                '<td class="col-bac-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_f !== null && ligne.bac_f !== undefined ? ligne.bac_f : '-') + '</td>' +
+                '<td class="col-bac-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_g !== null && ligne.bac_g !== undefined ? ligne.bac_g : '-') + '</td>' +
+                '<td class="col-bac-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.bac_t !== null && ligne.bac_t !== undefined ? ligne.bac_t : '-') + '</td>' +
+                
+                '<td class="col-alpha-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.alpha_f !== null && ligne.alpha_f !== undefined ? ligne.alpha_f : '-') + '</td>' +
+                '<td class="col-alpha-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.alpha_g !== null && ligne.alpha_g !== undefined ? ligne.alpha_g : '-') + '</td>' +
+                '<td class="col-alpha-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.alpha_t !== null && ligne.alpha_t !== undefined ? ligne.alpha_t : '-') + '</td>' +
+                
+                '<td class="col-benef-f" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.benef_f !== null && ligne.benef_f !== undefined ? ligne.benef_f : '-') + '</td>' +
+                '<td class="col-benef-g" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.benef_g !== null && ligne.benef_g !== undefined ? ligne.benef_g : '-') + '</td>' +
+                '<td class="col-benef-t" style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.benef_t !== null && ligne.benef_t !== undefined ? ligne.benef_t : '-') + '</td>' +
+                
+                '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.ratio_ens !== null && ligne.ratio_ens !== undefined ? ligne.ratio_ens : '-') + '</td>' +
+                '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.ratio_classe !== null && ligne.ratio_classe !== undefined ? ligne.ratio_classe : '-') + '</td>' +
+                '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (ligne.distance !== null && ligne.distance !== undefined ? ligne.distance : '-') + '</td>';
+            
+            if (currentUser.role === 'admin' || currentUser.service === 'BSD') {
+                tr.innerHTML += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><button class="btn btn-danger" style="font-size: 11px; padding: 4px 8px;" onclick="deleteStatistique(' + ligne.id + ')">Supprimer</button></td>';
+            }
+            
+            tbody.appendChild(tr);
+        }
+    } else {
+        var colspan = (currentUser.role === 'admin' || currentUser.service === 'BSD') ? '29' : '28';
+        tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty-state">Aucune statistique pour l\'année ' + anneeSelectionnee + '</td></tr>';
+    }
+    
+    console.log('✅ Tableau rechargé:', lignesArray.length, 'lignes');
+    
+    // Appliquer les filtres après rechargement
+    appliquerFiltresStatistiques();
+}
+
 function initialiserFiltreAnneeStatistiques() {
     // ✅ UTILISER LE BON ID
     var selectAnnee = document.getElementById('filter-annee-principale');
