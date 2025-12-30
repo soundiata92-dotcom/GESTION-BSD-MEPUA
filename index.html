@@ -4555,85 +4555,102 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     }
     html += '</tr></thead><tbody>';
     
-    // Combiner les 3 sources
-    var lignesTableau = {};
+// 🔥 RÉCUPÉRER L'ANNÉE DU FILTRE PRINCIPAL
+var anneeSelectionnee = document.getElementById('filter-annee-principale')?.value || '2025';
+var anneeScolaireTableau = '';
+
+if (anneeSelectionnee === '2025') {
+    anneeScolaireTableau = '2025-2026';
+} else if (anneeSelectionnee === '2024') {
+    anneeScolaireTableau = '2024-2025';
+} else if (anneeSelectionnee === '2023') {
+    anneeScolaireTableau = '2023-2024';
+}
+
+console.log('📅 Année tableau:', anneeScolaireTableau);
+
+// Combiner les 3 sources AVEC ANNÉE FILTRÉE
+var lignesTableau = {};
+
+for (var i = 0; i < statistiquesData.length; i++) {
+    var stat = statistiquesData[i];
+    if (stat.annee_scolaire !== anneeScolaireTableau) continue;  // ✅ UTILISER LA VARIABLE
+    var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
     
-    for (var i = 0; i < statistiquesData.length; i++) {
-        var stat = statistiquesData[i];
-        if (stat.annee_scolaire !== '2025-2026') continue;
-        var key = stat.region + '|' + stat.prefecture + '|' + stat.zone + '|' + stat.niveau;
-        
-        if (!lignesTableau[key]) {
-            lignesTableau[key] = {
-                region: stat.region,
-                prefecture: stat.prefecture,
-                zone: stat.zone,
-                niveau: stat.niveau,
-                id: stat.id
-            };
-        }
-        
-        lignesTableau[key].scol_f = stat.taux_scolarisation_filles;
-        lignesTableau[key].scol_g = stat.taux_scolarisation_garcons;
-        lignesTableau[key].scol_t = stat.taux_scolarisation_total;
-        lignesTableau[key].aban_f = stat.taux_abandon_filles;
-        lignesTableau[key].aban_g = stat.taux_abandon_garcons;
-        lignesTableau[key].aban_t = stat.taux_abandon_total;
-        lignesTableau[key].ratio_ens = stat.ratio_eleves_enseignant;
-        lignesTableau[key].ratio_classe = stat.ratio_eleves_classe;
-        lignesTableau[key].distance = stat.distance_moyenne_ecole_domicile;
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: stat.region,
+            prefecture: stat.prefecture,
+            zone: stat.zone,
+            niveau: stat.niveau,
+            annee: stat.annee_scolaire,  // ✅ AJOUTER L'ANNÉE
+            id: stat.id
+        };
     }
     
-    for (var i = 0; i < reussiteExamensData.length; i++) {
-        var exam = reussiteExamensData[i];
-        if (exam.annee_scolaire !== '2024-2025') continue;
-        
-        var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau;
-        
-        if (!lignesTableau[key]) {
-            lignesTableau[key] = {
-                region: exam.region,
-                prefecture: exam.prefecture,
-                zone: exam.zone,
-                niveau: exam.niveau,
-                id: exam.id
-            };
-        }
-        
-        lignesTableau[key].cee_f = exam.taux_reussite_cee_filles;
-        lignesTableau[key].cee_g = exam.taux_reussite_cee_garcons;
-        lignesTableau[key].cee_t = exam.taux_reussite_cee_total;
-        lignesTableau[key].bepc_f = exam.taux_reussite_bepc_filles;
-        lignesTableau[key].bepc_g = exam.taux_reussite_bepc_garcons;
-        lignesTableau[key].bepc_t = exam.taux_reussite_bepc_total;
-        lignesTableau[key].bac_f = exam.taux_reussite_bac_filles;
-        lignesTableau[key].bac_g = exam.taux_reussite_bac_garcons;
-        lignesTableau[key].bac_t = exam.taux_reussite_bac_total;
+    lignesTableau[key].scol_f = stat.taux_scolarisation_filles;
+    lignesTableau[key].scol_g = stat.taux_scolarisation_garcons;
+    lignesTableau[key].scol_t = stat.taux_scolarisation_total;
+    lignesTableau[key].aban_f = stat.taux_abandon_filles;
+    lignesTableau[key].aban_g = stat.taux_abandon_garcons;
+    lignesTableau[key].aban_t = stat.taux_abandon_total;
+    lignesTableau[key].ratio_ens = stat.ratio_eleves_enseignant;
+    lignesTableau[key].ratio_classe = stat.ratio_eleves_classe;
+    lignesTableau[key].distance = stat.distance_moyenne_ecole_domicile;
+}
+
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    var exam = reussiteExamensData[i];
+    if (exam.annee_scolaire !== anneeScolaireTableau) continue;  // ✅ UTILISER LA VARIABLE
+    
+    var key = exam.region + '|' + exam.prefecture + '|' + exam.zone + '|' + exam.niveau;
+    
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: exam.region,
+            prefecture: exam.prefecture,
+            zone: exam.zone,
+            niveau: exam.niveau,
+            annee: exam.annee_scolaire,  // ✅ AJOUTER L'ANNÉE
+            id: exam.id
+        };
     }
     
-    for (var i = 0; i < alphabetisationData.length; i++) {
-        var alpha = alphabetisationData[i];
-        if (alpha.annee_scolaire !== '2025-2026') continue;
-        
-        var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
-        
-        if (!lignesTableau[key]) {
-            lignesTableau[key] = {
-                region: alpha.region,
-                prefecture: alpha.prefecture,
-                zone: alpha.zone,
-                niveau: alpha.niveau,
-                id: alpha.id
-            };
-        }
-        
-        lignesTableau[key].alpha_f = alpha.taux_alphabetisation_filles;
-        lignesTableau[key].alpha_g = alpha.taux_alphabetisation_garcons;
-        lignesTableau[key].alpha_t = alpha.taux_alphabetisation_total;
-        lignesTableau[key].benef_f = alpha.beneficiaires_filles;
-        lignesTableau[key].benef_g = alpha.beneficiaires_garcons;
-        lignesTableau[key].benef_t = alpha.beneficiaires_total;
-    } 
+    lignesTableau[key].cee_f = exam.taux_reussite_cee_filles;
+    lignesTableau[key].cee_g = exam.taux_reussite_cee_garcons;
+    lignesTableau[key].cee_t = exam.taux_reussite_cee_total;
+    lignesTableau[key].bepc_f = exam.taux_reussite_bepc_filles;
+    lignesTableau[key].bepc_g = exam.taux_reussite_bepc_garcons;
+    lignesTableau[key].bepc_t = exam.taux_reussite_bepc_total;
+    lignesTableau[key].bac_f = exam.taux_reussite_bac_filles;
+    lignesTableau[key].bac_g = exam.taux_reussite_bac_garcons;
+    lignesTableau[key].bac_t = exam.taux_reussite_bac_total;
+}
+
+for (var i = 0; i < alphabetisationData.length; i++) {
+    var alpha = alphabetisationData[i];
+    if (alpha.annee_scolaire !== anneeScolaireTableau) continue;  // ✅ UTILISER LA VARIABLE
+    
+    var key = alpha.region + '|' + alpha.prefecture + '|' + alpha.zone + '|' + alpha.niveau;
+    
+    if (!lignesTableau[key]) {
+        lignesTableau[key] = {
+            region: alpha.region,
+            prefecture: alpha.prefecture,
+            zone: alpha.zone,
+            niveau: alpha.niveau,
+            annee: alpha.annee_scolaire,  // ✅ AJOUTER L'ANNÉE
+            id: alpha.id
+        };
+    }
+    
+    lignesTableau[key].alpha_f = alpha.taux_alphabetisation_filles;
+    lignesTableau[key].alpha_g = alpha.taux_alphabetisation_garcons;
+    lignesTableau[key].alpha_t = alpha.taux_alphabetisation_total;
+    lignesTableau[key].benef_f = alpha.beneficiaires_filles;
+    lignesTableau[key].benef_g = alpha.beneficiaires_garcons;
+    lignesTableau[key].benef_t = alpha.beneficiaires_total;
+}
     var lignesArray = [];
     for (var key in lignesTableau) {
         lignesArray.push(lignesTableau[key]);
