@@ -2437,6 +2437,7 @@ var rowIndex = 0;
 var zones = ['Urbaine', 'Rurale'];
 var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];    
     // Générer les lignes
+var anneeFormulaire = document.getElementById('Statistique-Année') ? document.getElementById('Statistique-Année').value : '2024-2025';
     for (var r = 0; r < regionsData.length; r++) {
         var region = regionsData[r];  
         var prefecturesRegion = [];
@@ -2456,7 +2457,7 @@ var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
                     var niveau = niveaux[n];
                     var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
                     
-html += '<tr class="stat-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
+html += '<tr class="stat-row" data-annee="' + anneeFormulaire + '" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
  html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
  html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
  html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
