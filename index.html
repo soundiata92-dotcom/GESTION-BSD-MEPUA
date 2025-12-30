@@ -4650,7 +4650,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
             }
             
             var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb'; 
-            html += '<tr class="stat-row" data-annee="' + anneeSelectionnee + '" data-region ="' + regionId + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '" style="background-color: ' + bgColor + ';">';  
+            html += '<tr class="stat-row" data-region="' + regionId + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '" style="background-color: ' + bgColor + ';">';  
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + ligne.region + '</td>';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.prefecture + '</td>';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.zone + '</td>';
@@ -4799,7 +4799,7 @@ html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap
                     var niveau = niveaux[n];
                     var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
                     
-                    html += '<tr class="examens-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
+                    html += '<tr class="examens-row" data-annee="' + anneeSelectionnee + '" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
@@ -5661,7 +5661,7 @@ html += '<select id="alpha-annee" class="form-control" style="font-size: 14px; p
                     var niveauLabel = niveau === 'Debutant' ? 'Débutant' : (niveau === 'Intermediaire' ? 'Intermédiaire' : 'Avancé');
                     var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
                     
-                    html += '<tr class="alpha-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
+                    html += '<tr class="alpha-row" data-annee="' + anneeSelectionnee + '" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
