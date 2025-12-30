@@ -4385,7 +4385,7 @@ if (activeTab === 'statistiques') {
 html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #0284c7;">';
 html += '<div style="display: flex; align-items: center; gap: 16px;">';
 html += '<label style="font-weight: bold; font-size: 16px; color: #0c4a6e;">📅 Année des données :</label>';
-html += '<select id="filter-annee-principale" class="form-control" style="max-width: 200px; font-size: 15px; padding: 10px; font-weight: bold;" onchange="changeTab(\'statistiques\')">';
+html += '<select id="filter-annee-principale" class="form-control" style="max-width: 200px; font-size: 15px; padding: 10px; font-weight: bold;" onchange="appliquerFiltresStatistiques()">';
 html += '<option value="2025" selected>2025</option>';
 html += '<option value="2024">2024</option>';
 html += '<option value="2023">2023</option>';
@@ -4555,7 +4555,20 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     }
     html += '</tr></thead><tbody>';
     
-    // Combiner les 3 sources AVEC ANNÉE FILTRÉE
+    // 🔥 RÉCUPÉRER L'ANNÉE DU FILTRE PRINCIPAL
+var anneeSelectionnee = document.getElementById('filter-annee-principale')?.value || '2025';
+var anneeScolaireTableau = '';
+
+if (anneeSelectionnee === '2025') {
+    anneeScolaireTableau = '2024-2025';
+} else if (anneeSelectionnee === '2024') {
+    anneeScolaireTableau = '2023-2024';
+} else if (anneeSelectionnee === '2023') {
+    anneeScolaireTableau = '2022-2023';
+}
+console.log('📅 Année tableau:', anneeScolaireTableau);
+
+// Combiner les 3 sources AVEC ANNÉE FILTRÉE
 var lignesTableau = {};
 
 for (var i = 0; i < statistiquesData.length; i++) {
@@ -4655,7 +4668,7 @@ for (var i = 0; i < alphabetisationData.length; i++) {
             }
             
             var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb'; 
-html += '<tr class="stat-row" data-annee="' + ligne.annee + '" data-region="' + regionId + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '" style="background-color: ' + bgColor + ';">';
+            html += '<tr class="stat-row" data-region="' + regionId + '" data-prefecture="' + ligne.prefecture + '" data-zone="' + ligne.zone + '" data-niveau="' + ligne.niveau + '" style="background-color: ' + bgColor + ';">';  
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + ligne.region + '</td>';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.prefecture + '</td>';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + ligne.zone + '</td>';
