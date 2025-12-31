@@ -3223,21 +3223,22 @@ function appliquerFiltresStatistiques() {
         if (filterRegion && filterRegion !== '' && examRegionId !== filterRegion) inclure = false;
         if (inclure && filterPrefecture && filterPrefecture !== '' && exam.prefecture !== filterPrefecture) inclure = false;
         if (inclure && filterZone && filterZone !== '' && exam.zone !== filterZone) inclure = false;
-        
-        if (inclure && filterNiveau && filterNiveau !== '') {
-            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
-                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                    if (exam.niveau !== 'Secondaire') inclure = false;
-                } else if (filterNiveau === 'Primaire') {
-                    if (exam.niveau !== 'Primaire') inclure = false;
-                } else {
-                    inclure = false;
-                }
-            } else {
-                inclure = false;
-            }
+if (inclure && filterNiveau && filterNiveau !== '') {
+    // Niveaux scolaires
+    if (['Préscolaire', 'Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+        if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+            if (stat.niveau !== 'Secondaire') inclure = false;
+        } else {
+            // Comparer sans accent
+            var niveauData = (stat.niveau || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            var niveauFiltre = (filterNiveau || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (niveauData !== niveauFiltre) inclure = false;
         }
-        
+    } else if (['Debutant', 'Débutant', 'Intermediaire', 'Intermédiaire', 'Avance', 'Avancé'].indexOf(filterNiveau) !== -1) {
+        // C'est un niveau alphabétisation, donc exclure les stats générales
+        inclure = false;
+    }
+}
         if (inclure) dataExamensFiltrees.push(exam);
     }
     
