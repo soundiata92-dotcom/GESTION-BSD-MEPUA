@@ -3071,7 +3071,7 @@ function updateCartesIndicateurs(periodesIncluses) {
     var moyenneAbandon = calculerMoyenne(dataFiltree, 'taux_abandon');
     var moyenneReussite = calculerMoyenne(dataFiltree, 'taux_reussite_examens');
     var moyenneScolarisation = calculerMoyenne(dataFiltree, 'taux_scolarisation');
-    var moyenneAlphabetisation = calculerMoyenne(dataFiltree, 'taux_alphabétisation');
+    var moyenneAlphabetisation = calculerMoyenne(dataFiltree, 'taux_alphabetisation');
     var moyenneRatioEnseignant = calculerMoyenne(dataFiltree, 'ratio_eleves_enseignant');
     var moyenneRatioClasse = calculerMoyenne(dataFiltree, 'ratio_eleves_classe');
     var moyenneDistance = calculerMoyenne(dataFiltree, 'distance_moyenne_ecole_domicile');
@@ -3186,19 +3186,15 @@ function appliquerFiltresStatistiques() {
         if (filterRegion && filterRegion !== '' && regionId !== filterRegion) inclure = false;
         if (inclure && filterPrefecture && filterPrefecture !== '' && stat.prefecture !== filterPrefecture) inclure = false;
         if (inclure && filterZone && filterZone !== '' && stat.zone !== filterZone) inclure = false;
-        
-        if (inclure && filterNiveau && filterNiveau !== '') {
-            if (['Préscolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
-                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                    if (stat.niveau !== 'Secondaire') inclure = false;
-                } else {
-                    if (stat.niveau !== filterNiveau) inclure = false;
-                }
-            } else {
-                inclure = false;
-            }
-        }
-        
+if (inclure && filterNiveau && filterNiveau !== '') {
+    if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+        // Comparer directement sans transformation
+        if (stat.niveau !== filterNiveau) inclure = false;
+    } else if (['Debutant', 'Intermediaire', 'Avance'].indexOf(filterNiveau) !== -1) {
+        // C'est un niveau alphabétisation, exclure les stats
+        inclure = false;
+    }
+}
         if (inclure) dataStatsGeneralesFiltrees.push(stat);
     }
     
@@ -3223,21 +3219,15 @@ function appliquerFiltresStatistiques() {
         if (filterRegion && filterRegion !== '' && examRegionId !== filterRegion) inclure = false;
         if (inclure && filterPrefecture && filterPrefecture !== '' && exam.prefecture !== filterPrefecture) inclure = false;
         if (inclure && filterZone && filterZone !== '' && exam.zone !== filterZone) inclure = false;
-        
-        if (inclure && filterNiveau && filterNiveau !== '') {
-            if (['Préscolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
-                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                    if (exam.niveau !== 'Secondaire') inclure = false;
-                } else if (filterNiveau === 'Primaire') {
-                    if (exam.niveau !== 'Primaire') inclure = false;
-                } else {
-                    inclure = false;
-                }
-            } else {
-                inclure = false;
-            }
-        }
-        
+if (inclure && filterNiveau && filterNiveau !== '') {
+    if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+        // Comparer directement
+        if (exam.niveau !== filterNiveau) inclure = false;
+    } else if (['Debutant', 'Intermediaire', 'Avance'].indexOf(filterNiveau) !== -1) {
+        // C'est un niveau alphabétisation, exclure les examens
+        inclure = false;
+    }
+}
         if (inclure) dataExamensFiltrees.push(exam);
     }
     
@@ -3282,7 +3272,7 @@ function appliquerFiltresStatistiques() {
     // 🔥 RECALCULER LES MOYENNES
     var moyenneScolarisation = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_scolarisation', filterGenre || 'Total');
     var moyenneAbandon = calculerMoyenne(dataStatsGeneralesFiltrees, 'taux_abandon', filterGenre || 'Total');
-    var moyenneAlphabetisation = calculerMoyenne(dataAlphaFiltrees, 'taux_alphabétisation', filterGenre || 'Total');
+    var moyenneAlphabetisation = calculerMoyenne(dataAlphaFiltrees, 'taux_alphabetisation', filterGenre || 'Total');
     var moyenneRatioEnseignant = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_enseignant', 'Total');
     var moyenneRatioClasse = calculerMoyenne(dataStatsGeneralesFiltrees, 'ratio_eleves_classe', 'Total');
     var moyenneDistance = calculerMoyenne(dataStatsGeneralesFiltrees, 'distance_moyenne_ecole_domicile', 'Total');
@@ -3350,19 +3340,10 @@ function appliquerFiltresStatistiques() {
         if (showRow && filterRegion && filterRegion !== '' && rowRegion !== filterRegion) showRow = false;
         if (showRow && filterPrefecture && filterPrefecture !== '' && rowPrefecture !== filterPrefecture) showRow = false;
         if (showRow && filterZone && filterZone !== '' && rowZone !== filterZone) showRow = false;
-        
-        if (showRow && filterNiveau && filterNiveau !== '') {
-            if (['Préscolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
-                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                    if (rowNiveau !== 'Secondaire') showRow = false;
-                } else {
-                    if (rowNiveau !== filterNiveau) showRow = false;
-                }
-            } else if (['Debutant', 'Intermediaire', 'Avance'].indexOf(filterNiveau) !== -1) {
-                if (rowNiveau !== filterNiveau) showRow = false;
-            }
-        }
-        
+if (showRow && filterNiveau && filterNiveau !== '') {
+    // Comparer directement le niveau du tableau avec le filtre
+    if (rowNiveau !== filterNiveau) showRow = false;
+}
         row.style.display = showRow ? '' : 'none';
         if (showRow) visibleCount++;
     }
@@ -3503,9 +3484,9 @@ function rechargerTableauStatistiques() {
             };
         }
         
-        lignesTableau[key].alpha_f = alpha.taux_alphabétisation_filles;
-        lignesTableau[key].alpha_g = alpha.taux_alphabétisation_garcons;
-        lignesTableau[key].alpha_t = alpha.taux_alphabétisation_total;
+        lignesTableau[key].alpha_f = alpha.taux_alphabetisation_filles;
+        lignesTableau[key].alpha_g = alpha.taux_alphabetisation_garcons;
+        lignesTableau[key].alpha_t = alpha.taux_alphabetisation_total;
         lignesTableau[key].benef_f = alpha.beneficiaires_filles;
         lignesTableau[key].benef_g = alpha.beneficiaires_garcons;
         lignesTableau[key].benef_t = alpha.beneficiaires_total;
@@ -4840,9 +4821,9 @@ for (var i = 0; i < alphabetisationData.length; i++) {
         };
     }
     
-    lignesTableau[key].alpha_f = alpha.taux_alphabétisation_filles;
-    lignesTableau[key].alpha_g = alpha.taux_alphabétisation_garcons;
-    lignesTableau[key].alpha_t = alpha.taux_alphabétisation_total;
+    lignesTableau[key].alpha_f = alpha.taux_alphabetisation_filles;
+    lignesTableau[key].alpha_g = alpha.taux_alphabetisation_garcons;
+    lignesTableau[key].alpha_t = alpha.taux_alphabetisation_total;
     lignesTableau[key].benef_f = alpha.beneficiaires_filles;
     lignesTableau[key].benef_g = alpha.beneficiaires_garcons;
     lignesTableau[key].benef_t = alpha.beneficiaires_total;
@@ -5588,9 +5569,9 @@ var alphaF = document.querySelector('input[data-row="' + rowIndex + '"][data-fie
                             prefecture: prefecture.nom,
                             zone: zone,
                             niveau: niveau,
-                            taux_alphabétisation_filles: valAlphaF,
-                            taux_alphabétisation_garcons: valAlphaG,
-                            taux_alphabétisation_total: valAlphaT,
+                            taux_alphabetisation_filles: valAlphaF,
+                            taux_alphabetisation_garcons: valAlphaG,
+                            taux_alphabetisation_total: valAlphaT,
                             beneficiaires_filles: valBenefF,
                             beneficiaires_garcons: valBenefG,
                             beneficiaires_total: valBenefT,
@@ -5970,17 +5951,17 @@ setTimeout(async function() {
                             for (var n = 0; n < niveaux.length && !found; n++) {
                                 if (niveaux[n] === alpha.niveau) {
                                     // Taux Alpha F/G/T
-                                    if (alpha.taux_alphabétisation_filles !== null) {
+                                    if (alpha.taux_alphabetisation_filles !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_filles"]');
-                                        if (input) { input.value = alpha.taux_alphabétisation_filles; input.style.background = '#fce7f3'; loaded++; }
+                                        if (input) { input.value = alpha.taux_alphabetisation_filles; input.style.background = '#fce7f3'; loaded++; }
                                     }
-                                    if (alpha.taux_alphabétisation_garcons !== null) {
+                                    if (alpha.taux_alphabetisation_garcons !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_garcons"]');
-                                        if (input) { input.value = alpha.taux_alphabétisation_garcons; input.style.background = '#fef3c7'; loaded++; }
+                                        if (input) { input.value = alpha.taux_alphabetisation_garcons; input.style.background = '#fef3c7'; loaded++; }
                                     }
-                                    if (alpha.taux_alphabétisation_total !== null) {
+                                    if (alpha.taux_alphabetisation_total !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_total"]');
-                                        if (input) { input.value = alpha.taux_alphabétisation_total; input.style.background = '#d1fae5'; loaded++; }
+                                        if (input) { input.value = alpha.taux_alphabetisation_total; input.style.background = '#d1fae5'; loaded++; }
                                     }
                                     
                                     // Bénéficiaires F/G/T
@@ -6032,7 +6013,7 @@ function calculerMoyenne(dataArray, fieldBase, genre) {
         'ratio_eleves_enseignant',
         'ratio_eleves_classe',
         'distance_moyenne_ecole_domicile',
-        'taux_alphabétisation'
+        'taux_alphabetisation'
     ];
     
     // Déterminer le champ exact
