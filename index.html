@@ -3201,45 +3201,46 @@ function appliquerFiltresStatistiques() {
         
         if (inclure) dataStatsGeneralesFiltrees.push(stat);
     }
+// 2️⃣ Examens - AVEC FILTRE ANNÉE
+var dataExamensFiltrees = [];
+for (var i = 0; i < reussiteExamensData.length; i++) {
+    var exam = reussiteExamensData[i];
     
-    // 2️⃣ Examens - AVEC FILTRE ANNÉE
-    var dataExamensFiltrees = [];
-    for (var i = 0; i < reussiteExamensData.length; i++) {
-        var exam = reussiteExamensData[i];
-        
-        // ✅ UTILISER L'ANNÉE SÉLECTIONNÉE AU LIEU D'UNE ANNÉE FIXE
-        if (exam.annee_scolaire !== anneeScolaireRecherchee) continue;
-        
-        var examRegionId = '';
-        for (var r = 0; r < regionsData.length; r++) {
-            if (regionsData[r].nom === exam.region) {
-                examRegionId = regionsData[r].id.toString();
-                break;
-            }
+    // ✅ UTILISER L'ANNÉE SÉLECTIONNÉE AU LIEU D'UNE ANNÉE FIXE
+    if (exam.annee_scolaire !== anneeScolaireRecherchee) continue;
+    
+    var examRegionId = '';
+    for (var r = 0; r < regionsData.length; r++) {
+        if (regionsData[r].nom === exam.region) {
+            examRegionId = regionsData[r].id.toString();
+            break;
         }
-        
-        var inclure = true;
-        
-        if (filterRegion && filterRegion !== '' && examRegionId !== filterRegion) inclure = false;
-        if (inclure && filterPrefecture && filterPrefecture !== '' && exam.prefecture !== filterPrefecture) inclure = false;
-        if (inclure && filterZone && filterZone !== '' && exam.zone !== filterZone) inclure = false;
-        
-        if (inclure && filterNiveau && filterNiveau !== '') {
-            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
-                if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
-                    if (exam.niveau !== 'Secondaire') inclure = false;
-                } else if (filterNiveau === 'Primaire') {
-                    if (exam.niveau !== 'Primaire') inclure = false;
-                } else {
-                    inclure = false;
-                }
-            } else {
-                inclure = false;
-            }
-        }
-        
-        if (inclure) dataExamensFiltrees.push(exam);
     }
+    
+    var inclure = true;
+    
+    if (filterRegion && filterRegion !== '' && examRegionId !== filterRegion) inclure = false;
+    if (inclure && filterPrefecture && filterPrefecture !== '' && exam.prefecture !== filterPrefecture) inclure = false;
+    if (inclure && filterZone && filterZone !== '' && exam.zone !== filterZone) inclure = false;
+    
+    if (inclure && filterNiveau && filterNiveau !== '') {
+        if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+            if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
+                if (exam.niveau !== 'Secondaire') inclure = false;
+            } else if (filterNiveau === 'Primaire') {
+                if (exam.niveau !== 'Primaire') inclure = false;
+            } else if (filterNiveau === 'Prescolaire') {  // ✅ AJOUT DE CETTE LIGNE
+                if (exam.niveau !== 'Prescolaire') inclure = false;
+            }
+            // ✅ SUPPRIMER LE else { inclure = false; }
+        } else if (['Debutant', 'Intermediaire', 'Avance'].indexOf(filterNiveau) !== -1) {
+            // Si c'est un niveau alpha, exclure les examens
+            inclure = false;
+        }
+    }
+    
+    if (inclure) dataExamensFiltrees.push(exam);
+}
     
     // 3️⃣ Alphabétisation - AVEC FILTRE ANNÉE
     var dataAlphaFiltrees = [];
