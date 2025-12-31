@@ -3188,7 +3188,7 @@ function appliquerFiltresStatistiques() {
         if (inclure && filterZone && filterZone !== '' && stat.zone !== filterZone) inclure = false;
         
         if (inclure && filterNiveau && filterNiveau !== '') {
-            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+            if (['Préscolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
                 if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
                     if (stat.niveau !== 'Secondaire') inclure = false;
                 } else {
@@ -3225,7 +3225,7 @@ function appliquerFiltresStatistiques() {
         if (inclure && filterZone && filterZone !== '' && exam.zone !== filterZone) inclure = false;
         
         if (inclure && filterNiveau && filterNiveau !== '') {
-            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+            if (['Préscolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
                 if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
                     if (exam.niveau !== 'Secondaire') inclure = false;
                 } else if (filterNiveau === 'Primaire') {
@@ -3266,7 +3266,7 @@ function appliquerFiltresStatistiques() {
         if (inclure && filterNiveau && filterNiveau !== '') {
             if (['Debutant', 'Intermediaire', 'Avance'].indexOf(filterNiveau) !== -1) {
                 if (alpha.niveau !== filterNiveau) inclure = false;
-            } else if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+            } else if (['Préscolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
                 inclure = false;
             }
         }
@@ -3352,7 +3352,7 @@ function appliquerFiltresStatistiques() {
         if (showRow && filterZone && filterZone !== '' && rowZone !== filterZone) showRow = false;
         
         if (showRow && filterNiveau && filterNiveau !== '') {
-            if (['Prescolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
+            if (['Préscolaire', 'Primaire', 'Collège', 'Lycée'].indexOf(filterNiveau) !== -1) {
                 if (filterNiveau === 'Collège' || filterNiveau === 'Lycée') {
                     if (rowNiveau !== 'Secondaire') showRow = false;
                 } else {
@@ -4620,7 +4620,7 @@ html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 
     html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
     html += '<select id="filter-stats-niveau" class="form-control" onchange="appliquerFiltresStatistiques()">';
     html += '<option value="">Tous</option>';
-    html += '<option value="Prescolaire">Préscolaire</option>';
+    html += '<option value="Préscolaire">Préscolaire</option>';
     html += '<option value="Primaire">Primaire</option>';
     html += '<option value="Collège">Collège</option>';
     html += '<option value="Lycée">Lycée</option>';
