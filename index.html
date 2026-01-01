@@ -5951,17 +5951,17 @@ setTimeout(async function() {
                             for (var n = 0; n < niveaux.length && !found; n++) {
                                 if (niveaux[n] === alpha.niveau) {
                                     // Taux Alpha F/G/T
-                                    if (alpha.taux_alphabetisation_filles !== null) {
+                                    if (alpha.taux_alphabétisation_filles !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_filles"]');
-                                        if (input) { input.value = alpha.taux_alphabetisation_filles; input.style.background = '#fce7f3'; loaded++; }
+                                        if (input) { input.value = alpha.taux_alphabétisation_filles; input.style.background = '#fce7f3'; loaded++; }
                                     }
-                                    if (alpha.taux_alphabetisation_garcons !== null) {
+                                    if (alpha.taux_alphabétisation_garcons !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_garcons"]');
-                                        if (input) { input.value = alpha.taux_alphabetisation_garcons; input.style.background = '#fef3c7'; loaded++; }
+                                        if (input) { input.value = alpha.taux_alphabétisation_garcons; input.style.background = '#fef3c7'; loaded++; }
                                     }
-                                    if (alpha.taux_alphabetisation_total !== null) {
+                                    if (alpha.taux_alphabétisation_total !== null) {
                                         var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="alpha_total"]');
-                                        if (input) { input.value = alpha.taux_alphabetisation_total; input.style.background = '#d1fae5'; loaded++; }
+                                        if (input) { input.value = alpha.taux_alphabétisation_total; input.style.background = '#d1fae5'; loaded++; }
                                     }
                                     
                                     // Bénéficiaires F/G/T
