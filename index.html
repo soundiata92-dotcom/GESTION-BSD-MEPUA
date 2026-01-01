@@ -4954,6 +4954,13 @@ html += '<td class="col-bac-t" style="padding: 10px; border: 1px solid #e5e7eb; 
     html += '</tbody></table></div>';
     
 } 
+setTimeout(function() {
+    if (activeTab === 'statistiques') {
+        console.log('🎯 Application automatique des filtres au chargement');
+        appliquerFiltresStatistiques();
+    }
+}, 100);
+
             html += '</div><div id="modal-container"></div>';
             app.innerHTML = html;
         }
