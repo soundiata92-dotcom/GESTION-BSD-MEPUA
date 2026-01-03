@@ -159,6 +159,7 @@ var users = [];
         var statistiquesData = [];
         var reussiteExamensData = [];
         var alphabetisationData = [];
+        var documentsStrategiques = [];
         var regionsData = [];
         var prefecturesData = [];
         function calcTaux(item) {
@@ -393,7 +394,18 @@ async function toggle(activityId, field) {
             alphabetisationData = alphaDataRaw;
             console.log('✅ Alphabétisation chargée:', alphabetisationData.length);
         }
-        
+       // 🔥 Charger les documents stratégiques
+const { data: documentsData, error: documentsError } = await supabase
+    .from('documents_strategiques')
+    .select('*')
+    .order('date_upload', { ascending: false });
+
+if (documentsError) throw documentsError;
+if (documentsData) {
+    documentsStrategiques = documentsData;
+    console.log('✅ Documents stratégiques chargés:', documentsStrategiques.length);
+}
+ 
         console.log('✅ Toutes les données chargées avec succès !');
         
     } catch (error) {
@@ -3719,12 +3731,13 @@ if (!currentUser) {
             }
             html += '</span><button class="btn btn-secondary" onclick="logout()">Déconnexion</button></div></div>';
 
-            html += '<div class="nav">';
-            html += '<button class="' + (activeTab === 'dashboard' ? 'active' : '') + '" onclick="changeTab(\'dashboard\')">Tableau de Bord</button>';
-            html += '<button class="' + (activeTab === 'planning' ? 'active' : '') + '" onclick="changeTab(\'planning\')">Planification</button>';
-            html += '<button class="' + (activeTab === 'suivi' ? 'active' : '') + '" onclick="changeTab(\'suivi\')">Suivi-Évaluation</button>';
-            html += '<button class="' + (activeTab === 'commentaires' ? 'active' : '') + '" onclick="changeTab(\'commentaires\')">Commentaires et Preuves</button>';
-            html += '<button class="' + (activeTab === 'rapport' ? 'active' : '') + '" onclick="changeTab(\'rapport\')">Rapport de performance</button>';
+html += '<div class="nav">';
+html += '<button class="' + (activeTab === 'dashboard' ? 'active' : '') + '" onclick="changeTab(\'dashboard\')">Tableau de Bord</button>';
+html += '<button class="' + (activeTab === 'planning' ? 'active' : '') + '" onclick="changeTab(\'planning\')">Planification</button>';
+html += '<button class="' + (activeTab === 'suivi' ? 'active' : '') + '" onclick="changeTab(\'suivi\')">Suivi-Évaluation</button>';
+html += '<button class="' + (activeTab === 'commentaires' ? 'active' : '') + '" onclick="changeTab(\'commentaires\')">Commentaires et Preuves</button>';
+html += '<button class="' + (activeTab === 'rapport' ? 'active' : '') + '" onclick="changeTab(\'rapport\')">Rapport de performance</button>';
+html += '<button class="' + (activeTab === 'documents' ? 'active' : '') + '" onclick="changeTab(\'documents\')">📚 Documents Stratégiques</button>';
 
 if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || ['BSD', 'DGECS', 'DNAEFP-LN'].indexOf(currentUser.service) !== -1) {
     html += '<button class="' + (activeTab === 'statistiques' ? 'active' : '') + '" onclick="changeTab(\'statistiques\')">📊 Statistiques</button>';
@@ -4477,6 +4490,124 @@ html += '</div></div>';
         html += renderAnalyseDecisions();
     }
 }
+// ========== ONGLET : DOCUMENTS STRATÉGIQUES ==========
+if (activeTab === 'documents') {
+    html += '<div class="flex-between"><h2>📚 Documents Stratégiques</h2>';
+    
+    // Bouton Upload (admin ou chef uniquement)
+    if (currentUser.role === 'admin' || currentUser.role === 'chef') {
+        html += '<button class="btn btn-success" onclick="showUploadDocumentModal()">➕ Ajouter un document</button>';
+    }
+    
+    html += '</div>';
+    
+    // Filtre par service (admin/chefdept uniquement)
+    if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+        html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-top: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+        html += '<label style="font-weight: bold; margin-right: 12px;">🔍 Filtrer par service :</label>';
+        html += '<select id="filter-documents-service" class="form-control" style="display: inline-block; width: auto;" onchange="filterDocuments()">';
+        html += '<option value="TOUS">Tous les services</option>';
+        for (var i = 0; i < services.length; i++) {
+            html += '<option value="' + services[i] + '">' + services[i] + '</option>';
+        }
+        html += '</select>';
+        html += '</div>';
+    }
+    
+    // Liste des documents
+    var documentsAffiches = [];
+    
+    for (var i = 0; i < documentsStrategiques.length; i++) {
+        var doc = documentsStrategiques[i];
+        
+        // Filtrage par permissions
+        var canView = false;
+        if (doc.service === 'TOUS') {
+            canView = true; // Tout le monde peut voir
+        } else if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+            canView = true; // Admin/ChefDept voient tout
+        } else if (doc.service === currentUser.service) {
+            canView = true; // Chef voit son service
+        }
+        
+        if (canView) {
+            documentsAffiches.push(doc);
+        }
+    }
+    
+    if (documentsAffiches.length > 0) {
+        html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; margin-top: 24px;">';
+        
+        for (var i = 0; i < documentsAffiches.length; i++) {
+            var doc = documentsAffiches[i];
+            
+            // Déterminer l'icône selon le type
+            var icone = '📄';
+            if (doc.type_fichier === 'pdf') icone = '📕';
+            else if (doc.type_fichier === 'docx') icone = '📘';
+            else if (doc.type_fichier === 'xlsx') icone = '📊';
+            
+            // Déterminer si l'utilisateur peut supprimer
+            var canDelete = false;
+            if (currentUser.role === 'admin') {
+                canDelete = true;
+            } else if (currentUser.role === 'chef' && doc.service === currentUser.service) {
+                canDelete = true;
+            }
+            
+            // Couleur de badge selon le service
+            var badgeColor = doc.service === 'TOUS' ? '#7c3aed' : '#2563eb';
+            
+            html += '<div style="background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ' + badgeColor + ';">';
+            
+            // En-tête
+            html += '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">';
+            html += '<span style="font-size: 32px;">' + icone + '</span>';
+            html += '<div style="flex: 1;">';
+            html += '<h3 style="margin: 0; font-size: 16px; font-weight: bold; color: #1f2937;">' + doc.titre + '</h3>';
+            html += '<span class="badge" style="background-color: ' + badgeColor + '; color: white; font-size: 11px; margin-top: 4px; display: inline-block;">' + doc.service + '</span>';
+            html += '</div></div>';
+            
+            // Description
+            if (doc.description) {
+                html += '<p style="font-size: 13px; color: #6b7280; margin: 12px 0; line-height: 1.5;">' + doc.description + '</p>';
+            }
+            
+            // Métadonnées
+            html += '<div style="font-size: 12px; color: #9ca3af; margin: 12px 0; border-top: 1px solid #e5e7eb; padding-top: 12px;">';
+            html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">';
+            html += '<span>📦 Type:</span><strong>' + doc.type_fichier.toUpperCase() + '</strong>';
+            html += '</div>';
+            if (doc.taille_ko) {
+                html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">';
+                html += '<span>💾 Taille:</span><strong>' + Math.round(doc.taille_ko / 1024 * 10) / 10 + ' Mo</strong>';
+                html += '</div>';
+            }
+            html += '<div style="display: flex; justify-content: space-between;">';
+            html += '<span>👤 Par:</span><strong>' + doc.upload_par + '</strong>';
+            html += '</div>';
+            html += '<div style="display: flex; justify-content: space-between; margin-top: 4px;">';
+            html += '<span>📅 Le:</span><strong>' + new Date(doc.date_upload).toLocaleDateString('fr-FR') + '</strong>';
+            html += '</div>';
+            html += '</div>';
+            
+            // Actions
+            html += '<div style="display: flex; gap: 8px; margin-top: 16px;">';
+            html += '<button class="btn btn-primary" style="flex: 1; font-size: 13px;" onclick="telechargerDocument(' + doc.id + ')">📥 Télécharger</button>';
+            if (canDelete) {
+                html += '<button class="btn btn-danger" style="font-size: 13px;" onclick="supprimerDocument(' + doc.id + ')">🗑️</button>';
+            }
+            html += '</div>';
+            
+            html += '</div>';
+        }
+        
+        html += '</div>';
+    } else {
+        html += '<div class="empty-state" style="margin-top: 32px;">Aucun document disponible</div>';
+    }
+}
+
 // ========== ONGLET 7 : ADMINISTRATION ==========
             if (activeTab === 'admin') {
                 html += '<h2 style="margin-bottom: 16px;">⚙️ Administration</h2>';
@@ -6141,6 +6272,220 @@ function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
     
     return moyenne;
 }
+// ========== FONCTIONS DOCUMENTS STRATÉGIQUES ==========
+function filterDocuments() {
+    var filterService = document.getElementById('filter-documents-service');
+    if (!filterService) return;
+    
+    console.log('🔍 Filtre documents:', filterService.value);
+    render();
+}
+
+function showUploadDocumentModal() {
+    var modalContainer = document.getElementById('modal-container');
+    var html = '<div class="modal"><div class="modal-content" style="max-width: 600px;"><h2 style="margin-bottom: 24px;">📤 Ajouter un document stratégique</h2>';
+    
+    html += '<div class="form-group"><label>Titre du document *</label>';
+    html += '<input type="text" id="doc-titre" class="form-control" placeholder="Ex: Cadre de Résultats 2025-2030"></div>';
+    
+    html += '<div class="form-group"><label>Description (optionnel)</label>';
+    html += '<textarea id="doc-description" class="form-control" rows="3" placeholder="Brève description du document..."></textarea></div>';
+    
+    html += '<div class="form-group"><label>Portée *</label>';
+    html += '<select id="doc-service" class="form-control">';
+    
+    if (currentUser.role === 'admin') {
+        html += '<option value="TOUS">📢 TOUS (visible par tous)</option>';
+        for (var i = 0; i < services.length; i++) {
+            html += '<option value="' + services[i] + '">' + services[i] + '</option>';
+        }
+    } else {
+        html += '<option value="' + currentUser.service + '" selected>' + currentUser.service + '</option>';
+    }
+    
+    html += '</select></div>';
+    
+    html += '<div class="form-group"><label>Fichier *</label>';
+    html += '<input type="file" id="doc-fichier" class="form-control" accept=".pdf,.docx,.xlsx">';
+    html += '<small style="color: #6b7280; display: block; margin-top: 4px;">Formats acceptés : PDF, Word (.docx), Excel (.xlsx) - Max 10 Mo</small>';
+    html += '</div>';
+    
+    html += '<div style="display: flex; gap: 10px; margin-top: 24px;">';
+    html += '<button class="btn btn-primary" onclick="uploadDocument()">💾 Enregistrer</button>';
+    html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
+    html += '</div>';
+    
+    html += '</div></div>';
+    modalContainer.innerHTML = html;
+}
+
+async function uploadDocument() {
+    var titre = document.getElementById('doc-titre').value.trim();
+    var description = document.getElementById('doc-description').value.trim();
+    var service = document.getElementById('doc-service').value;
+    var fichierInput = document.getElementById('doc-fichier');
+    var fichier = fichierInput && fichierInput.files.length > 0 ? fichierInput.files[0] : null;
+    
+    if (!titre || !fichier) {
+        alert('⚠️ Veuillez remplir le titre et sélectionner un fichier');
+        return;
+    }
+    
+    // Vérifier le type
+    var extension = fichier.name.split('.').pop().toLowerCase();
+    if (['pdf', 'docx', 'xlsx'].indexOf(extension) === -1) {
+        alert('❌ Type de fichier non autorisé. Utilisez PDF, DOCX ou XLSX');
+        return;
+    }
+    
+    // Vérifier la taille (10 Mo max)
+    if (fichier.size > 10 * 1024 * 1024) {
+        alert('❌ Fichier trop volumineux (max 10 Mo)');
+        return;
+    }
+    
+    try {
+        console.log('📤 Upload du document:', fichier.name);
+        
+        // 1. Upload vers Storage
+        var timestamp = Date.now();
+        var nomFichierStorage = 'doc_' + timestamp + '_' + fichier.name.replace(/\s+/g, '_');
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('documents-strategiques')
+            .upload(nomFichierStorage, fichier);
+        
+        if (uploadError) {
+            console.error('❌ Erreur upload:', uploadError);
+            throw uploadError;
+        }
+        
+        // 2. Récupérer l'URL publique
+        const { data: urlData } = supabase.storage
+            .from('documents-strategiques')
+            .getPublicUrl(nomFichierStorage);
+        
+        if (!urlData || !urlData.publicUrl) {
+            throw new Error('Impossible de générer l\'URL du fichier');
+        }
+        
+        console.log('✅ Fichier uploadé, URL:', urlData.publicUrl);
+        
+        // 3. Insérer dans la table
+        const { data: insertData, error: insertError } = await supabase
+            .from('documents_strategiques')
+            .insert({
+                titre: titre,
+                description: description || null,
+                type_fichier: extension,
+                nom_fichier: fichier.name,
+                fichier_url: urlData.publicUrl,
+                service: service,
+                upload_par: currentUser.nom,
+                taille_ko: Math.round(fichier.size / 1024)
+            })
+            .select();
+        
+        if (insertError) {
+            console.error('❌ Erreur insertion:', insertError);
+            throw insertError;
+        }
+        
+        console.log('✅ Document enregistré:', insertData);
+        
+        // Ajouter aux données locales
+        if (insertData && insertData.length > 0) {
+            documentsStrategiques.unshift(insertData[0]);
+        }
+        
+        alert('✅ Document ajouté avec succès !');
+        closeModal();
+        render();
+        
+    } catch (error) {
+        console.error('❌ Erreur complète:', error);
+        alert('❌ Erreur : ' + error.message);
+    }
+}
+
+async function telechargerDocument(docId) {
+    var doc = null;
+    for (var i = 0; i < documentsStrategiques.length; i++) {
+        if (documentsStrategiques[i].id === docId) {
+            doc = documentsStrategiques[i];
+            break;
+        }
+    }
+    
+    if (!doc) {
+        alert('❌ Document introuvable');
+        return;
+    }
+    
+    console.log('📥 Téléchargement:', doc.titre);
+    
+    // Ouvrir dans un nouvel onglet
+    window.open(doc.fichier_url, '_blank');
+}
+
+async function supprimerDocument(docId) {
+    var doc = null;
+    for (var i = 0; i < documentsStrategiques.length; i++) {
+        if (documentsStrategiques[i].id === docId) {
+            doc = documentsStrategiques[i];
+            break;
+        }
+    }
+    
+    if (!doc) {
+        alert('❌ Document introuvable');
+        return;
+    }
+    
+    if (!confirm('⚠️ Supprimer "' + doc.titre + '" ?\n\nCette action est irréversible.')) {
+        return;
+    }
+    
+    try {
+        console.log('🗑️ Suppression du document:', doc.titre);
+        
+        // 1. Supprimer du Storage (extraire le nom depuis l'URL)
+        var nomFichierStorage = doc.fichier_url.split('/').pop();
+        
+        const { error: storageError } = await supabase.storage
+            .from('documents-strategiques')
+            .remove([nomFichierStorage]);
+        
+        if (storageError) {
+            console.error('⚠️ Erreur suppression storage:', storageError);
+        }
+        
+        // 2. Supprimer de la table
+        const { error: deleteError } = await supabase
+            .from('documents_strategiques')
+            .delete()
+            .eq('id', docId);
+        
+        if (deleteError) throw deleteError;
+        
+        // 3. Retirer des données locales
+        var newDocs = [];
+        for (var i = 0; i < documentsStrategiques.length; i++) {
+            if (documentsStrategiques[i].id !== docId) {
+                newDocs.push(documentsStrategiques[i]);
+            }
+        }
+        documentsStrategiques = newDocs;
+        
+        alert('✅ Document supprimé !');
+        render();
+        
+    } catch (error) {
+        console.error('❌ Erreur suppression:', error);
+        alert('❌ Erreur lors de la suppression');
+    }
+}
+
         // ========== INITIALISATION ==========
 async function init() {
     try {
