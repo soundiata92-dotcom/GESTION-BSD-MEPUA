@@ -3751,8 +3751,8 @@ if (currentUser.role === 'admin' || currentUser.role === 'chefdept' || currentUs
                 html += '<button class="' + (activeTab === 'admin' ? 'active' : '') + '" onclick="changeTab(\'admin\')">Administration</button>';
             }
             html += '</div>';
-// Afficher le filtre service SAUF dans l'onglet statistiques
-if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && activeTab !== 'statistiques' && activeTab !== 'analyse')  {
+// Afficher le filtre service SAUF dans l'onglet statistiques ET documents
+if ((currentUser.role === 'admin' || currentUser.role === 'chefdept') && activeTab !== 'statistiques' && activeTab !== 'analyse' && activeTab !== 'documents')  {
     html += '<div style="background-color: white; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><div style="max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 16px;"><label style="font-weight: bold; font-size: 14px;">Filtrer:</label><select onchange="changeServiceFilter(this.value)" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;"><option value="TOUS"' + (selectedServiceFilter === 'TOUS' ? ' selected' : '') + '>Tous les services</option>';
     
     for (var i = 0; i < services.length; i++) {
@@ -6273,30 +6273,14 @@ function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
     return moyenne;
 }
 // ========== FONCTIONS DOCUMENTS STRATÉGIQUES ==========
-function filterDocumentsDisplay() {
-    var filterSelect = document.getElementById('filter-documents-service');
-    if (!filterSelect) return;
+function filterDocuments() {
+    var filterService = document.getElementById('filter-documents-service');
+    if (!filterService) return;
     
-    var filterValue = filterSelect.value;
-    console.log('🔍 Filtre documents:', filterValue);
-    
-    var cards = document.querySelectorAll('.document-card');
-    var visibleCount = 0;
-    
-    for (var i = 0; i < cards.length; i++) {
-        var card = cards[i];
-        var cardService = card.getAttribute('data-service');
-        
-        if (filterValue === 'TOUS' || cardService === filterValue || cardService === 'TOUS') {
-            card.style.display = '';
-            visibleCount++;
-        } else {
-            card.style.display = 'none';
-        }
-    }
-    
-    console.log('✅ Documents visibles:', visibleCount);
+    console.log('🔍 Filtre documents:', filterService.value);
+    render();
 }
+
 function showUploadDocumentModal() {
     var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 600px;"><h2 style="margin-bottom: 24px;">📤 Ajouter un document stratégique</h2>';
