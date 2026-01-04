@@ -5094,6 +5094,13 @@ setTimeout(function() {
 
             html += '</div><div id="modal-container"></div>';
             app.innerHTML = html;
+// Initialiser les filtres Accès Équitable si l'onglet est actif
+setTimeout(function() {
+    if (activeTab === 'analyse' && activeAnalyseTab === 'acces') {
+        console.log('🎯 Initialisation Accès Équitable');
+        appliquerFiltresAcces();
+    }
+}, 100);
         }
 function showReussiteExamensModal() {
     var modalContainer = document.getElementById('modal-container');
@@ -6820,15 +6827,134 @@ function telechargerBlob(blob, nomFichier) {
     window.URL.revokeObjectURL(url);
 }
 // ========== FONCTIONS DE RENDU ANALYSE ==========
-
 function renderAnalyseAcces() {
-    var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>⚖️ Analyse de l\'Accès Équitable</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Contenu en cours de développement...</p>';
+    var html = '';
+    
+    // ========== FILTRES PRINCIPAUX ==========
+    html += '<div style="background-color: #e0f2fe; padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0284c7;">';
+    html += '<h3 style="margin: 0 0 12px 0; color: #0c4a6e; font-size: 16px;">🔍 Filtres</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+    
+    // Filtre Année
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Année</label>';
+    html += '<select id="filter-acces-annee" class="form-control" onchange="appliquerFiltresAcces()">';
+    html += '<option value="2024-2025">2025</option>';
+    html += '<option value="2023-2024">2024</option>';
+    html += '<option value="2022-2023">2023</option>';
+    html += '</select></div>';
+    
+    // Filtre Région
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
+    html += '<select id="filter-acces-region" class="form-control" onchange="appliquerFiltresAcces(); updateAccesPrefectures();">';
+    html += '<option value="">Toutes</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
+    
+    // Filtre Préfecture
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏛️ Préfecture</label>';
+    html += '<select id="filter-acces-prefecture" class="form-control" onchange="appliquerFiltresAcces()">';
+    html += '<option value="">Toutes</option>';
+    html += '</select></div>';
+    
+    // Filtre Zone
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏘️ Zone</label>';
+    html += '<select id="filter-acces-zone" class="form-control" onchange="appliquerFiltresAcces()">';
+    html += '<option value="">Toutes</option>';
+    html += '<option value="Urbaine">Urbaine</option>';
+    html += '<option value="Rurale">Rurale</option>';
+    html += '</select></div>';
+    
+    html += '</div></div>';
+    
+    // ========== SECTION A : TAUX DE SCOLARISATION ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">';
+    html += '<h3 style="color: #2563eb; margin-bottom: 16px; font-size: 20px;">📚 A. Taux de Scolarisation</h3>';
+    
+    // Cartes d'indicateurs (4 cartes en ligne)
+    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">';
+    
+    // Carte 1 : Scolarisation Globale
+    html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">📊 Taux Global</div>';
+    html += '<div id="carte-acces-global" style="font-size: 36px; font-weight: bold; color: #1e40af;">0%</div>';
     html += '</div>';
+    
+    // Carte 2 : Scolarisation Filles
+    html += '<div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 4px solid #ec4899; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #9f1239; margin-bottom: 8px;">👧 Filles</div>';
+    html += '<div id="carte-acces-filles" style="font-size: 36px; font-weight: bold; color: #9f1239;">0%</div>';
+    html += '</div>';
+    
+    // Carte 3 : Scolarisation Garçons
+    html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px;">👦 Garçons</div>';
+    html += '<div id="carte-acces-garcons" style="font-size: 36px; font-weight: bold; color: #1e3a8a;">0%</div>';
+    html += '</div>';
+    
+    // Carte 4 : IPG (Indice de Parité Genre)
+    html += '<div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #065f46; margin-bottom: 8px;">⚖️ IPG</div>';
+    html += '<div id="carte-acces-ipg" style="font-size: 36px; font-weight: bold; color: #065f46;">0.00</div>';
+    html += '<div style="font-size: 10px; color: #047857; margin-top: 4px;" id="ipg-status">-</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Graphique : Scolarisation par niveau
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Scolarisation par niveau</h4>';
+    html += '<div id="graph-scol-niveau" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 300px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    html += '</div>'; // Fin Section A
+    
+    // ========== SECTION B : INFRASTRUCTURE ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">';
+    html += '<h3 style="color: #2563eb; margin-bottom: 16px; font-size: 20px;">🏫 B. Infrastructure et Accessibilité</h3>';
+    
+    // 3 cartes
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">';
+    
+    // Carte Ratio Élèves/Classe
+    html += '<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #92400e; margin-bottom: 8px;">👥 Ratio É/Classe</div>';
+    html += '<div id="carte-acces-ratio-classe" style="font-size: 36px; font-weight: bold; color: #92400e;">0</div>';
+    html += '<div style="font-size: 11px; color: #78350f; margin-top: 4px;">Objectif : ≤ 45</div>';
+    html += '</div>';
+    
+    // Carte Distance Moyenne
+    html += '<div style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border-left: 4px solid #6366f1; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #312e81; margin-bottom: 8px;">📍 Distance (km)</div>';
+    html += '<div id="carte-acces-distance" style="font-size: 36px; font-weight: bold; color: #312e81;">0</div>';
+    html += '<div style="font-size: 11px; color: #3730a3; margin-top: 4px;">Objectif : ≤ 3 km</div>';
+    html += '</div>';
+    
+    // Carte Préfectures Critiques
+    html += '<div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #ef4444; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #991b1b; margin-bottom: 8px;">🚨 Préf. Critiques</div>';
+    html += '<div id="carte-acces-critiques" style="font-size: 36px; font-weight: bold; color: #991b1b;">0</div>';
+    html += '<div style="font-size: 11px; color: #7f1d1d; margin-top: 4px;">Ratio > 45</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    html += '</div>'; // Fin Section B
+    
+    // ========== SECTION C : ÉQUITÉ D'ACCÈS ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+    html += '<h3 style="color: #2563eb; margin-bottom: 16px; font-size: 20px;">⚖️ C. Tableau d\'Équité par Préfecture</h3>';
+    
+    html += '<div id="tableau-equite" style="margin-top: 16px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div>';
+    
+    html += '</div>'; // Fin Section C
+    
     return html;
 }
-
 function renderAnalyseQualite() {
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
     html += '<h3>🎓 Analyse de la Qualité</h3>';
@@ -6853,6 +6979,290 @@ function renderAnalysePilotage() {
     html += '<p style="color: #6b7280; margin-top: 4px;">Contenu en cours de développement...</p>';
     html += '</div>';
     return html;
+}
+// ========== FONCTIONS ANALYSE ACCÈS ÉQUITABLE ==========
+
+function updateAccesPrefectures() {
+    var regionSelect = document.getElementById('filter-acces-region');
+    var prefectureSelect = document.getElementById('filter-acces-prefecture');
+    
+    if (!regionSelect || !prefectureSelect) return;
+    
+    var regionId = regionSelect.value;
+    
+    prefectureSelect.innerHTML = '<option value="">Toutes</option>';
+    
+    if (regionId && regionId !== '') {
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+    }
+}
+
+function appliquerFiltresAcces() {
+    console.log('🔍 Application des filtres Accès Équitable...');
+    
+    // Récupérer les valeurs des filtres
+    var anneeSelect = document.getElementById('filter-acces-annee');
+    var regionSelect = document.getElementById('filter-acces-region');
+    var prefectureSelect = document.getElementById('filter-acces-prefecture');
+    var zoneSelect = document.getElementById('filter-acces-zone');
+    
+    if (!anneeSelect) return;
+    
+    var annee = anneeSelect.value;
+    var regionId = regionSelect ? regionSelect.value : '';
+    var prefecture = prefectureSelect ? prefectureSelect.value : '';
+    var zone = zoneSelect ? zoneSelect.value : '';
+    
+    console.log('Filtres:', { annee, regionId, prefecture, zone });
+    
+    // Filtrer les données
+    var dataFiltrees = [];
+    
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        if (stat.annee_scolaire !== annee) continue;
+        
+        var statRegionId = '';
+        for (var r = 0; r < regionsData.length; r++) {
+            if (regionsData[r].nom === stat.region) {
+                statRegionId = regionsData[r].id.toString();
+                break;
+            }
+        }
+        
+        var inclure = true;
+        
+        if (regionId && regionId !== '' && statRegionId !== regionId) inclure = false;
+        if (inclure && prefecture && prefecture !== '' && stat.prefecture !== prefecture) inclure = false;
+        if (inclure && zone && zone !== '' && stat.zone !== zone) inclure = false;
+        
+        if (inclure) dataFiltrees.push(stat);
+    }
+    
+    console.log('✅ Données filtrées:', dataFiltrees.length);
+    
+    // Calculer et afficher les indicateurs
+    calculerIndicateursAcces(dataFiltrees);
+    afficherGraphiqueNiveau(dataFiltrees);
+    afficherTableauEquite(dataFiltrees);
+}
+
+function calculerIndicateursAcces(dataFiltrees) {
+    if (dataFiltrees.length === 0) {
+        // Afficher des zéros
+        document.getElementById('carte-acces-global').textContent = '0%';
+        document.getElementById('carte-acces-filles').textContent = '0%';
+        document.getElementById('carte-acces-garcons').textContent = '0%';
+        document.getElementById('carte-acces-ipg').textContent = '0.00';
+        document.getElementById('ipg-status').textContent = 'Aucune donnée';
+        document.getElementById('carte-acces-ratio-classe').textContent = '0';
+        document.getElementById('carte-acces-distance').textContent = '0';
+        document.getElementById('carte-acces-critiques').textContent = '0';
+        return;
+    }
+    
+    // Calcul taux de scolarisation
+    var moyenneGlobal = calculerMoyenne(dataFiltrees, 'taux_scolarisation', 'total');
+    var moyenneFilles = calculerMoyenne(dataFiltrees, 'taux_scolarisation', 'filles');
+    var moyenneGarcons = calculerMoyenne(dataFiltrees, 'taux_scolarisation', 'garcons');
+    
+    // IPG (Indice de Parité Genre)
+    var ipg = moyenneGarcons > 0 ? Math.round((moyenneFilles / moyenneGarcons) * 100) / 100 : 0;
+    var ipgStatus = '';
+    if (ipg >= 0.97 && ipg <= 1.03) {
+        ipgStatus = '🟢 Parité atteinte';
+    } else if (ipg < 0.97) {
+        ipgStatus = '🔴 Déf. filles';
+    } else {
+        ipgStatus = '🟡 Déf. garçons';
+    }
+    
+    // Infrastructure
+    var moyenneRatioClasse = calculerMoyenne(dataFiltrees, 'ratio_eleves_classe', 'Total');
+    var moyenneDistance = calculerMoyenne(dataFiltrees, 'distance_moyenne_ecole_domicile', 'Total');
+    
+    // Préfectures critiques (ratio > 45)
+    var prefCritiques = 0;
+    for (var i = 0; i < dataFiltrees.length; i++) {
+        if (dataFiltrees[i].ratio_eleves_classe && dataFiltrees[i].ratio_eleves_classe > 45) {
+            prefCritiques++;
+        }
+    }
+    
+    // Afficher dans les cartes
+    document.getElementById('carte-acces-global').textContent = moyenneGlobal + '%';
+    document.getElementById('carte-acces-filles').textContent = moyenneFilles + '%';
+    document.getElementById('carte-acces-garcons').textContent = moyenneGarcons + '%';
+    document.getElementById('carte-acces-ipg').textContent = ipg;
+    document.getElementById('ipg-status').textContent = ipgStatus;
+    document.getElementById('carte-acces-ratio-classe').textContent = Math.round(moyenneRatioClasse);
+    document.getElementById('carte-acces-distance').textContent = moyenneDistance + ' km';
+    document.getElementById('carte-acces-critiques').textContent = prefCritiques;
+}
+
+function afficherGraphiqueNiveau(dataFiltrees) {
+    var container = document.getElementById('graph-scol-niveau');
+    if (!container) return;
+    
+    // Grouper par niveau
+    var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
+    var dataParNiveau = {};
+    
+    for (var i = 0; i < niveaux.length; i++) {
+        dataParNiveau[niveaux[i]] = { filles: [], garcons: [], total: [] };
+    }
+    
+    for (var i = 0; i < dataFiltrees.length; i++) {
+        var stat = dataFiltrees[i];
+        if (dataParNiveau[stat.niveau]) {
+            if (stat.taux_scolarisation_filles) dataParNiveau[stat.niveau].filles.push(stat.taux_scolarisation_filles);
+            if (stat.taux_scolarisation_garcons) dataParNiveau[stat.niveau].garcons.push(stat.taux_scolarisation_garcons);
+            if (stat.taux_scolarisation_total) dataParNiveau[stat.niveau].total.push(stat.taux_scolarisation_total);
+        }
+    }
+    
+    // Calculer moyennes
+    var html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
+    
+    for (var i = 0; i < niveaux.length; i++) {
+        var niveau = niveaux[i];
+        var data = dataParNiveau[niveau];
+        
+        var moyF = data.filles.length > 0 ? Math.round(data.filles.reduce(function(a,b){return a+b;},0) / data.filles.length) : 0;
+        var moyG = data.garcons.length > 0 ? Math.round(data.garcons.reduce(function(a,b){return a+b;},0) / data.garcons.length) : 0;
+        var moyT = data.total.length > 0 ? Math.round(data.total.reduce(function(a,b){return a+b;},0) / data.total.length) : 0;
+        
+        html += '<div>';
+        html += '<div style="font-weight: bold; margin-bottom: 8px; color: #374151;">' + niveau + '</div>';
+        html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">';
+        
+        // Barre Filles
+        html += '<div><div style="font-size: 11px; color: #9f1239; margin-bottom: 4px;">👧 Filles: ' + moyF + '%</div>';
+        html += '<div style="background-color: #fee2e2; height: 24px; border-radius: 4px; overflow: hidden;">';
+        html += '<div style="width: ' + moyF + '%; height: 100%; background-color: #dc2626;"></div></div></div>';
+        
+        // Barre Garçons
+        html += '<div><div style="font-size: 11px; color: #1e3a8a; margin-bottom: 4px;">👦 Garçons: ' + moyG + '%</div>';
+        html += '<div style="background-color: #dbeafe; height: 24px; border-radius: 4px; overflow: hidden;">';
+        html += '<div style="width: ' + moyG + '%; height: 100%; background-color: #3b82f6;"></div></div></div>';
+        
+        // Barre Total
+        html += '<div><div style="font-size: 11px; color: #065f46; margin-bottom: 4px;">📊 Total: ' + moyT + '%</div>';
+        html += '<div style="background-color: #d1fae5; height: 24px; border-radius: 4px; overflow: hidden;">';
+        html += '<div style="width: ' + moyT + '%; height: 100%; background-color: #059669;"></div></div></div>';
+        
+        html += '</div></div>';
+    }
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+function afficherTableauEquite(dataFiltrees) {
+    var container = document.getElementById('tableau-equite');
+    if (!container) return;
+    
+    if (dataFiltrees.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée disponible</p>';
+        return;
+    }
+    
+    // Grouper par préfecture
+    var dataParPref = {};
+    
+    for (var i = 0; i < dataFiltrees.length; i++) {
+        var stat = dataFiltrees[i];
+        var key = stat.prefecture;
+        
+        if (!dataParPref[key]) {
+            dataParPref[key] = {
+                region: stat.region,
+                scol: [],
+                ratio: [],
+                distance: []
+            };
+        }
+        
+        if (stat.taux_scolarisation_total) dataParPref[key].scol.push(stat.taux_scolarisation_total);
+        if (stat.ratio_eleves_classe) dataParPref[key].ratio.push(stat.ratio_eleves_classe);
+        if (stat.distance_moyenne_ecole_domicile) dataParPref[key].distance.push(stat.distance_moyenne_ecole_domicile);
+    }
+    
+    // Calculer score d'équité pour chaque préfecture
+    var prefectures = [];
+    
+    for (var pref in dataParPref) {
+        var data = dataParPref[pref];
+        
+        var moyScol = data.scol.length > 0 ? data.scol.reduce(function(a,b){return a+b;},0) / data.scol.length : 0;
+        var moyRatio = data.ratio.length > 0 ? data.ratio.reduce(function(a,b){return a+b;},0) / data.ratio.length : 0;
+        var moyDist = data.distance.length > 0 ? data.distance.reduce(function(a,b){return a+b;},0) / data.distance.length : 0;
+        
+        // Score d'équité (0-100)
+        // Plus de scolarisation = mieux
+        // Moins de ratio = mieux
+        // Moins de distance = mieux
+        var scoreScol = moyScol; // 0-100
+        var scoreRatio = moyRatio > 0 ? Math.max(0, 100 - (moyRatio - 30) * 2) : 50; // 30 = idéal, pénalité si > 30
+        var scoreDist = moyDist > 0 ? Math.max(0, 100 - moyDist * 20) : 50; // 5km = 0 points
+        
+        var scoreGlobal = Math.round((scoreScol + scoreRatio + scoreDist) / 3);
+        
+        prefectures.push({
+            nom: pref,
+            region: data.region,
+            scol: Math.round(moyScol * 10) / 10,
+            ratio: Math.round(moyRatio * 10) / 10,
+            distance: Math.round(moyDist * 10) / 10,
+            score: scoreGlobal
+        });
+    }
+    
+    // Trier par score décroissant
+    prefectures.sort(function(a, b) { return b.score - a.score; });
+    
+    // Afficher tableau
+    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #2563eb; color: white;">';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Rang</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Préfecture</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Région</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Scolarisation (%)</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ratio É/Cl</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Distance (km)</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Score Équité</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        var p = prefectures[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        // Couleur du score
+        var scoreColor = p.score >= 70 ? '#059669' : (p.score >= 50 ? '#f59e0b' : '#ef4444');
+        var scoreBg = p.score >= 70 ? '#d1fae5' : (p.score >= 50 ? '#fef3c7' : '#fee2e2');
+        
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + (i + 1) + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + p.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.scol + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.ratio + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.distance + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: ' + scoreBg + '; color: ' + scoreColor + '; padding: 6px 12px; border-radius: 6px; font-weight: bold;">' + p.score + '</span></td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    container.innerHTML = html;
 }
         // Lancer l'initialisation
         init();
