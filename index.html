@@ -6273,14 +6273,30 @@ function calculerMoyenneParGenre(dataArray, fieldBase, genre) {
     return moyenne;
 }
 // ========== FONCTIONS DOCUMENTS STRATÉGIQUES ==========
-function filterDocuments() {
-    var filterService = document.getElementById('filter-documents-service');
-    if (!filterService) return;
+function filterDocumentsDisplay() {
+    var filterSelect = document.getElementById('filter-documents-service');
+    if (!filterSelect) return;
     
-    console.log('🔍 Filtre documents:', filterService.value);
-    render();
+    var filterValue = filterSelect.value;
+    console.log('🔍 Filtre documents:', filterValue);
+    
+    var cards = document.querySelectorAll('.document-card');
+    var visibleCount = 0;
+    
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var cardService = card.getAttribute('data-service');
+        
+        if (filterValue === 'TOUS' || cardService === filterValue || cardService === 'TOUS') {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    }
+    
+    console.log('✅ Documents visibles:', visibleCount);
 }
-
 function showUploadDocumentModal() {
     var modalContainer = document.getElementById('modal-container');
     var html = '<div class="modal"><div class="modal-content" style="max-width: 600px;"><h2 style="margin-bottom: 24px;">📤 Ajouter un document stratégique</h2>';
