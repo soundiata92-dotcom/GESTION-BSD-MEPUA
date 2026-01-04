@@ -4501,113 +4501,112 @@ if (activeTab === 'documents') {
     
     html += '</div>';
     
-    // Filtre par service (admin/chefdept uniquement)
-    if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
-        html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-top: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-        html += '<label style="font-weight: bold; margin-right: 12px;">🔍 Filtrer par service :</label>';
-        html += '<select id="filter-documents-service" class="form-control" style="display: inline-block; width: auto;" onchange="filterDocuments()">';
-        html += '<option value="TOUS">Tous les services</option>';
-        for (var i = 0; i < services.length; i++) {
-            html += '<option value="' + services[i] + '">' + services[i] + '</option>';
-        }
-        html += '</select>';
-        html += '</div>';
+// Filtre par service (admin/chefdept uniquement)
+if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; margin-top: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+    html += '<div style="display: flex; align-items: center; gap: 12px;">';
+    html += '<label style="font-weight: bold; font-size: 14px;">🔍 Filtrer par service :</label>';
+    html += '<select id="filter-documents-service" class="form-control" style="display: inline-block; width: auto; min-width: 200px;" onchange="filterDocumentsDisplay()">';
+    html += '<option value="TOUS">Tous les services</option>';
+    for (var i = 0; i < services.length; i++) {
+        html += '<option value="' + services[i] + '">' + services[i] + '</option>';
+    }
+    html += '</select>';
+    html += '</div></div>';
+}
+
+// Liste des documents avec filtrage
+var documentsAffiches = [];
+
+for (var i = 0; i < documentsStrategiques.length; i++) {
+    var doc = documentsStrategiques[i];
+    
+    // Filtrage par permissions
+    var canView = false;
+    if (doc.service === 'TOUS') {
+        canView = true;
+    } else if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
+        canView = true;
+    } else if (doc.service === currentUser.service) {
+        canView = true;
     }
     
-    // Liste des documents
-    var documentsAffiches = [];
-    
-    for (var i = 0; i < documentsStrategiques.length; i++) {
-        var doc = documentsStrategiques[i];
-        
-        // Filtrage par permissions
-        var canView = false;
-        if (doc.service === 'TOUS') {
-            canView = true; // Tout le monde peut voir
-        } else if (currentUser.role === 'admin' || currentUser.role === 'chefdept') {
-            canView = true; // Admin/ChefDept voient tout
-        } else if (doc.service === currentUser.service) {
-            canView = true; // Chef voit son service
-        }
-        
-        if (canView) {
-            documentsAffiches.push(doc);
-        }
-    }
-    
-    if (documentsAffiches.length > 0) {
-        html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; margin-top: 24px;">';
-        
-        for (var i = 0; i < documentsAffiches.length; i++) {
-            var doc = documentsAffiches[i];
-            
-            // Déterminer l'icône selon le type
-            var icone = '📄';
-            if (doc.type_fichier === 'pdf') icone = '📕';
-            else if (doc.type_fichier === 'docx') icone = '📘';
-            else if (doc.type_fichier === 'xlsx') icone = '📊';
-            
-            // Déterminer si l'utilisateur peut supprimer
-            var canDelete = false;
-            if (currentUser.role === 'admin') {
-                canDelete = true;
-            } else if (currentUser.role === 'chef' && doc.service === currentUser.service) {
-                canDelete = true;
-            }
-            
-            // Couleur de badge selon le service
-            var badgeColor = doc.service === 'TOUS' ? '#7c3aed' : '#2563eb';
-            
-            html += '<div style="background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ' + badgeColor + ';">';
-            
-            // En-tête
-            html += '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">';
-            html += '<span style="font-size: 32px;">' + icone + '</span>';
-            html += '<div style="flex: 1;">';
-            html += '<h3 style="margin: 0; font-size: 16px; font-weight: bold; color: #1f2937;">' + doc.titre + '</h3>';
-            html += '<span class="badge" style="background-color: ' + badgeColor + '; color: white; font-size: 11px; margin-top: 4px; display: inline-block;">' + doc.service + '</span>';
-            html += '</div></div>';
-            
-            // Description
-            if (doc.description) {
-                html += '<p style="font-size: 13px; color: #6b7280; margin: 12px 0; line-height: 1.5;">' + doc.description + '</p>';
-            }
-            
-            // Métadonnées
-            html += '<div style="font-size: 12px; color: #9ca3af; margin: 12px 0; border-top: 1px solid #e5e7eb; padding-top: 12px;">';
-            html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">';
-            html += '<span>📦 Type:</span><strong>' + doc.type_fichier.toUpperCase() + '</strong>';
-            html += '</div>';
-            if (doc.taille_ko) {
-                html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">';
-                html += '<span>💾 Taille:</span><strong>' + Math.round(doc.taille_ko / 1024 * 10) / 10 + ' Mo</strong>';
-                html += '</div>';
-            }
-            html += '<div style="display: flex; justify-content: space-between;">';
-            html += '<span>👤 Par:</span><strong>' + doc.upload_par + '</strong>';
-            html += '</div>';
-            html += '<div style="display: flex; justify-content: space-between; margin-top: 4px;">';
-            html += '<span>📅 Le:</span><strong>' + new Date(doc.date_upload).toLocaleDateString('fr-FR') + '</strong>';
-            html += '</div>';
-            html += '</div>';
-            
-            // Actions
-            html += '<div style="display: flex; gap: 8px; margin-top: 16px;">';
-            html += '<button class="btn btn-primary" style="flex: 1; font-size: 13px;" onclick="telechargerDocument(' + doc.id + ')">📥 Télécharger</button>';
-            if (canDelete) {
-                html += '<button class="btn btn-danger" style="font-size: 13px;" onclick="supprimerDocument(' + doc.id + ')">🗑️</button>';
-            }
-            html += '</div>';
-            
-            html += '</div>';
-        }
-        
-        html += '</div>';
-    } else {
-        html += '<div class="empty-state" style="margin-top: 32px;">Aucun document disponible</div>';
+    if (canView) {
+        documentsAffiches.push(doc);
     }
 }
 
+if (documentsAffiches.length > 0) {
+    html += '<div id="documents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; margin-top: 24px;">';
+    
+    for (var i = 0; i < documentsAffiches.length; i++) {
+        var doc = documentsAffiches[i];
+        
+        // Déterminer l'icône selon le type
+        var icone = '📄';
+        if (doc.type_fichier === 'pdf') icone = '📕';
+        else if (doc.type_fichier === 'docx') icone = '📘';
+        else if (doc.type_fichier === 'xlsx') icone = '📊';
+        
+        // Déterminer si l'utilisateur peut supprimer
+        var canDelete = false;
+        if (currentUser.role === 'admin') {
+            canDelete = true;
+        } else if (currentUser.role === 'chef' && doc.service === currentUser.service) {
+            canDelete = true;
+        }
+        
+        // Couleur de badge selon le service
+        var badgeColor = doc.service === 'TOUS' ? '#7c3aed' : '#2563eb';
+        
+        html += '<div class="document-card" data-service="' + doc.service + '" style="background-color: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ' + badgeColor + '; position: relative;">';
+        
+        // En-tête
+        html += '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">';
+        html += '<span style="font-size: 32px;">' + icone + '</span>';
+        html += '<div style="flex: 1;">';
+        html += '<h3 style="margin: 0; font-size: 16px; font-weight: bold; color: #1f2937;">' + doc.titre + '</h3>';
+        html += '<span class="badge" style="background-color: ' + badgeColor + '; color: white; font-size: 11px; margin-top: 4px; display: inline-block;">' + doc.service + '</span>';
+        html += '</div></div>';
+        
+        // Description
+        if (doc.description) {
+            html += '<p style="font-size: 13px; color: #6b7280; margin: 12px 0; line-height: 1.5;">' + doc.description + '</p>';
+        }
+        
+        // Métadonnées
+        html += '<div style="font-size: 12px; color: #9ca3af; margin: 12px 0; border-top: 1px solid #e5e7eb; padding-top: 12px;">';
+        html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">';
+        html += '<span>📦 Type:</span><strong>' + doc.type_fichier.toUpperCase() + '</strong>';
+        html += '</div>';
+        if (doc.taille_ko) {
+            html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">';
+            html += '<span>💾 Taille:</span><strong>' + Math.round(doc.taille_ko / 1024 * 10) / 10 + ' Mo</strong>';
+            html += '</div>';
+        }
+        html += '<div style="display: flex; justify-content: space-between;">';
+        html += '<span>👤 Par:</span><strong>' + doc.upload_par + '</strong>';
+        html += '</div>';
+        html += '<div style="display: flex; justify-content: space-between; margin-top: 4px;">';
+        html += '<span>📅 Le:</span><strong>' + new Date(doc.date_upload).toLocaleDateString('fr-FR') + '</strong>';
+        html += '</div>';
+        html += '</div>';
+        
+        // Actions
+        html += '<div style="display: flex; gap: 8px; margin-top: 16px;">';
+        html += '<button class="btn btn-primary" style="flex: 1; font-size: 13px;" onclick="telechargerDocument(' + doc.id + ')">📥 Télécharger</button>';
+        if (canDelete) {
+            html += '<button class="btn btn-danger" style="font-size: 13px;" onclick="supprimerDocument(' + doc.id + ')">🗑️</button>';
+        }
+        html += '</div>';
+        
+        html += '</div>';
+    }
+    
+    html += '</div>';
+} else {
+    html += '<div class="empty-state" style="margin-top: 32px;">Aucun document disponible</div>';
+}
 // ========== ONGLET 7 : ADMINISTRATION ==========
             if (activeTab === 'admin') {
                 html += '<h2 style="margin-bottom: 16px;">⚙️ Administration</h2>';
