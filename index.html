@@ -145,7 +145,7 @@ var users = [];
         var permissionsCache = {}; 
         var activeTab = 'dashboard';
         var selectedServiceFilter = 'TOUS';
-        var activeAnalyseTab = 'acces'; // 'acces' | 'qualite' | 'alphabetisation' | 'decisions'
+        var activeAnalyseTab = 'acces'; // 'acces' | 'qualite' | 'alphabetisation' | 'pilotage'
         var selectedStatusFilter = 'TOUS';
         var selectedObjectifFilter = 'TOUS';
         var selectedTrimestreFilter = 'TOUS';
@@ -4471,11 +4471,11 @@ var styleAlpha = activeAnalyseTab === 'alphabetisation'
     : 'background: linear-gradient(135deg, #fed7aa 0%, #fecaca 100%); color: #9a3412;';
 html += '<button onclick="changeAnalyseTab(\'alphabetisation\')" style="' + styleAlpha + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">✍️ Alphabétisation</button>';
 
-// Bouton 4 : Décisions (Bleu cyan)
-var styleDecisions = activeAnalyseTab === 'decisions'
-    ? 'background: linear-gradient(135deg, #2196F3 0%, #00BCD4 100%); color: white; transform: scale(1.02);'
-    : 'background: linear-gradient(135deg, #bfdbfe 0%, #a5f3fc 100%); color: #075985;';
-html += '<button onclick="changeAnalyseTab(\'decisions\')" style="' + styleDecisions + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🎯 Décisions</button>';
+// Bouton 4 : Pilotage stratégique (Violet profond) 🔥 RENOMMÉ
+var stylePilotage = activeAnalyseTab === 'pilotage'
+    ? 'background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%); color: white; transform: scale(1.02);'
+    : 'background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%); color: #5b21b6;';
+html += '<button onclick="changeAnalyseTab(\'pilotage\')" style="' + stylePilotage + ' border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🎯 Pilotage stratégique</button>';
 
 html += '</div></div>';
    
@@ -4486,8 +4486,8 @@ html += '</div></div>';
         html += renderAnalyseQualite();
     } else if (activeAnalyseTab === 'alphabetisation') {
         html += renderAnalyseAlphabetisation();
-    } else if (activeAnalyseTab === 'decisions') {
-        html += renderAnalyseDecisions();
+    } else if (activeAnalyseTab === 'pilotage') { // 🔥 CHANGÉ de 'decisions' à 'pilotage'
+        html += renderAnalysePilotage(); // 🔥 NOUVELLE FONCTION
     }
 }
 // ========== ONGLET : DOCUMENTS STRATÉGIQUES ==========
@@ -6844,10 +6844,13 @@ function renderAnalyseAlphabetisation() {
     html += '</div>';
     return html;
 }
-function renderAnalyseDecisions() {
+
+// 🔥 NOUVELLE FONCTION (remplace renderAnalyseDecisions)
+function renderAnalysePilotage() {
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>🎯 Décisions Stratégiques</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Contenu en cours de développement...</p>';
+    html += '<h3>🎯 Pilotage Stratégique</h3>';
+    html += '<p style="color: #6b7280; margin-top: 8px;">Tableau de bord stratégique national</p>';
+    html += '<p style="color: #6b7280; margin-top: 4px;">Contenu en cours de développement...</p>';
     html += '</div>';
     return html;
 }
