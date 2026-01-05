@@ -5103,6 +5103,9 @@ setTimeout(function() {
         } else if (activeAnalyseTab === 'qualite') {
             console.log('🎯 Initialisation Qualité');
             appliquerFiltresQualite();
+        } else if (activeAnalyseTab === 'alphabetisation') {
+            console.log('🎯 Initialisation Alphabétisation');
+            appliquerFiltresAlpha();
         }
     }
 }, 100);
@@ -7143,13 +7146,180 @@ function renderAnalyseQualite() {
     return html;
 }
 function renderAnalyseAlphabetisation() {
-    var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>✍️ Analyse de l\'Alphabétisation</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Contenu en cours de développement...</p>';
+    var html = '';
+    
+    // ========== FILTRES PRINCIPAUX ==========
+    html += '<div style="background-color: #fef3c7; padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">';
+    html += '<h3 style="margin: 0 0 12px 0; color: #92400e; font-size: 16px;">🔍 Filtres</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+    
+    // Filtre Année
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Année</label>';
+    html += '<select id="filter-alpha-annee" class="form-control" onchange="appliquerFiltresAlpha()">';
+    html += '<option value="2024-2025">2025</option>';
+    html += '<option value="2023-2024">2024</option>';
+    html += '<option value="2022-2023">2023</option>';
+    html += '</select></div>';
+    
+    // Filtre Région
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
+    html += '<select id="filter-alpha-region" class="form-control" onchange="appliquerFiltresAlpha(); updateAlphaPrefectures();">';
+    html += '<option value="">Toutes</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
+    
+    // Filtre Préfecture
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏛️ Préfecture</label>';
+    html += '<select id="filter-alpha-prefecture" class="form-control" onchange="appliquerFiltresAlpha()">';
+    html += '<option value="">Toutes</option>';
+    html += '</select></div>';
+    
+    // Filtre Zone
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏘️ Zone</label>';
+    html += '<select id="filter-alpha-zone" class="form-control" onchange="appliquerFiltresAlpha()">';
+    html += '<option value="">Toutes</option>';
+    html += '<option value="Urbaine">Urbaine</option>';
+    html += '<option value="Rurale">Rurale</option>';
+    html += '</select></div>';
+    
+    // Filtre Niveau
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
+    html += '<select id="filter-alpha-niveau" class="form-control" onchange="appliquerFiltresAlpha()">';
+    html += '<option value="">Tous</option>';
+    html += '<option value="Debutant">Débutant</option>';
+    html += '<option value="Intermediaire">Intermédiaire</option>';
+    html += '<option value="Avance">Avancé</option>';
+    html += '</select></div>';
+    
+    html += '</div></div>';
+    
+    // ========== SECTION A : COUVERTURE TERRITORIALE ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">';
+    html += '<h3 style="color: #f59e0b; margin-bottom: 16px; font-size: 20px;">🗺️ A. Couverture Territoriale</h3>';
+    
+    // 5 cartes d'indicateurs
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px;">';
+    
+    // Carte 1 : Taux Alpha Global
+    html += '<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #92400e; margin-bottom: 8px;">📊 Taux Global</div>';
+    html += '<div id="carte-alpha-global" style="font-size: 36px; font-weight: bold; color: #92400e;">0%</div>';
     html += '</div>';
+    
+    // Carte 2 : Bénéficiaires Total
+    html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">👥 Bénéficiaires</div>';
+    html += '<div id="carte-alpha-beneficiaires" style="font-size: 36px; font-weight: bold; color: #1e40af;">0</div>';
+    html += '</div>';
+    
+    // Carte 3 : Préfectures Couvertes
+    html += '<div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #065f46; margin-bottom: 8px;">🏛️ Préf. Actives</div>';
+    html += '<div id="carte-alpha-prefectures" style="font-size: 36px; font-weight: bold; color: #065f46;">0</div>';
+    html += '</div>';
+    
+    // Carte 4 : Parité F/G
+    html += '<div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 4px solid #ec4899; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #9f1239; margin-bottom: 8px;">⚖️ Parité F/G</div>';
+    html += '<div id="carte-alpha-parite" style="font-size: 36px; font-weight: bold; color: #9f1239;">0.00</div>';
+    html += '<div style="font-size: 10px; color: #831843; margin-top: 4px;" id="alpha-parite-status">-</div>';
+    html += '</div>';
+    
+    // Carte 5 : Couverture Population (%)
+    html += '<div style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border-left: 4px solid #a855f7; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #6b21a8; margin-bottom: 8px;">📍 Couverture</div>';
+    html += '<div id="carte-alpha-couverture" style="font-size: 36px; font-weight: bold; color: #6b21a8;">0%</div>';
+    html += '<div style="font-size: 10px; color: #581c87; margin-top: 4px;">Population cible</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Graphique : Évolution couverture 2023-2025
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📈 Évolution Couverture 2023-2025</h4>';
+    html += '<div id="graph-alpha-evolution" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 250px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    // Carte interactive : Couverture par région
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🗺️ Carte de Couverture par Région</h4>';
+    html += '<div id="carte-alpha-regions" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 300px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    html += '</div>'; // Fin Section A
+    
+    // ========== SECTION B : EFFICACITÉ DES PROGRAMMES ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">';
+    html += '<h3 style="color: #f59e0b; margin-bottom: 16px; font-size: 20px;">📊 B. Efficacité des Programmes</h3>';
+    
+    // 3 cartes
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">';
+    
+    // Carte Taux Passage Débutant → Intermédiaire
+    html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px;">📘 Dé → Int</div>';
+    html += '<div id="carte-alpha-passage1" style="font-size: 36px; font-weight: bold; color: #1e3a8a;">0%</div>';
+    html += '<div style="font-size: 11px; color: #1e40af; margin-top: 4px;">Taux passage</div>';
+    html += '</div>';
+    
+    // Carte Taux Passage Intermédiaire → Avancé
+    html += '<div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #065f46; margin-bottom: 8px;">📗 Int → Av</div>';
+    html += '<div id="carte-alpha-passage2" style="font-size: 36px; font-weight: bold; color: #065f46;">0%</div>';
+    html += '<div style="font-size: 11px; color: #047857; margin-top: 4px;">Taux passage</div>';
+    html += '</div>';
+    
+    // Carte Taux Achèvement Complet
+    html += '<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #92400e; margin-bottom: 8px;">🎓 Achèvement</div>';
+    html += '<div id="carte-alpha-achevement" style="font-size: 36px; font-weight: bold; color: #92400e;">0%</div>';
+    html += '<div style="font-size: 11px; color: #78350f; margin-top: 4px;">Complet</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Graphique : Progression par niveau
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Taux par Niveau et Genre</h4>';
+    html += '<div id="graph-alpha-niveaux" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 300px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    // Graphique : Analyse genre par préfecture
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">⚖️ Participation F/G par Préfecture</h4>';
+    html += '<div id="graph-alpha-genre" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 300px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    html += '</div>'; // Fin Section B
+    
+    // ========== SECTION C : QUALITÉ ET IMPACT ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+    html += '<h3 style="color: #f59e0b; margin-bottom: 16px; font-size: 20px;">⭐ C. Qualité et Impact</h3>';
+    
+    // Tableau : Classement des préfectures
+    html += '<div style="margin-top: 16px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🏆 Classement des Préfectures</h4>';
+    html += '<div id="tableau-alpha-classement" style="margin-top: 16px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    // Analyse d'impact
+    html += '<div style="margin-top: 24px; padding: 20px; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px;">';
+    html += '<h4 style="color: #1e40af; margin-bottom: 12px;">💡 Analyse d\'Impact</h4>';
+    html += '<div id="analyse-alpha-impact">';
+    html += '<p style="color: #1e3a8a; font-size: 14px;">Chargement de l\'analyse...</p>';
+    html += '</div></div>';
+    
+    html += '</div>'; // Fin Section C
+    
     return html;
 }
-
 // 🔥 NOUVELLE FONCTION (remplace renderAnalyseDecisions)
 function renderAnalysePilotage() {
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
@@ -7928,6 +8098,682 @@ function afficherClassementPrefectures(examensFiltre) {
     }
     html += '</tbody></table></div></div>';
     html += '</div>';
+    container.innerHTML = html;
+}
+// ========== FONCTIONS ANALYSE ALPHABÉTISATION ==========
+
+function updateAlphaPrefectures() {
+    var regionSelect = document.getElementById('filter-alpha-region');
+    var prefectureSelect = document.getElementById('filter-alpha-prefecture');
+    
+    if (!regionSelect || !prefectureSelect) return;
+    
+    var regionId = regionSelect.value;
+    
+    prefectureSelect.innerHTML = '<option value="">Toutes</option>';
+    
+    if (regionId && regionId !== '') {
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+    }
+}
+
+function appliquerFiltresAlpha() {
+    console.log('🔍 Application des filtres Alphabétisation...');
+    
+    var anneeSelect = document.getElementById('filter-alpha-annee');
+    var regionSelect = document.getElementById('filter-alpha-region');
+    var prefectureSelect = document.getElementById('filter-alpha-prefecture');
+    var zoneSelect = document.getElementById('filter-alpha-zone');
+    var niveauSelect = document.getElementById('filter-alpha-niveau');
+    
+    if (!anneeSelect) return;
+    
+    var annee = anneeSelect.value;
+    var regionId = regionSelect ? regionSelect.value : '';
+    var prefecture = prefectureSelect ? prefectureSelect.value : '';
+    var zone = zoneSelect ? zoneSelect.value : '';
+    var niveau = niveauSelect ? niveauSelect.value : '';
+    
+    console.log('Filtres:', { annee, regionId, prefecture, zone, niveau });
+    
+    // Filtrer les données
+    var alphaFiltre = [];
+    
+    for (var i = 0; i < alphabetisationData.length; i++) {
+        var alpha = alphabetisationData[i];
+        
+        if (alpha.annee_scolaire !== annee) continue;
+        
+        var alphaRegionId = '';
+        for (var r = 0; r < regionsData.length; r++) {
+            if (regionsData[r].nom === alpha.region) {
+                alphaRegionId = regionsData[r].id.toString();
+                break;
+            }
+        }
+        
+        var inclure = true;
+        
+        if (regionId && regionId !== '' && alphaRegionId !== regionId) inclure = false;
+        if (inclure && prefecture && prefecture !== '' && alpha.prefecture !== prefecture) inclure = false;
+        if (inclure && zone && zone !== '' && alpha.zone !== zone) inclure = false;
+        if (inclure && niveau && niveau !== '' && alpha.niveau !== niveau) inclure = false;
+        
+        if (inclure) alphaFiltre.push(alpha);
+    }
+    
+    console.log('✅ Données alpha filtrées:', alphaFiltre.length);
+    
+    // Calculer et afficher
+    calculerIndicateursAlpha(alphaFiltre);
+    afficherGraphiqueEvolutionAlpha(annee, regionId, prefecture, zone, niveau);
+    afficherCarteRegionsAlpha(alphaFiltre);
+    afficherGraphiqueNiveauxAlpha(alphaFiltre);
+    afficherGraphiqueGenreAlpha(alphaFiltre);
+    afficherClassementAlpha(alphaFiltre);
+    afficherAnalyseImpact(alphaFiltre);
+}
+
+function calculerIndicateursAlpha(alphaFiltre) {
+    if (alphaFiltre.length === 0) {
+        document.getElementById('carte-alpha-global').textContent = '0%';
+        document.getElementById('carte-alpha-beneficiaires').textContent = '0';
+        document.getElementById('carte-alpha-prefectures').textContent = '0';
+        document.getElementById('carte-alpha-parite').textContent = '0.00';
+        document.getElementById('alpha-parite-status').textContent = 'Aucune donnée';
+        document.getElementById('carte-alpha-couverture').textContent = '0%';
+        document.getElementById('carte-alpha-passage1').textContent = '0%';
+        document.getElementById('carte-alpha-passage2').textContent = '0%';
+        document.getElementById('carte-alpha-achevement').textContent = '0%';
+        return;
+    }
+    
+    // Taux global
+    var moyenneGlobal = calculerMoyenne(alphaFiltre, 'taux_alphabétisation', 'Total');
+    
+    // Bénéficiaires total
+    var totalBenef = 0;
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        if (alphaFiltre[i].beneficiaires_total) {
+            totalBenef += alphaFiltre[i].beneficiaires_total;
+        }
+    }
+    
+    // Préfectures actives (uniques)
+    var prefecturesUniques = {};
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        prefecturesUniques[alphaFiltre[i].prefecture] = true;
+    }
+    var nbPrefectures = Object.keys(prefecturesUniques).length;
+    
+    // Parité F/G
+    var moyenneFilles = calculerMoyenne(alphaFiltre, 'taux_alphabétisation', 'Filles');
+    var moyenneGarcons = calculerMoyenne(alphaFiltre, 'taux_alphabétisation', 'Garcons');
+    var parite = moyenneGarcons > 0 ? Math.round((moyenneFilles / moyenneGarcons) * 100) / 100 : 0;
+    var pariteStatus = '';
+    if (parite >= 0.97 && parite <= 1.03) {
+        pariteStatus = '🟢 Parité atteinte';
+    } else if (parite < 0.97) {
+        pariteStatus = '🔴 Déf. filles';
+    } else {
+        pariteStatus = '🟡 Déf. garçons';
+    }
+    
+    // Couverture population (simulation : bénéficiaires / population cible estimée)
+    var populationCibleEstimee = nbPrefectures * 5000; // Estimation
+    var tauxCouverture = populationCibleEstimee > 0 ? Math.round((totalBenef / populationCibleEstimee) * 100) : 0;
+    
+    // Taux de passage (simulation basée sur répartition par niveau)
+    var debutant = 0, intermediaire = 0, avance = 0;
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        var alpha = alphaFiltre[i];
+        if (alpha.niveau === 'Debutant' && alpha.beneficiaires_total) debutant += alpha.beneficiaires_total;
+        if (alpha.niveau === 'Intermediaire' && alpha.beneficiaires_total) intermediaire += alpha.beneficiaires_total;
+        if (alpha.niveau === 'Avance' && alpha.beneficiaires_total) avance += alpha.beneficiaires_total;
+    }
+    
+    var tauxPassage1 = debutant > 0 ? Math.round((intermediaire / debutant) * 100) : 0;
+    var tauxPassage2 = intermediaire > 0 ? Math.round((avance / intermediaire) * 100) : 0;
+    var tauxAchevement = debutant > 0 ? Math.round((avance / debutant) * 100) : 0;
+    
+    // Limiter à 100%
+    tauxPassage1 = Math.min(tauxPassage1, 100);
+    tauxPassage2 = Math.min(tauxPassage2, 100);
+    tauxAchevement = Math.min(tauxAchevement, 100);
+    
+    // Affichage
+    document.getElementById('carte-alpha-global').textContent = moyenneGlobal + '%';
+    document.getElementById('carte-alpha-beneficiaires').textContent = totalBenef.toLocaleString();
+    document.getElementById('carte-alpha-prefectures').textContent = nbPrefectures;
+    document.getElementById('carte-alpha-parite').textContent = parite;
+    document.getElementById('alpha-parite-status').textContent = pariteStatus;
+    document.getElementById('carte-alpha-couverture').textContent = tauxCouverture + '%';
+    document.getElementById('carte-alpha-passage1').textContent = tauxPassage1 + '%';
+    document.getElementById('carte-alpha-passage2').textContent = tauxPassage2 + '%';
+    document.getElementById('carte-alpha-achevement').textContent = tauxAchevement + '%';
+}
+
+function afficherGraphiqueEvolutionAlpha(annee, regionId, prefecture, zone, niveau) {
+    var container = document.getElementById('graph-alpha-evolution');
+    if (!container) return;
+    
+    // Récupérer les 3 dernières années
+    var annees = ['2022-2023', '2023-2024', '2024-2025'];
+    var anneesLabels = ['2023', '2024', '2025'];
+    
+    var dataTaux = [];
+    var dataBenef = [];
+    
+    for (var a = 0; a < annees.length; a++) {
+        var anneeActuelle = annees[a];
+        
+        var alphaAnnee = [];
+        for (var i = 0; i < alphabetisationData.length; i++) {
+            var alpha = alphabetisationData[i];
+            
+            if (alpha.annee_scolaire !== anneeActuelle) continue;
+            
+            var alphaRegionId = '';
+            for (var r = 0; r < regionsData.length; r++) {
+                if (regionsData[r].nom === alpha.region) {
+                    alphaRegionId = regionsData[r].id.toString();
+                    break;
+                }
+            }
+            
+            var inclure = true;
+            
+            if (regionId && regionId !== '' && alphaRegionId !== regionId) inclure = false;
+            if (inclure && prefecture && prefecture !== '' && alpha.prefecture !== prefecture) inclure = false;
+            if (inclure && zone && zone !== '' && alpha.zone !== zone) inclure = false;
+            if (inclure && niveau && niveau !== '' && alpha.niveau !== niveau) inclure = false;
+            
+            if (inclure) alphaAnnee.push(alpha);
+        }
+        
+        var moyenneTaux = alphaAnnee.length > 0 ? calculerMoyenne(alphaAnnee, 'taux_alphabétisation', 'Total') : 0;
+        
+        var totalBenef = 0;
+        for (var i = 0; i < alphaAnnee.length; i++) {
+            if (alphaAnnee[i].beneficiaires_total) {
+                totalBenef += alphaAnnee[i].beneficiaires_total;
+            }
+        }
+        
+        dataTaux.push(moyenneTaux);
+        dataBenef.push(totalBenef);
+    }
+    
+    // Graphique double axe (Taux % + Bénéficiaires)
+    var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
+    
+    // Graphique 1 : Taux
+    html += '<div>';
+    html += '<h5 style="color: #374151; margin-bottom: 12px; font-size: 14px;">📊 Évolution Taux (%)</h5>';
+    html += '<div style="position: relative; height: 180px;">';
+    
+    for (var i = 0; i < annees.length; i++) {
+        var x = 20 + (i * 100);
+        var hauteur = dataTaux[i] * 1.5; // Échelle
+        var y = 150 - hauteur;
+        
+        html += '<div style="position: absolute; left: ' + x + 'px; bottom: 20px; width: 60px; height: ' + hauteur + 'px; background: linear-gradient(180deg, #f59e0b 0%, #fb923c 100%); border-radius: 4px 4px 0 0;"></div>';
+        html += '<div style="position: absolute; left: ' + (x + 15) + 'px; bottom: ' + (hauteur + 25) + 'px; font-size: 12px; font-weight: bold; color: #92400e;">' + dataTaux[i] + '%</div>';
+        html += '<div style="position: absolute; left: ' + (x + 10) + 'px; bottom: 0; font-size: 11px; color: #374151; font-weight: 600;">' + anneesLabels[i] + '</div>';
+    }
+    
+    html += '</div></div>';
+    
+    // Graphique 2 : Bénéficiaires
+    html += '<div>';
+    html += '<h5 style="color: #374151; margin-bottom: 12px; font-size: 14px;">👥 Évolution Bénéficiaires</h5>';
+    html += '<div style="position: relative; height: 180px;">';
+    
+    var maxBenef = Math.max.apply(null, dataBenef);
+    
+    for (var i = 0; i < annees.length; i++) {
+        var x = 20 + (i * 100);
+        var hauteur = maxBenef > 0 ? (dataBenef[i] / maxBenef) * 150 : 0;
+        var y = 150 - hauteur;
+        
+        html += '<div style="position: absolute; left: ' + x + 'px; bottom: 20px; width: 60px; height: ' + hauteur + 'px; background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%); border-radius: 4px 4px 0 0;"></div>';
+html += '<div style="position: absolute; left: ' + (x + 5) + 'px; bottom: ' + (hauteur + 25) + 'px; font-size: 11px; font-weight: bold; color: #1e40af;">' + dataBenef[i].toLocaleString() + '</div>';
+        html += '<div style="position: absolute; left: ' + (x + 10) + 'px; bottom: 0; font-size: 11px; color: #374151; font-weight: 600;">' + anneesLabels[i] + '</div>';
+    }
+    html += '</div></div>';
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+function afficherCarteRegionsAlpha(alphaFiltre) {
+    var container = document.getElementById('carte-alpha-regions');
+    if (!container) return;
+    
+    if (alphaFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Grouper par région
+    var dataParRegion = {};
+    
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        var alpha = alphaFiltre[i];
+        var region = alpha.region;
+        
+        if (!dataParRegion[region]) {
+            dataParRegion[region] = {
+                taux: [],
+                beneficiaires: 0
+            };
+        }
+        
+        if (alpha.taux_alphabétisation_total) {
+            dataParRegion[region].taux.push(alpha.taux_alphabétisation_total);
+        }
+        if (alpha.beneficiaires_total) {
+            dataParRegion[region].beneficiaires += alpha.beneficiaires_total;
+        }
+    }
+    
+    // Calculer moyennes et créer tableau
+    var regions = [];
+    for (var region in dataParRegion) {
+        var data = dataParRegion[region];
+        var moyenneTaux = data.taux.length > 0 ? Math.round(data.taux.reduce(function(a,b){return a+b;},0) / data.taux.length * 10) / 10 : 0;
+        
+        regions.push({
+            nom: region,
+            taux: moyenneTaux,
+            beneficiaires: data.beneficiaires
+        });
+    }
+    
+    // Trier par taux décroissant
+    regions.sort(function(a, b) { return b.taux - a.taux; });
+    
+    // Afficher sous forme de carte de chaleur
+    var html = '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">';
+    
+    for (var i = 0; i < regions.length; i++) {
+        var r = regions[i];
+        
+        // Déterminer la couleur selon le taux
+        var couleurBg, couleurText, emoji;
+        if (r.taux >= 70) {
+            couleurBg = '#d1fae5';
+            couleurText = '#065f46';
+            emoji = '🟢';
+        } else if (r.taux >= 50) {
+            couleurBg = '#fef3c7';
+            couleurText = '#92400e';
+            emoji = '🟡';
+        } else {
+            couleurBg = '#fee2e2';
+            couleurText = '#991b1b';
+            emoji = '🔴';
+        }
+        
+        html += '<div style="background-color: ' + couleurBg + '; padding: 16px; border-radius: 8px; border-left: 4px solid ' + couleurText + ';">';
+        html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">';
+        html += '<span style="font-weight: bold; color: ' + couleurText + '; font-size: 15px;">' + emoji + ' ' + r.nom + '</span>';
+        html += '<span style="font-size: 20px; font-weight: bold; color: ' + couleurText + ';">' + r.taux + '%</span>';
+        html += '</div>';
+        html += '<div style="font-size: 12px; color: ' + couleurText + ';">👥 ' + r.beneficiaires.toLocaleString() + ' bénéficiaires</div>';
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+function afficherGraphiqueNiveauxAlpha(alphaFiltre) {
+    var container = document.getElementById('graph-alpha-niveaux');
+    if (!container) return;
+    
+    if (alphaFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Grouper par niveau
+    var niveaux = ['Debutant', 'Intermediaire', 'Avance'];
+    var niveauxLabels = ['Débutant', 'Intermédiaire', 'Avancé'];
+    var dataParNiveau = {};
+    
+    for (var i = 0; i < niveaux.length; i++) {
+        dataParNiveau[niveaux[i]] = { filles: [], garcons: [], total: [] };
+    }
+    
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        var alpha = alphaFiltre[i];
+        if (dataParNiveau[alpha.niveau]) {
+            if (alpha.taux_alphabétisation_filles) dataParNiveau[alpha.niveau].filles.push(alpha.taux_alphabétisation_filles);
+            if (alpha.taux_alphabétisation_garcons) dataParNiveau[alpha.niveau].garcons.push(alpha.taux_alphabétisation_garcons);
+            if (alpha.taux_alphabétisation_total) dataParNiveau[alpha.niveau].total.push(alpha.taux_alphabétisation_total);
+        }
+    }
+    
+    // Graphique
+    var html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
+    
+    for (var i = 0; i < niveaux.length; i++) {
+        var niveau = niveaux[i];
+        var label = niveauxLabels[i];
+        var data = dataParNiveau[niveau];
+        
+        var moyF = data.filles.length > 0 ? Math.round(data.filles.reduce(function(a,b){return a+b;},0) / data.filles.length * 10) / 10 : 0;
+        var moyG = data.garcons.length > 0 ? Math.round(data.garcons.reduce(function(a,b){return a+b;},0) / data.garcons.length * 10) / 10 : 0;
+        var moyT = data.total.length > 0 ? Math.round(data.total.reduce(function(a,b){return a+b;},0) / data.total.length * 10) / 10 : 0;
+        
+        html += '<div>';
+        html += '<div style="font-weight: bold; margin-bottom: 10px; color: #374151; font-size: 15px;">' + label + '</div>';
+        html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
+        
+        // Filles
+        html += '<div><div style="font-size: 12px; color: #9f1239; margin-bottom: 6px; font-weight: 600;">👧 Filles: ' + moyF + '%</div>';
+        html += '<div style="background-color: #fee2e2; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
+        html += '<div style="width: ' + moyF + '%; height: 100%; background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);"></div></div></div>';
+        
+        // Garçons
+        html += '<div><div style="font-size: 12px; color: #1e3a8a; margin-bottom: 6px; font-weight: 600;">👦 Garçons: ' + moyG + '%</div>';
+        html += '<div style="background-color: #dbeafe; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
+        html += '<div style="width: ' + moyG + '%; height: 100%; background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);"></div></div></div>';
+        
+        // Total
+        html += '<div><div style="font-size: 12px; color: #92400e; margin-bottom: 6px; font-weight: 600;">📊 Total: ' + moyT + '%</div>';
+        html += '<div style="background-color: #fef3c7; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
+        html += '<div style="width: ' + moyT + '%; height: 100%; background: linear-gradient(90deg, #f59e0b 0%, #fb923c 100%);"></div></div></div>';
+        
+        html += '</div></div>';
+    }
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+function afficherGraphiqueGenreAlpha(alphaFiltre) {
+    var container = document.getElementById('graph-alpha-genre');
+    if (!container) return;
+    
+    if (alphaFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Grouper par préfecture
+    var dataParPref = {};
+    
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        var alpha = alphaFiltre[i];
+        var key = alpha.prefecture;
+        
+        if (!dataParPref[key]) {
+            dataParPref[key] = {
+                filles: 0,
+                garcons: 0
+            };
+        }
+        
+        if (alpha.beneficiaires_filles) dataParPref[key].filles += alpha.beneficiaires_filles;
+        if (alpha.beneficiaires_garcons) dataParPref[key].garcons += alpha.beneficiaires_garcons;
+    }
+    
+    // Créer tableau
+    var prefectures = [];
+    for (var pref in dataParPref) {
+        var data = dataParPref[pref];
+        var total = data.filles + data.garcons;
+        var pourcentageF = total > 0 ? Math.round((data.filles / total) * 100) : 0;
+        var pourcentageG = total > 0 ? Math.round((data.garcons / total) * 100) : 0;
+        
+        prefectures.push({
+            nom: pref,
+            filles: data.filles,
+            garcons: data.garcons,
+            pourcentageF: pourcentageF,
+            pourcentageG: pourcentageG
+        });
+    }
+    
+    // Trier par total décroissant
+    prefectures.sort(function(a, b) { return (b.filles + b.garcons) - (a.filles + a.garcons); });
+    
+    // Limiter aux 10 premières
+    prefectures = prefectures.slice(0, 10);
+    
+    // Graphique en barres empilées horizontales
+    var html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        var p = prefectures[i];
+        
+        html += '<div>';
+        html += '<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">';
+        html += '<span style="font-size: 13px; font-weight: 600; color: #374151;">' + p.nom + '</span>';
+        html += '<span style="font-size: 12px; color: #6b7280;">Total: ' + (p.filles + p.garcons).toLocaleString() + '</span>';
+        html += '</div>';
+        
+        html += '<div style="display: flex; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+        
+        // Barre Filles
+        html += '<div style="width: ' + p.pourcentageF + '%; background: linear-gradient(90deg, #ec4899 0%, #f472b6 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: bold;">';
+        if (p.pourcentageF > 15) html += p.pourcentageF + '%';
+        html += '</div>';
+        
+        // Barre Garçons
+        html += '<div style="width: ' + p.pourcentageG + '%; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: bold;">';
+        if (p.pourcentageG > 15) html += p.pourcentageG + '%';
+        html += '</div>';
+        
+        html += '</div>';
+        
+        html += '<div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: #6b7280;">';
+        html += '<span>👧 Filles: ' + p.filles.toLocaleString() + '</span>';
+        html += '<span>👦 Garçons: ' + p.garcons.toLocaleString() + '</span>';
+        html += '</div>';
+        
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    
+    // Légende
+    html += '<div style="display: flex; gap: 20px; justify-content: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">';
+    html += '<div style="display: flex; align-items: center; gap: 6px;">';
+    html += '<div style="width: 16px; height: 16px; background: linear-gradient(90deg, #ec4899 0%, #f472b6 100%); border-radius: 4px;"></div>';
+    html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">👧 Filles</span>';
+    html += '</div>';
+    html += '<div style="display: flex; align-items: center; gap: 6px;">';
+    html += '<div style="width: 16px; height: 16px; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 4px;"></div>';
+    html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">👦 Garçons</span>';
+    html += '</div>';
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+function afficherClassementAlpha(alphaFiltre) {
+    var container = document.getElementById('tableau-alpha-classement');
+    if (!container) return;
+    
+    if (alphaFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Grouper par préfecture
+    var dataParPref = {};
+    
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        var alpha = alphaFiltre[i];
+        var key = alpha.prefecture;
+        
+        if (!dataParPref[key]) {
+            dataParPref[key] = {
+                region: alpha.region,
+                taux: [],
+                beneficiaires: 0
+            };
+        }
+        
+        if (alpha.taux_alphabétisation_total) dataParPref[key].taux.push(alpha.taux_alphabétisation_total);
+        if (alpha.beneficiaires_total) dataParPref[key].beneficiaires += alpha.beneficiaires_total;
+    }
+    
+    // Calculer moyennes et score
+    var prefectures = [];
+    
+    for (var pref in dataParPref) {
+        var data = dataParPref[pref];
+        var moyenneTaux = data.taux.length > 0 ? Math.round(data.taux.reduce(function(a,b){return a+b;},0) / data.taux.length * 10) / 10 : 0;
+        
+        // Score : combinaison taux + nombre bénéficiaires (normalisé)
+        var scoreTaux = moyenneTaux; // 0-100
+        var scoreBenef = Math.min(data.beneficiaires / 100, 100); // Normalisé sur 100
+        var scoreGlobal = Math.round((scoreTaux * 0.7 + scoreBenef * 0.3)); // Pondération 70-30
+        
+        prefectures.push({
+            nom: pref,
+            region: data.region,
+            taux: moyenneTaux,
+            beneficiaires: data.beneficiaires,
+            score: scoreGlobal
+        });
+    }
+    
+    // Trier par score décroissant
+    prefectures.sort(function(a, b) { return b.score - a.score; });
+    
+    // Tableau complet
+    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #f59e0b; color: white;">';
+    html += '<th style="padding: 12px; border: 1px solid #d97706;">Rang</th>';
+    html += '<th style="padding: 12px; border: 1px solid #d97706;">Préfecture</th>';
+    html += '<th style="padding: 12px; border: 1px solid #d97706;">Région</th>';
+    html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center;">Taux (%)</th>';
+    html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center;">Bénéficiaires</th>';
+    html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center;">Score Global</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        var p = prefectures[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#fffbeb';
+        
+        // Couleur du score
+        var scoreColor = p.score >= 70 ? '#059669' : (p.score >= 50 ? '#f59e0b' : '#ef4444');
+        var scoreBg = p.score >= 70 ? '#d1fae5' : (p.score >= 50 ? '#fef3c7' : '#fee2e2');
+        
+        // Médaille pour le podium
+        var medaille = '';
+        if (i === 0) medaille = '🥇 ';
+        else if (i === 1) medaille = '🥈 ';
+        else if (i === 2) medaille = '🥉 ';
+        
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; font-size: 15px;">' + medaille + (i + 1) + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + p.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.taux + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.beneficiaires.toLocaleString() + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: ' + scoreBg + '; color: ' + scoreColor + '; padding: 6px 12px; border-radius: 6px; font-weight: bold;">' + p.score + '</span></td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    container.innerHTML = html;
+}
+
+function afficherAnalyseImpact(alphaFiltre) {
+    var container = document.getElementById('analyse-alpha-impact');
+    if (!container) return;
+    
+    if (alphaFiltre.length === 0) {
+        container.innerHTML = '<p style="color: #1e3a8a;">Aucune donnée disponible pour l\'analyse d\'impact.</p>';
+        return;
+    }
+    
+    // Calculer indicateurs d'impact
+    var totalBenef = 0;
+    var tauxMoyen = 0;
+    var countTaux = 0;
+    
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        if (alphaFiltre[i].beneficiaires_total) totalBenef += alphaFiltre[i].beneficiaires_total;
+        if (alphaFiltre[i].taux_alphabétisation_total) {
+            tauxMoyen += alphaFiltre[i].taux_alphabétisation_total;
+            countTaux++;
+        }
+    }
+    
+    tauxMoyen = countTaux > 0 ? Math.round(tauxMoyen / countTaux * 10) / 10 : 0;
+    
+    // Préfectures uniques
+    var prefUniques = {};
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        prefUniques[alphaFiltre[i].prefecture] = true;
+    }
+    var nbPrefectures = Object.keys(prefUniques).length;
+    
+    // Générer analyse
+    var html = '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">';
+    
+    // Impact quantitatif
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; border-left: 4px solid #059669;">';
+    html += '<h5 style="color: #065f46; margin-bottom: 10px; font-size: 14px; font-weight: bold;">📊 Impact Quantitatif</h5>';
+    html += '<ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #1e3a8a; line-height: 1.8;">';
+    html += '<li><strong>' + totalBenef.toLocaleString() + '</strong> personnes alphabétisées</li>';
+    html += '<li><strong>' + nbPrefectures + '</strong> préfectures couvertes</li>';
+    html += '<li>Taux moyen d\'alphabétisation : <strong>' + tauxMoyen + '%</strong></li>';
+    html += '</ul></div>';
+    
+    // Impact qualitatif
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6;">';
+    html += '<h5 style="color: #1e40af; margin-bottom: 10px; font-size: 14px; font-weight: bold;">⭐ Impact Qualitatif</h5>';
+    html += '<ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #1e3a8a; line-height: 1.8;">';
+    
+    if (tauxMoyen >= 70) {
+        html += '<li>✅ Programmes <strong>très efficaces</strong></li>';
+    } else if (tauxMoyen >= 50) {
+        html += '<li>🟡 Programmes <strong>moyennement efficaces</strong></li>';
+    } else {
+        html += '<li>⚠️ Programmes nécessitant <strong>amélioration</strong></li>';
+    }
+    
+    html += '<li>Impact sur <strong>scolarisation des enfants</strong></li>';
+    html += '<li>Contribution au <strong>développement local</strong></li>';
+    html += '</ul></div>';
+    
+    html += '</div>';
+    
+    // Recommandations
+    html += '<div style="margin-top: 16px; padding: 14px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">';
+    html += '<h5 style="color: #92400e; margin-bottom: 8px; font-size: 14px; font-weight: bold;">💡 Recommandations</h5>';
+    html += '<ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #78350f; line-height: 1.8;">';
+    
+    if (tauxMoyen < 60) {
+        html += '<li>Renforcer la formation des formateurs</li>';
+        html += '<li>Améliorer les supports pédagogiques</li>';
+    }
+    
+    if (nbPrefectures < prefecturesData.length / 2) {
+        html += '<li>Étendre la couverture géographique aux zones non desservies</li>';
+    }
+    
+    html += '<li>Assurer un suivi régulier des bénéficiaires</li>';
+    html += '<li>Renforcer la sensibilisation communautaire</li>';
+    html += '</ul></div>';
+    
     container.innerHTML = html;
 }
 
