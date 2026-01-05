@@ -5094,11 +5094,16 @@ setTimeout(function() {
 
             html += '</div><div id="modal-container"></div>';
             app.innerHTML = html;
-// Initialiser les filtres Accès Équitable si l'onglet est actif
+// Initialiser les filtres selon le sous-onglet actif
 setTimeout(function() {
-    if (activeTab === 'analyse' && activeAnalyseTab === 'acces') {
-        console.log('🎯 Initialisation Accès Équitable');
-        appliquerFiltresAcces();
+    if (activeTab === 'analyse') {
+        if (activeAnalyseTab === 'acces') {
+            console.log('🎯 Initialisation Accès Équitable');
+            appliquerFiltresAcces();
+        } else if (activeAnalyseTab === 'qualite') {
+            console.log('🎯 Initialisation Qualité');
+            appliquerFiltresQualite();
+        }
     }
 }, 100);
         }
@@ -6956,13 +6961,187 @@ function renderAnalyseAcces() {
     return html;
 }
 function renderAnalyseQualite() {
-    var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>🎓 Analyse de la Qualité</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Contenu en cours de développement...</p>';
+    var html = '';
+    
+    // ========== FILTRES PRINCIPAUX ==========
+    html += '<div style="background-color: #d1fae5; padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #059669;">';
+    html += '<h3 style="margin: 0 0 12px 0; color: #065f46; font-size: 16px;">🔍 Filtres</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+    
+    // Filtre Année
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Année</label>';
+    html += '<select id="filter-qualite-annee" class="form-control" onchange="appliquerFiltresQualite()">';
+    html += '<option value="2024-2025">2025</option>';
+    html += '<option value="2023-2024">2024</option>';
+    html += '<option value="2022-2023">2023</option>';
+    html += '</select></div>';
+    
+    // Filtre Région
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🌍 Région</label>';
+    html += '<select id="filter-qualite-region" class="form-control" onchange="appliquerFiltresQualite(); updateQualitePrefectures();">';
+    html += '<option value="">Toutes</option>';
+    for (var i = 0; i < regionsData.length; i++) {
+        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
+    }
+    html += '</select></div>';
+    
+    // Filtre Préfecture
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">🏛️ Préfecture</label>';
+    html += '<select id="filter-qualite-prefecture" class="form-control" onchange="appliquerFiltresQualite()">';
+    html += '<option value="">Toutes</option>';
+    html += '</select></div>';
+    
+    // Filtre Niveau
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
+    html += '<select id="filter-qualite-niveau" class="form-control" onchange="appliquerFiltresQualite()">';
+    html += '<option value="">Tous</option>';
+    html += '<option value="Primaire">Primaire (CEE)</option>';
+    html += '<option value="Collège">Collège (BEPC)</option>';
+    html += '<option value="Lycée">Lycée (BAC)</option>';
+    html += '</select></div>';
+    
+    html += '</div></div>';
+    
+    // ========== SECTION A : PERFORMANCE ACADÉMIQUE ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">';
+    html += '<h3 style="color: #059669; margin-bottom: 16px; font-size: 20px;">📈 A. Performance Académique</h3>';
+    
+    // 5 cartes d'indicateurs
+    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px;">';
+    
+    // Carte 1 : CEE Global
+    html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">📘 CEE</div>';
+    html += '<div id="carte-qualite-cee" style="font-size: 36px; font-weight: bold; color: #1e40af;">0%</div>';
+    html += '<div style="font-size: 10px; color: #1e3a8a; margin-top: 4px;">Objectif : > 70%</div>';
     html += '</div>';
+    
+    // Carte 2 : BEPC Global
+    html += '<div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #065f46; margin-bottom: 8px;">📗 BEPC</div>';
+    html += '<div id="carte-qualite-bepc" style="font-size: 36px; font-weight: bold; color: #065f46;">0%</div>';
+    html += '<div style="font-size: 10px; color: #047857; margin-top: 4px;">Objectif : > 60%</div>';
+    html += '</div>';
+    
+    // Carte 3 : BAC Global
+    html += '<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #92400e; margin-bottom: 8px;">📙 BAC</div>';
+    html += '<div id="carte-qualite-bac" style="font-size: 36px; font-weight: bold; color: #92400e;">0%</div>';
+    html += '<div style="font-size: 10px; color: #78350f; margin-top: 4px;">Objectif : > 50%</div>';
+    html += '</div>';
+    
+    // Carte 4 : Moyenne Globale
+    html += '<div style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border-left: 4px solid #a855f7; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #6b21a8; margin-bottom: 8px;">📊 Moyenne</div>';
+    html += '<div id="carte-qualite-moyenne" style="font-size: 36px; font-weight: bold; color: #6b21a8;">0%</div>';
+    html += '<div style="font-size: 10px; color: #581c87; margin-top: 4px;">Tous examens</div>';
+    html += '</div>';
+    
+    // Carte 5 : Parité Réussite F/G
+    html += '<div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 4px solid #ec4899; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #9f1239; margin-bottom: 8px;">⚖️ Parité F/G</div>';
+    html += '<div id="carte-qualite-parite" style="font-size: 36px; font-weight: bold; color: #9f1239;">0.00</div>';
+    html += '<div style="font-size: 10px; color: #831843; margin-top: 4px;" id="parite-status">-</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Graphique : Réussite par examen et genre
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Réussite par examen (F/G/T)</h4>';
+    html += '<div id="graph-qualite-examens" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 300px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    // Graphique : Évolution temporelle
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📈 Évolution 2023-2025</h4>';
+    html += '<div id="graph-qualite-evolution" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 250px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    html += '</div>'; // Fin Section A
+    
+    // ========== SECTION B : RESSOURCES PÉDAGOGIQUES ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 24px;">';
+    html += '<h3 style="color: #059669; margin-bottom: 16px; font-size: 20px;">👨‍🏫 B. Ressources Pédagogiques</h3>';
+    
+    // 3 cartes
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">';
+    
+    // Carte Ratio Élèves/Enseignant
+    html += '<div style="background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%); border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px;">👥 Ratio É/Ens</div>';
+    html += '<div id="carte-qualite-ratio-ens" style="font-size: 36px; font-weight: bold; color: #1e3a8a;">0</div>';
+    html += '<div style="font-size: 11px; color: #1e40af; margin-top: 4px;">Objectif : ≤ 40</div>';
+    html += '</div>';
+    
+    // Carte Préfectures Sous-Encadrées
+    html += '<div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #ef4444; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #991b1b; margin-bottom: 8px;">🚨 Sous-encadrées</div>';
+    html += '<div id="carte-qualite-sous-encadrees" style="font-size: 36px; font-weight: bold; color: #991b1b;">0</div>';
+    html += '<div style="font-size: 11px; color: #7f1d1d; margin-top: 4px;">Ratio > 40</div>';
+    html += '</div>';
+    
+    // Carte Impact Ratio sur Réussite
+    html += '<div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #059669; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #065f46; margin-bottom: 8px;">📊 Corrélation</div>';
+    html += '<div id="carte-qualite-correlation" style="font-size: 24px; font-weight: bold; color: #065f46;">-</div>';
+    html += '<div style="font-size: 11px; color: #047857; margin-top: 4px;">Ratio ↔ Réussite</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Graphique : Ratio par préfecture
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Ratio Élèves/Enseignant par préfecture</h4>';
+    html += '<div id="graph-qualite-ratio" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 300px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    html += '</div>'; // Fin Section B
+    
+    // ========== SECTION C : RÉTENTION SCOLAIRE ==========
+    html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+    html += '<h3 style="color: #059669; margin-bottom: 16px; font-size: 20px;">🚪 C. Rétention Scolaire</h3>';
+    
+    // 2 cartes
+    html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px;">';
+    
+    // Carte Taux Abandon Moyen
+    html += '<div style="background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); border-left: 4px solid #ea580c; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #9a3412; margin-bottom: 8px;">📉 Abandon Moyen</div>';
+    html += '<div id="carte-qualite-abandon" style="font-size: 36px; font-weight: bold; color: #9a3412;">0%</div>';
+    html += '<div style="font-size: 11px; color: #7c2d12; margin-top: 4px;">Objectif : < 10%</div>';
+    html += '</div>';
+    
+    // Carte Préfectures Critiques (abandon > 15%)
+    html += '<div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626; border-radius: 8px; padding: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #991b1b; margin-bottom: 8px;">🔴 Critiques</div>';
+    html += '<div id="carte-qualite-abandon-critique" style="font-size: 36px; font-weight: bold; color: #991b1b;">0</div>';
+    html += '<div style="font-size: 11px; color: #7f1d1d; margin-top: 4px;">Abandon > 15%</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Graphique : Abandon par niveau
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Taux d\'abandon par niveau</h4>';
+    html += '<div id="graph-qualite-abandon" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 300px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    // Tableau Top/Bottom préfectures
+    html += '<div style="margin-top: 24px;">';
+    html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🏆 Classement des préfectures</h4>';
+    html += '<div id="tableau-qualite-classement" style="margin-top: 16px;">';
+    html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+    html += '</div></div>';
+    
+    html += '</div>'; // Fin Section C
+    
     return html;
 }
-
 function renderAnalyseAlphabetisation() {
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
     html += '<h3>✍️ Analyse de l\'Alphabétisation</h3>';
@@ -7264,6 +7443,494 @@ function afficherTableauEquite(dataFiltrees) {
     
     container.innerHTML = html;
 }
+// ========== FONCTIONS ANALYSE QUALITÉ ==========
+function updateQualitePrefectures() {
+    var regionSelect = document.getElementById('filter-qualite-region');
+    var prefectureSelect = document.getElementById('filter-qualite-prefecture');
+    
+    if (!regionSelect || !prefectureSelect) return;
+    var regionId = regionSelect.value;
+    prefectureSelect.innerHTML = '<option value="">Toutes</option>';
+    if (regionId && regionId !== '') {
+        for (var i = 0; i < prefecturesData.length; i++) {
+            if (prefecturesData[i].region_id == regionId) {
+                var option = document.createElement('option');
+                option.value = prefecturesData[i].nom;
+                option.textContent = prefecturesData[i].nom;
+                prefectureSelect.appendChild(option);
+            }
+        }
+    }
+}
+
+function appliquerFiltresQualite() {
+    console.log('🔍 Application des filtres Qualité...');
+    var anneeSelect = document.getElementById('filter-qualite-annee');
+    var regionSelect = document.getElementById('filter-qualite-region');
+    var prefectureSelect = document.getElementById('filter-qualite-prefecture');
+    var niveauSelect = document.getElementById('filter-qualite-niveau');
+    if (!anneeSelect) return;
+    
+    var annee = anneeSelect.value;
+    var regionId = regionSelect ? regionSelect.value : '';
+    var prefecture = prefectureSelect ? prefectureSelect.value : '';
+    var niveau = niveauSelect ? niveauSelect.value : '';
+    console.log('Filtres:', { annee, regionId, prefecture, niveau });
+    // Filtrer examens
+    var examensFiltre = [];
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire !== annee) continue;
+        var examRegionId = '';
+        for (var r = 0; r < regionsData.length; r++) {
+            if (regionsData[r].nom === exam.region) {
+                examRegionId = regionsData[r].id.toString();
+                break;
+            }
+        }
+        var inclure = true;
+        if (regionId && regionId !== '' && examRegionId !== regionId) inclure = false;
+        if (inclure && prefecture && prefecture !== '' && exam.prefecture !== prefecture) inclure = false;
+        if (inclure && niveau && niveau !== '' && exam.niveau !== niveau) inclure = false;
+        if (inclure) examensFiltre.push(exam);
+    }
+    // Filtrer stats générales (pour ratios et abandon)
+    var statsFiltre = [];
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        if (stat.annee_scolaire !== annee) continue;
+        var statRegionId = '';
+        for (var r = 0; r < regionsData.length; r++) {
+            if (regionsData[r].nom === stat.region) {
+                statRegionId = regionsData[r].id.toString();
+                break;
+            }
+        }
+        var inclure = true;
+        if (regionId && regionId !== '' && statRegionId !== regionId) inclure = false;
+        if (inclure && prefecture && prefecture !== '' && stat.prefecture !== prefecture) inclure = false;
+        if (inclure && niveau && niveau !== '' && stat.niveau !== niveau) inclure = false;
+        if (inclure) statsFiltre.push(stat);
+    }
+    
+    console.log('✅ Examens filtrés:', examensFiltre.length);
+    console.log('✅ Stats filtrées:', statsFiltre.length);
+    
+    // Calculer et afficher
+    calculerIndicateursQualite(examensFiltre, statsFiltre);
+    afficherGraphiqueExamens(examensFiltre);
+    afficherGraphiqueEvolution(annee, regionId, prefecture, niveau);
+    afficherGraphiqueRatio(statsFiltre);
+    afficherGraphiqueAbandon(statsFiltre);
+    afficherClassementPrefectures(examensFiltre);
+}
+function calculerIndicateursQualite(examensFiltre, statsFiltre) {
+    if (examensFiltre.length === 0) {
+        document.getElementById('carte-qualite-cee').textContent = '0%';
+        document.getElementById('carte-qualite-bepc').textContent = '0%';
+        document.getElementById('carte-qualite-bac').textContent = '0%';
+        document.getElementById('carte-qualite-moyenne').textContent = '0%';
+        document.getElementById('carte-qualite-parite').textContent = '0.00';
+        document.getElementById('parite-status').textContent = 'Aucune donnée';
+        document.getElementById('carte-qualite-ratio-ens').textContent = '0';
+        document.getElementById('carte-qualite-sous-encadrees').textContent = '0';
+        document.getElementById('carte-qualite-correlation').textContent = '-';
+        document.getElementById('carte-qualite-abandon').textContent = '0%';
+        document.getElementById('carte-qualite-abandon-critique').textContent = '0';
+        return;
+    }
+    
+    // Taux de réussite
+    var moyenneCEE = calculerMoyenneParGenre(examensFiltre, 'taux_reussite_cee', 'Total');
+    var moyenneBEPC = calculerMoyenneParGenre(examensFiltre, 'taux_reussite_bepc', 'Total');
+    var moyenneBAC = calculerMoyenneParGenre(examensFiltre, 'taux_reussite_bac', 'Total');
+    var moyenneGlobale = Math.round((moyenneCEE + moyenneBEPC + moyenneBAC) / 3 * 10) / 10;
+    // Parité F/G
+    var moyenneFilles = (
+        calculerMoyenneParGenre(examensFiltre, 'taux_reussite_cee', 'Filles') +
+        calculerMoyenneParGenre(examensFiltre, 'taux_reussite_bepc', 'Filles') +
+        calculerMoyenneParGenre(examensFiltre, 'taux_reussite_bac', 'Filles')
+    ) / 3;
+    var moyenneGarcons = (
+        calculerMoyenneParGenre(examensFiltre, 'taux_reussite_cee', 'Garcons') +
+        calculerMoyenneParGenre(examensFiltre, 'taux_reussite_bepc', 'Garcons') +
+        calculerMoyenneParGenre(examensFiltre, 'taux_reussite_bac', 'Garcons')
+    ) / 3;
+    var parite = moyenneGarcons > 0 ? Math.round((moyenneFilles / moyenneGarcons) * 100) / 100 : 0;
+    var pariteStatus = '';
+    if (parite >= 0.97 && parite <= 1.03) {
+        pariteStatus = '🟢 Parité atteinte';
+    } else if (parite < 0.97) {
+        pariteStatus = '🔴 Déf. filles';
+    } else {
+        pariteStatus = '🟡 Déf. garçons';
+    }
+    // Ressources pédagogiques
+    var moyenneRatioEns = statsFiltre.length > 0 ? calculerMoyenne(statsFiltre, 'ratio_eleves_enseignant', 'Total') : 0;
+    var sousEncadrees = 0;
+    for (var i = 0; i < statsFiltre.length; i++) {
+        if (statsFiltre[i].ratio_eleves_enseignant && statsFiltre[i].ratio_eleves_enseignant > 40) {
+            sousEncadrees++;
+        }
+    }
+    // Corrélation (simulation simplifiée)
+    var correlation = moyenneRatioEns > 0 && moyenneGlobale > 0 ? 
+        (moyenneRatioEns <= 40 ? '🟢 Positive' : '🔴 Négative') : '-';
+    // Abandon
+    var moyenneAbandon = statsFiltre.length > 0 ? calculerMoyenne(statsFiltre, 'taux_abandon', 'Total') : 0;
+    var abandonCritique = 0;
+    for (var i = 0; i < statsFiltre.length; i++) {
+        if (statsFiltre[i].taux_abandon_total && statsFiltre[i].taux_abandon_total > 15) {
+            abandonCritique++;
+        }
+    }
+    // Affichage
+    document.getElementById('carte-qualite-cee').textContent = moyenneCEE + '%';
+    document.getElementById('carte-qualite-bepc').textContent = moyenneBEPC + '%';
+    document.getElementById('carte-qualite-bac').textContent = moyenneBAC + '%';
+    document.getElementById('carte-qualite-moyenne').textContent = moyenneGlobale + '%';
+    document.getElementById('carte-qualite-parite').textContent = parite;
+    document.getElementById('parite-status').textContent = pariteStatus;
+    document.getElementById('carte-qualite-ratio-ens').textContent = Math.round(moyenneRatioEns);
+    document.getElementById('carte-qualite-sous-encadrees').textContent = sousEncadrees;
+    document.getElementById('carte-qualite-correlation').textContent = correlation;
+    document.getElementById('carte-qualite-abandon').textContent = moyenneAbandon + '%';
+    document.getElementById('carte-qualite-abandon-critique').textContent = abandonCritique;
+}
+function afficherGraphiqueExamens(examensFiltre) {
+    var container = document.getElementById('graph-qualite-examens');
+    if (!container) return;
+    if (examensFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    var examens = ['CEE', 'BEPC', 'BAC'];
+    var html = '<div style="display: flex; flex-direction: column; gap: 24px;">';
+    for (var e = 0; e < examens.length; e++) {
+        var exam = examens[e];
+        var field = 'taux_reussite_' + exam.toLowerCase();
+        var moyF = calculerMoyenneParGenre(examensFiltre, field, 'Filles');
+        var moyG = calculerMoyenneParGenre(examensFiltre, field, 'Garcons');
+        var moyT = calculerMoyenneParGenre(examensFiltre, field, 'Total');
+        html += '<div>';
+        html += '<div style="font-weight: bold; margin-bottom: 10px; color: #374151; font-size: 15px;">' + exam + '</div>';
+        html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
+        // Filles
+        html += '<div><div style="font-size: 12px; color: #9f1239; margin-bottom: 6px; font-weight: 600;">👧 Filles: ' + moyF + '%</div>';
+        html += '<div style="background-color: #fee2e2; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
+        html += '<div style="width: ' + moyF + '%; height: 100%; background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);"></div></div></div>';
+        // Garçons
+        html += '<div><div style="font-size: 12px; color: #1e3a8a; margin-bottom: 6px; font-weight: 600;">👦 Garçons: ' + moyG + '%</div>';
+        html += '<div style="background-color: #dbeafe; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
+        html += '<div style="width: ' + moyG + '%; height: 100%; background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);"></div></div></div>';
+        // Total
+        html += '<div><div style="font-size: 12px; color: #065f46; margin-bottom: 6px; font-weight: 600;">📊 Total: ' + moyT + '%</div>';
+        html += '<div style="background-color: #d1fae5; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
+        html += '<div style="width: ' + moyT + '%; height: 100%; background: linear-gradient(90deg, #059669 0%, #10b981 100%);"></div></div></div>';
+        html += '</div></div>';
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+function afficherGraphiqueEvolution(annee, regionId, prefecture, niveau) {
+    var container = document.getElementById('graph-qualite-evolution');
+    if (!container) return;
+    // Récupérer les 3 dernières années
+    var annees = ['2022-2023', '2023-2024', '2024-2025'];
+    var anneesLabels = ['2023', '2024', '2025'];
+    // Collecter les données pour CEE, BEPC, BAC
+    var dataCEE = [];
+    var dataBEPC = [];
+    var dataBAC = [];
+    for (var a = 0; a < annees.length; a++) {
+        var anneeActuelle = annees[a];
+        var examensAnnee = [];
+        for (var i = 0; i < reussiteExamensData.length; i++) {
+            var exam = reussiteExamensData[i];
+            if (exam.annee_scolaire !== anneeActuelle) continue;
+            var examRegionId = '';
+            for (var r = 0; r < regionsData.length; r++) {
+                if (regionsData[r].nom === exam.region) {
+                    examRegionId = regionsData[r].id.toString();
+                    break;
+                }
+            }
+            var inclure = true;
+            if (regionId && regionId !== '' && examRegionId !== regionId) inclure = false;
+            if (inclure && prefecture && prefecture !== '' && exam.prefecture !== prefecture) inclure = false;
+            if (inclure && niveau && niveau !== '' && exam.niveau !== niveau) inclure = false;
+            
+            if (inclure) examensAnnee.push(exam);
+        }
+        
+        var moyenneCEE = examensAnnee.length > 0 ? calculerMoyenneParGenre(examensAnnee, 'taux_reussite_cee', 'Total') : 0;
+        var moyenneBEPC = examensAnnee.length > 0 ? calculerMoyenneParGenre(examensAnnee, 'taux_reussite_bepc', 'Total') : 0;
+        var moyenneBAC = examensAnnee.length > 0 ? calculerMoyenneParGenre(examensAnnee, 'taux_reussite_bac', 'Total') : 0;
+        dataCEE.push(moyenneCEE);
+        dataBEPC.push(moyenneBEPC);
+        dataBAC.push(moyenneBAC);
+    }
+    // Graphique en ligne simple
+    var html = '<div style="position: relative; height: 200px;">';
+    // Axes
+    html += '<div style="position: absolute; bottom: 30px; left: 0; right: 0; border-top: 2px solid #e5e7eb;"></div>';
+    html += '<div style="position: absolute; bottom: 0; left: 30px; top: 0; border-left: 2px solid #e5e7eb;"></div>';
+    // Labels Y
+    for (var i = 0; i <= 4; i++) {
+        var valeur = i * 25;
+        var posY = 170 - (i * 42.5);
+        html += '<div style="position: absolute; left: 0; top: ' + posY + 'px; font-size: 10px; color: #6b7280;">' + valeur + '%</div>';
+    }
+    // Points et lignes
+    var maxVal = 100;
+    var largeur = 80; // % de largeur utilisable
+    var ecartX = largeur / (annees.length - 1);
+    var couleurs = {
+        'CEE': '#3b82f6',
+        'BEPC': '#059669',
+        'BAC': '#f59e0b'
+    };
+    var datasets = [
+        { nom: 'CEE', data: dataCEE, couleur: couleurs.CEE },
+        { nom: 'BEPC', data: dataBEPC, couleur: couleurs.BEPC },
+        { nom: 'BAC', data: dataBAC, couleur: couleurs.BAC }
+    ];
+    for (var d = 0; d < datasets.length; d++) {
+        var dataset = datasets[d];
+        for (var i = 0; i < dataset.data.length; i++) {
+            var valeur = dataset.data[i];
+            var x = 50 + (i * ecartX * 10); // Position X en pixels
+            var y = 170 - (valeur * 1.7); // Position Y en pixels
+            // Point
+            html += '<div style="position: absolute; left: ' + x + 'px; top: ' + y + 'px; width: 8px; height: 8px; background-color: ' + dataset.couleur + '; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>';
+            
+            // Valeur au-dessus du point
+            html += '<div style="position: absolute; left: ' + (x - 10) + 'px; top: ' + (y - 20) + 'px; font-size: 10px; font-weight: bold; color: ' + dataset.couleur + ';">' + valeur + '%</div>';
+        }
+    }
+    // Labels X (années)
+    for (var i = 0; i < anneesLabels.length; i++) {
+        var x = 42 + (i * ecartX * 10);
+        html += '<div style="position: absolute; left: ' + x + 'px; bottom: 5px; font-size: 11px; color: #374151; font-weight: 600;">' + anneesLabels[i] + '</div>';
+    }
+    html += '</div>';
+    // Légende
+    html += '<div style="display: flex; gap: 20px; justify-content: center; margin-top: 40px;">';
+    for (var d = 0; d < datasets.length; d++) {
+        var dataset = datasets[d];
+        html += '<div style="display: flex; align-items: center; gap: 6px;">';
+        html += '<div style="width: 12px; height: 12px; background-color: ' + dataset.couleur + '; border-radius: 50%;"></div>';
+        html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">' + dataset.nom + '</span>';
+        html += '</div>';
+    }
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+function afficherGraphiqueRatio(statsFiltre) {
+    var container = document.getElementById('graph-qualite-ratio');
+    if (!container) return;
+    if (statsFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    // Grouper par préfecture
+    var ratioParPref = {};
+    
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        var key = stat.prefecture;
+        
+        if (!ratioParPref[key]) {
+            ratioParPref[key] = [];
+        }
+        
+        if (stat.ratio_eleves_enseignant) {
+            ratioParPref[key].push(stat.ratio_eleves_enseignant);
+        }
+    }
+    
+    // Calculer moyennes et trier
+    var prefectures = [];
+    for (var pref in ratioParPref) {
+        var ratios = ratioParPref[pref];
+        var moyenne = ratios.reduce(function(a,b){return a+b;},0) / ratios.length;
+        prefectures.push({ nom: pref, ratio: Math.round(moyenne * 10) / 10 });
+    }
+    // Trier par ratio décroissant
+    prefectures.sort(function(a, b) { return b.ratio - a.ratio; });
+    // Limiter aux 10 premières
+    prefectures = prefectures.slice(0, 10);
+    // Graphique en barres horizontales
+    var html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+    for (var i = 0; i < prefectures.length; i++) {
+        var p = prefectures[i];
+        var couleur = p.ratio > 40 ? '#ef4444' : (p.ratio > 35 ? '#f59e0b' : '#10b981');
+        var bgCouleur = p.ratio > 40 ? '#fee2e2' : (p.ratio > 35 ? '#fef3c7' : '#d1fae5');
+        var largeur = Math.min(p.ratio * 2, 100); // Max 100%
+        html += '<div>';
+        html += '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">';
+        html += '<span style="font-size: 12px; font-weight: 600; color: #374151;">' + p.nom + '</span>';
+        html += '<span style="font-size: 12px; font-weight: bold; color: ' + couleur + ';">' + p.ratio + '</span>';
+        html += '</div>';
+        html += '<div style="background-color: ' + bgCouleur + '; height: 24px; border-radius: 6px; overflow: hidden; position: relative;">';
+        html += '<div style="width: ' + largeur + '%; height: 100%; background-color: ' + couleur + '; transition: width 0.3s;"></div>';  
+        // Ligne objectif à 40
+        if (largeur > 80) {
+            html += '<div style="position: absolute; left: 80%; top: 0; bottom: 0; width: 2px; background-color: #dc2626; opacity: 0.5;"></div>';
+        }   
+        html += '</div></div>';
+    } 
+    html += '</div>';    
+    // Note
+    html += '<div style="margin-top: 16px; padding: 12px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">';
+    html += '<p style="font-size: 12px; color: #92400e; margin: 0;">📌 Objectif national : Ratio ≤ 40 élèves/enseignant</p>';
+    html += '</div>';
+    container.innerHTML = html;
+}
+function afficherGraphiqueAbandon(statsFiltre) {
+    var container = document.getElementById('graph-qualite-abandon');
+    if (!container) return;
+    if (statsFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    // Grouper par niveau
+    var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
+    var dataParNiveau = {};
+    
+    for (var i = 0; i < niveaux.length; i++) {
+        dataParNiveau[niveaux[i]] = { filles: [], garcons: [], total: [] };
+    }  
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        if (dataParNiveau[stat.niveau]) {
+            if (stat.taux_abandon_filles) dataParNiveau[stat.niveau].filles.push(stat.taux_abandon_filles);
+            if (stat.taux_abandon_garcons) dataParNiveau[stat.niveau].garcons.push(stat.taux_abandon_garcons);
+            if (stat.taux_abandon_total) dataParNiveau[stat.niveau].total.push(stat.taux_abandon_total);
+        }
+    }  
+    // Graphique
+    var html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
+    for (var i = 0; i < niveaux.length; i++) {
+        var niveau = niveaux[i];
+        var data = dataParNiveau[niveau];
+        var moyF = data.filles.length > 0 ? Math.round(data.filles.reduce(function(a,b){return a+b;},0) / data.filles.length * 10) / 10 : 0;
+        var moyG = data.garcons.length > 0 ? Math.round(data.garcons.reduce(function(a,b){return a+b;},0) / data.garcons.length * 10) / 10 : 0;
+        var moyT = data.total.length > 0 ? Math.round(data.total.reduce(function(a,b){return a+b;},0) / data.total.length * 10) / 10 : 0;    
+        html += '<div>';
+        html += '<div style="font-weight: bold; margin-bottom: 8px; color: #374151;">' + niveau + '</div>';
+        html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">';
+        
+        // Filles
+        html += '<div><div style="font-size: 11px; color: #9f1239; margin-bottom: 4px;">👧 Filles: ' + moyF + '%</div>';
+        html += '<div style="background-color: #fee2e2; height: 24px; border-radius: 4px; overflow: hidden;">';
+        html += '<div style="width: ' + (moyF * 5) + '%; height: 100%; background-color: #dc2626;"></div></div></div>'; 
+        // Garçons
+        html += '<div><div style="font-size: 11px; color: #1e3a8a; margin-bottom: 4px;">👦 Garçons: ' + moyG + '%</div>';
+        html += '<div style="background-color: #dbeafe; height: 24px; border-radius: 4px; overflow: hidden;">';
+        html += '<div style="width: ' + (moyG * 5) + '%; height: 100%; background-color: #3b82f6;"></div></div></div>';
+        // Total
+        html += '<div><div style="font-size: 11px; color: #9a3412; margin-bottom: 4px;">📊 Total: ' + moyT + '%</div>';
+        html += '<div style="background-color: #fed7aa; height: 24px; border-radius: 4px; overflow: hidden;">';
+        html += '<div style="width: ' + (moyT * 5) + '%; height: 100%; background-color: #ea580c;"></div></div></div>';   
+        html += '</div></div>';
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+function afficherClassementPrefectures(examensFiltre) {
+    var container = document.getElementById('tableau-qualite-classement');
+    if (!container) return;
+    
+    if (examensFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }  
+    // Grouper par préfecture et calculer moyenne globale
+    var dataParPref = {};
+    for (var i = 0; i < examensFiltre.length; i++) {
+        var exam = examensFiltre[i];
+        var key = exam.prefecture;
+        if (!dataParPref[key]) {
+            dataParPref[key] = {
+                region: exam.region,
+                cee: [],
+                bepc: [],
+                bac: []
+            };
+        } 
+        if (exam.taux_reussite_cee_total) dataParPref[key].cee.push(exam.taux_reussite_cee_total);
+        if (exam.taux_reussite_bepc_total) dataParPref[key].bepc.push(exam.taux_reussite_bepc_total);
+        if (exam.taux_reussite_bac_total) dataParPref[key].bac.push(exam.taux_reussite_bac_total);
+    }    
+    // Calculer moyennes
+    var prefectures = [];  
+    for (var pref in dataParPref) {
+        var data = dataParPref[pref];
+        
+        var moyenneCEE = data.cee.length > 0 ? data.cee.reduce(function(a,b){return a+b;},0) / data.cee.length : 0;
+        var moyenneBEPC = data.bepc.length > 0 ? data.bepc.reduce(function(a,b){return a+b;},0) / data.bepc.length : 0;
+        var moyenneBAC = data.bac.length > 0 ? data.bac.reduce(function(a,b){return a+b;},0) / data.bac.length : 0;
+        var moyenneGlobale = Math.round((moyenneCEE + moyenneBEPC + moyenneBAC) / 3 * 10) / 10;   
+        prefectures.push({
+            nom: pref,
+            region: data.region,
+            cee: Math.round(moyenneCEE * 10) / 10,
+            bepc: Math.round(moyenneBEPC * 10) / 10,
+            bac: Math.round(moyenneBAC * 10) / 10,
+            moyenne: moyenneGlobale
+        });
+    }
+    // Trier par moyenne décroissante
+    prefectures.sort(function(a, b) { return b.moyenne - a.moyenne; });
+    // Afficher Top 5 et Bottom 5
+    var top5 = prefectures.slice(0, 5);
+    var bottom5 = prefectures.slice(-5).reverse();
+    var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
+    // TOP 5
+    html += '<div>';
+    html += '<h4 style="color: #059669; margin-bottom: 12px; font-size: 16px;">🏆 Top 5 - Meilleures Performances</h4>';
+    html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #059669; color: white;">';
+    html += '<th style="padding: 10px; border: 1px solid #047857;">Rang</th>';
+    html += '<th style="padding: 10px; border: 1px solid #047857;">Préfecture</th>';
+    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center;">Moyenne</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < top5.length; i++) {
+        var p = top5[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#f0fdf4';
+        
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + (i + 1) + '</td>';
+        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 6px; font-weight: bold;">' + p.moyenne + '%</span></td>';
+        html += '</tr>';
+    }  
+    html += '</tbody></table></div></div>';
+    // BOTTOM 5
+    html += '<div>';
+    html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ Bottom 5 - À Améliorer</h4>';
+    html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626; color: white;">';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Rang</th>';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Préfecture</th>';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">Moyenne</th>';
+    html += '</tr></thead><tbody>';
+    for (var i = 0; i < bottom5.length; i++) {
+        var p = bottom5[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + (prefectures.length - bottom5.length + i + 1) + '</td>';
+        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: bold;">' + p.moyenne + '%</span></td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table></div></div>';
+    html += '</div>';
+    container.innerHTML = html;
+}
+
         // Lancer l'initialisation
         init();
     </script>
