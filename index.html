@@ -8622,94 +8622,127 @@ function afficherImpactDistance(dataFiltrees) {
     
     html += '</div>'; // Fin partie droite
     html += '</div>'; // Fin grid
-// 🔥 GRAPHIQUE RADAR - Distance vs Scolarisation
+// 🔥 GRAPHIQUE EN COURBE - Distance vs Scolarisation
 html += '<div style="margin-top: 24px;">';
-html += '<h5 style="color: #374151; margin-bottom: 12px; font-size: 15px;">📊 Tendance Générale : Distance vs Scolarisation</h5>';
+html += '<h5 style="color: #374151; margin-bottom: 12px; font-size: 15px;">📉 Tendance Générale : Distance vs Scolarisation</h5>';
 html += '<div style="background-color: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb;">';
 
-// Graphique circulaire simplifié
-html += '<div style="position: relative; width: 400px; height: 400px; margin: 0 auto;">';
+// Zone de graphique
+html += '<div style="position: relative; height: 280px; padding: 20px;">';
 
-// Cercles concentriques (20%, 40%, 60%, 80%, 100%)
-var rayons = [160, 120, 80, 40];
-var couleursCercles = ['#fee2e2', '#fef3c7', '#d1fae5', '#059669'];
+// Axes
+html += '<div style="position: absolute; bottom: 40px; left: 60px; right: 30px; border-top: 2px solid #e5e7eb;"></div>';
+html += '<div style="position: absolute; bottom: 30px; left: 60px; top: 20px; border-left: 2px solid #e5e7eb;"></div>';
 
-for (var r = 0; r < rayons.length; r++) {
-    html += '<div style="position: absolute; left: 50%; top: 50%; width: ' + (rayons[r] * 2) + 'px; height: ' + (rayons[r] * 2) + 'px; border: 2px solid ' + couleursCercles[r] + '; border-radius: 50%; transform: translate(-50%, -50%); opacity: 0.3;"></div>';
+// Labels Y (Scolarisation 0-100%)
+for (var i = 0; i <= 5; i++) {
+    var valeur = i * 20;
+    var posY = 230 - (i * 40);
+    html += '<div style="position: absolute; left: 20px; top: ' + posY + 'px; font-size: 11px; color: #6b7280; font-weight: 600;">' + valeur + '%</div>';
 }
 
-// Labels des cercles (pourcentages)
-var pourcentages = [100, 80, 60, 40, 20];
-for (var p = 0; p < pourcentages.length; p++) {
-    var rayon = p === 0 ? 165 : rayons[p - 1];
-    html += '<div style="position: absolute; left: 50%; top: ' + (200 - rayon - 15) + 'px; font-size: 10px; color: #6b7280; font-weight: bold; transform: translateX(-50%);">' + pourcentages[p] + '%</div>';
-}
+// Label axe Y
+html += '<div style="position: absolute; left: 5px; top: 100px; font-size: 12px; color: #374151; font-weight: bold; transform: rotate(-90deg); transform-origin: left;">Scolarisation</div>';
 
-// Placer les tranches de distance sur le cercle
-var angleStep = 360 / tranches.length;
-var maxTranchesValides = 0;
+// Label axe X
+html += '<div style="position: absolute; bottom: 10px; right: 20px; font-size: 12px; color: #374151; font-weight: bold;">Distance (km)</div>';
 
+// Filtrer les tranches avec données
+var tranchesValides = [];
 for (var t = 0; t < tranches.length; t++) {
-    if (tranches[t].count > 0) maxTranchesValides++;
+    if (tranches[t].count > 0) {
+        tranchesValides.push(tranches[t]);
+    }
 }
 
-var trancheIndex = 0;
-for (var t = 0; t < tranches.length; t++) {
-    var tranche = tranches[t];
+if (tranchesValides.length > 0) {
+    var largeurUtile = 85; // % de la largeur
+    var ecartX = tranchesValides.length > 1 ? largeurUtile / (tranchesValides.length - 1) : 0;
     
-    if (tranche.count === 0) continue;
+    // Tracer la ligne de tendance
+    for (var i = 0; i < tranchesValides.length - 1; i++) {
+        var x1 = 70 + (i * ecartX * 6.5);
+        var y1 = 230 - (tranchesValides[i].moyenne * 2);
+        var x2 = 70 + ((i + 1) * ecartX * 6.5);
+        var y2 = 230 - (tranchesValides[i + 1].moyenne * 2);
+        
+        var longueur = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        var angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+        
+        // Couleur du segment selon tendance
+        var couleurSegment = tranchesValides[i + 1].moyenne >= tranchesValides[i].moyenne ? '#10b981' : '#ef4444';
+        
+        html += '<div style="position: absolute; left: ' + x1 + 'px; top: ' + y1 + 'px; width: ' + longueur + 'px; height: 3px; background-color: ' + couleurSegment + '; transform-origin: 0 0; transform: rotate(' + angle + 'deg); opacity: 0.8;"></div>';
+    }
     
-    var angle = (trancheIndex * 360 / maxTranchesValides) - 90; // -90 pour commencer en haut
-    var angleRad = angle * Math.PI / 180;
+    // Tracer les points et étiquettes
+    for (var i = 0; i < tranchesValides.length; i++) {
+        var tranche = tranchesValides[i];
+        var x = 70 + (i * ecartX * 6.5);
+        var y = 230 - (tranche.moyenne * 2);
+        
+        // Couleur selon performance
+        var couleur = tranche.moyenne >= 70 ? '#10b981' : (tranche.moyenne >= 50 ? '#f59e0b' : '#ef4444');
+        var couleurBg = tranche.moyenne >= 70 ? '#d1fae5' : (tranche.moyenne >= 50 ? '#fef3c7' : '#fee2e2');
+        
+        // Point
+        html += '<div style="position: absolute; left: ' + (x - 6) + 'px; top: ' + (y - 6) + 'px; width: 12px; height: 12px; background-color: ' + couleur + '; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 10;"></div>';
+        
+        // Étiquette au-dessus du point
+        html += '<div style="position: absolute; left: ' + (x - 25) + 'px; top: ' + (y - 40) + 'px; width: 50px; text-align: center; font-size: 11px; font-weight: bold; color: ' + couleur + '; background-color: white; padding: 4px 6px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); border: 1px solid ' + couleur + ';">' + tranche.moyenne + '%</div>';
+        
+        // Label X (distance)
+        var labelDistance = tranche.label.replace('< ', '<').replace('> ', '>');
+        html += '<div style="position: absolute; left: ' + (x - 30) + 'px; bottom: 15px; font-size: 11px; color: #374151; font-weight: 600; text-align: center; width: 60px;">' + labelDistance + '</div>';
+        
+        // Nombre de zones (en petit sous le label)
+        html += '<div style="position: absolute; left: ' + (x - 30) + 'px; bottom: 2px; font-size: 9px; color: #9ca3af; text-align: center; width: 60px;">(' + tranche.count + ' zone' + (tranche.count > 1 ? 's' : '') + ')</div>';
+    }
     
-    // Calculer position du point selon le taux
-    var rayon = (tranche.moyenne / 100) * 160;
-    var x = 200 + rayon * Math.cos(angleRad);
-    var y = 200 + rayon * Math.sin(angleRad);
-    
-    // Couleur selon performance
-    var couleur = tranche.moyenne >= 70 ? '#10b981' : (tranche.moyenne >= 50 ? '#f59e0b' : '#ef4444');
-    
-    // Ligne depuis le centre
-    html += '<div style="position: absolute; left: 200px; top: 200px; width: ' + rayon + 'px; height: 2px; background-color: ' + couleur + '; transform-origin: 0 0; transform: rotate(' + angle + 'deg); opacity: 0.6;"></div>';
-    
-    // Point
-    html += '<div style="position: absolute; left: ' + (x - 8) + 'px; top: ' + (y - 8) + 'px; width: 16px; height: 16px; background-color: ' + couleur + '; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 10;"></div>';
-    
-    // Label de la tranche (à l'extérieur)
-    var rayonLabel = 190;
-    var xLabel = 200 + rayonLabel * Math.cos(angleRad);
-    var yLabel = 200 + rayonLabel * Math.sin(angleRad);
-    
-    html += '<div style="position: absolute; left: ' + (xLabel - 35) + 'px; top: ' + (yLabel - 25) + 'px; width: 70px; text-align: center; font-size: 11px; font-weight: bold; color: #374151; background-color: white; padding: 6px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 3px solid ' + couleur + ';">';
-    html += '<div style="font-size: 10px; color: #6b7280; margin-bottom: 2px;">' + tranche.label + '</div>';
-    html += '<div style="font-size: 14px; color: ' + couleur + ';">' + tranche.moyenne + '%</div>';
-    html += '</div>';
-    
-    trancheIndex++;
+    // Ligne objectif 70%
+    var yObjectif = 230 - (70 * 2);
+    html += '<div style="position: absolute; left: 60px; right: 30px; top: ' + yObjectif + 'px; border-top: 2px dashed #2563eb; opacity: 0.5;"></div>';
+    html += '<div style="position: absolute; right: 35px; top: ' + (yObjectif - 20) + 'px; font-size: 11px; color: #2563eb; font-weight: bold; background-color: white; padding: 2px 6px; border-radius: 3px; border: 1px solid #2563eb;">Objectif 70%</div>';
 }
 
-// Point central
-html += '<div style="position: absolute; left: 192px; top: 192px; width: 16px; height: 16px; background-color: #374151; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index: 11;"></div>';
-
 html += '</div>';
 
-// Légende
-html += '<div style="display: flex; gap: 20px; justify-content: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">';
+// Statistiques sous le graphique
+html += '<div style="margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
 
-html += '<div style="display: flex; align-items: center; gap: 8px;">';
-html += '<div style="width: 14px; height: 14px; background-color: #10b981; border-radius: 50%;"></div>';
-html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">≥ 70% (Bon)</span>';
+// Meilleure tranche
+var meilleureTranche = tranchesValides[0];
+for (var t = 1; t < tranchesValides.length; t++) {
+    if (tranchesValides[t].moyenne > meilleureTranche.moyenne) {
+        meilleureTranche = tranchesValides[t];
+    }
+}
+
+html += '<div style="background-color: #d1fae5; padding: 14px; border-radius: 8px; border-left: 4px solid #059669;">';
+html += '<div style="font-size: 11px; color: #065f46; margin-bottom: 4px; font-weight: bold;">🟢 Meilleure Performance</div>';
+html += '<div style="font-size: 18px; font-weight: bold; color: #065f46;">' + meilleureTranche.moyenne + '%</div>';
+html += '<div style="font-size: 10px; color: #047857; margin-top: 4px;">' + meilleureTranche.label + '</div>';
 html += '</div>';
 
-html += '<div style="display: flex; align-items: center; gap: 8px;">';
-html += '<div style="width: 14px; height: 14px; background-color: #f59e0b; border-radius: 50%;"></div>';
-html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">50-70% (Moyen)</span>';
+// Pire tranche
+var pireTranche = tranchesValides[0];
+for (var t = 1; t < tranchesValides.length; t++) {
+    if (tranchesValides[t].moyenne < pireTranche.moyenne) {
+        pireTranche = tranchesValides[t];
+    }
+}
+
+html += '<div style="background-color: #fee2e2; padding: 14px; border-radius: 8px; border-left: 4px solid #dc2626;">';
+html += '<div style="font-size: 11px; color: #991b1b; margin-bottom: 4px; font-weight: bold;">🔴 Pire Performance</div>';
+html += '<div style="font-size: 18px; font-weight: bold; color: #991b1b;">' + pireTranche.moyenne + '%</div>';
+html += '<div style="font-size: 10px; color: #7f1d1d; margin-top: 4px;">' + pireTranche.label + '</div>';
 html += '</div>';
 
-html += '<div style="display: flex; align-items: center; gap: 8px;">';
-html += '<div style="width: 14px; height: 14px; background-color: #ef4444; border-radius: 50%;"></div>';
-html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">< 50% (Faible)</span>';
+// Corrélation
+html += '<div style="background-color: #dbeafe; padding: 14px; border-radius: 8px; border-left: 4px solid #2563eb;">';
+html += '<div style="font-size: 11px; color: #1e40af; margin-bottom: 4px; font-weight: bold;">📊 Corrélation</div>';
+html += '<div style="font-size: 18px; font-weight: bold; color: #1e40af;">' + correlation + '</div>';
+html += '<div style="font-size: 10px; color: #1e3a8a; margin-top: 4px;">' + (correlation < -0.5 ? 'Impact fort' : 'Impact limité') + '</div>';
 html += '</div>';
 
 html += '</div>';
@@ -8720,11 +8753,17 @@ html += '<div style="font-size: 13px; font-weight: bold; color: ' + (correlation
 html += '<div style="font-size: 12px; color: ' + (correlation < -0.5 ? '#7f1d1d' : '#047857') + '; line-height: 1.6;">';
 
 if (correlation < -0.5) {
-    html += '⚠️ <strong>Impact négatif confirmé :</strong> Plus la distance augmente (périphérie du cercle), plus le taux de scolarisation diminue (points proches du centre). La construction de nouvelles écoles dans les zones éloignées est <strong>prioritaire</strong>.';
+    html += '⚠️ <strong>Impact négatif confirmé :</strong> La courbe montre une tendance descendante claire. Plus la distance augmente, plus le taux de scolarisation diminue. ';
+    html += 'Écart de <strong>' + Math.round((meilleureTranche.moyenne - pireTranche.moyenne) * 10) / 10 + ' points</strong> entre zones proches et éloignées. ';
+    html += 'La construction de nouvelles écoles dans les zones éloignées (> 3 km) est <strong>prioritaire</strong>.';
 } else {
-    html += '✅ <strong>Impact limité :</strong> Les points sont répartis de manière homogène. La distance n\'est pas le facteur principal. Concentrer les efforts sur la qualité des écoles existantes et les facteurs socio-économiques.';
+    html += '✅ <strong>Impact limité :</strong> La courbe est relativement stable. La distance n\'est pas le facteur principal affectant la scolarisation. ';
+    html += 'D\'autres facteurs (pauvreté, sensibilisation, qualité des écoles) sont probablement plus déterminants. ';
+    html += 'Concentrer les efforts sur l\'amélioration de la qualité et l\'accessibilité économique.';
 }
+
 html += '</div></div>';
+
 html += '</div></div>';
     // Recommandations finales
     html += '<div style="margin-top: 20px; padding: 16px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">';
