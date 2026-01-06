@@ -7801,13 +7801,21 @@ function afficherDetailRegion(nomRegion) {
     container.innerHTML = html;
     container.style.display = 'block';
 }
-
 // 2️⃣ ÉVOLUTION TEMPORELLE 2023-2025
 function afficherEvolutionTemporelle(dataFiltrees) {
     var container = document.getElementById('evolution-temporelle-acces');
     if (!container) return;
     
-    // Récupérer les données pour les 3 années
+    // 🔥 APPLIQUER LES FILTRES ACTIFS
+    var regionSelect = document.getElementById('filter-acces-region');
+    var prefectureSelect = document.getElementById('filter-acces-prefecture');
+    var zoneSelect = document.getElementById('filter-acces-zone');
+    
+    var regionId = regionSelect ? regionSelect.value : '';
+    var prefecture = prefectureSelect ? prefectureSelect.value : '';
+    var zone = zoneSelect ? zoneSelect.value : '';
+    
+    // Récupérer les données pour les 3 années AVEC FILTRES
     var annees = ['2022-2023', '2023-2024', '2024-2025'];
     var anneesLabels = ['2023', '2024', '2025'];
     
@@ -7820,9 +7828,25 @@ function afficherEvolutionTemporelle(dataFiltrees) {
         
         var statsAnnee = [];
         for (var i = 0; i < statistiquesData.length; i++) {
-            if (statistiquesData[i].annee_scolaire === annee) {
-                statsAnnee.push(statistiquesData[i]);
+            var stat = statistiquesData[i];
+            
+            if (stat.annee_scolaire !== annee) continue;
+            
+            // Appliquer les filtres
+            var statRegionId = '';
+            for (var r = 0; r < regionsData.length; r++) {
+                if (regionsData[r].nom === stat.region) {
+                    statRegionId = regionsData[r].id.toString();
+                    break;
+                }
             }
+            
+            var inclure = true;
+            if (regionId && regionId !== '' && statRegionId !== regionId) inclure = false;
+            if (inclure && prefecture && prefecture !== '' && stat.prefecture !== prefecture) inclure = false;
+            if (inclure && zone && zone !== '' && stat.zone !== zone) inclure = false;
+            
+            if (inclure) statsAnnee.push(stat);
         }
         
         var moyT = calculerMoyenne(statsAnnee, 'taux_scolarisation', 'Total');
@@ -7850,9 +7874,9 @@ function afficherEvolutionTemporelle(dataFiltrees) {
     
     // Tracer les 3 courbes
     var datasets = [
-        { nom: 'Total', data: dataTotal, couleur: '#2563eb', emoji: '🟢' },
+        { nom: 'Total', data: dataTotal, couleur: '#10b981', emoji: '🟢' },
         { nom: 'Filles', data: dataFilles, couleur: '#ec4899', emoji: '🔴' },
-        { nom: 'Garçons', data: dataGarcons, couleur: '#14b8a6', emoji: '🟡' }
+        { nom: 'Garçons', data: dataGarcons, couleur: '#3b82f6', emoji: '🔵' }
     ];
     
     var largeurUtile = 85; // %
@@ -7881,8 +7905,9 @@ function afficherEvolutionTemporelle(dataFiltrees) {
             
             html += '<div style="position: absolute; left: ' + (x - 5) + 'px; top: ' + (y - 5) + 'px; width: 10px; height: 10px; background-color: ' + dataset.couleur + '; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>';
             
-            // Valeur
-            html += '<div style="position: absolute; left: ' + (x - 15) + 'px; top: ' + (y - 22) + 'px; font-size: 11px; font-weight: bold; color: ' + dataset.couleur + ';">' + dataset.data[i] + '%</div>';
+            // 🔥 VALEUR ÉLOIGNÉE (décalage selon dataset)
+            var decalageY = -28 - (d * 14); // Empiler verticalement
+            html += '<div style="position: absolute; left: ' + (x - 18) + 'px; top: ' + (y + decalageY) + 'px; font-size: 11px; font-weight: bold; color: ' + dataset.couleur + '; background-color: white; padding: 2px 4px; border-radius: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">' + dataset.data[i] + '%</div>';
         }
     }
     
@@ -7894,7 +7919,7 @@ function afficherEvolutionTemporelle(dataFiltrees) {
     
     html += '</div>';
     
-    // Légende
+    // 🔥 LÉGENDE CORRIGÉE (1 couleur par catégorie)
     html += '<div style="display: flex; gap: 24px; justify-content: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;">';
     for (var d = 0; d < datasets.length; d++) {
         var dataset = datasets[d];
@@ -7907,7 +7932,6 @@ function afficherEvolutionTemporelle(dataFiltrees) {
     
     container.innerHTML = html;
 }
-
 // 3️⃣ CARTOGRAPHIE ÉCARTS GENRE
 function afficherCartographieEcartsGenre(dataFiltrees) {
     var container = document.getElementById('carte-ecarts-genre');
@@ -8583,56 +8607,92 @@ function afficherImpactDistance(dataFiltrees) {
     
     html += '</div>'; // Fin partie droite
     html += '</div>'; // Fin grid
+// 🔥 GRAPHIQUE EN BARRES GROUPÉES (plus explicite)
+html += '<div style="margin-top: 24px;">';
+html += '<h5 style="color: #374151; margin-bottom: 12px; font-size: 15px;">📊 Tendance Générale : Distance vs Scolarisation</h5>';
+html += '<div style="background-color: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb;">';
+
+// Graphique en barres horizontales
+html += '<div style="display: flex; flex-direction: column; gap: 20px;">';
+
+for (var t = 0; t < tranches.length; t++) {
+    var tranche = tranches[t];
     
-    // Graphique de tendance (nuage de points simplifié)
-    html += '<div style="margin-top: 24px;">';
-    html += '<h5 style="color: #374151; margin-bottom: 12px; font-size: 15px;">📉 Tendance Générale : Distance vs Scolarisation</h5>';
-    html += '<div style="background-color: white; padding: 20px; border-radius: 8px; position: relative; height: 200px; border: 1px solid #e5e7eb;">';
+    if (tranche.count === 0) continue;
     
-    // Axes
-    html += '<div style="position: absolute; bottom: 30px; left: 40px; right: 20px; border-top: 2px solid #e5e7eb;"></div>';
-    html += '<div style="position: absolute; bottom: 20px; left: 40px; top: 20px; border-left: 2px solid #e5e7eb;"></div>';
+    var couleurBarre = tranche.moyenne >= 70 ? '#10b981' : (tranche.moyenne >= 50 ? '#f59e0b' : '#ef4444');
+    var couleurBg = tranche.moyenne >= 70 ? '#d1fae5' : (tranche.moyenne >= 50 ? '#fef3c7' : '#fee2e2');
     
-    // Labels axes
-    html += '<div style="position: absolute; left: 5px; top: 10px; font-size: 10px; color: #6b7280; transform: rotate(-90deg); transform-origin: left;">Scolarisation (%)</div>';
-    html += '<div style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #6b7280;">Distance (km)</div>';
+    // Emoji selon qualité
+    var emoji = tranche.moyenne >= 70 ? '🟢' : (tranche.moyenne >= 50 ? '🟡' : '🔴');
     
-    // Labels Y
-    for (var i = 0; i <= 4; i++) {
-        var valeur = i * 25;
-        var posY = 160 - (i * 35);
-        html += '<div style="position: absolute; left: 10px; top: ' + posY + 'px; font-size: 10px; color: #6b7280;">' + valeur + '</div>';
-    }
+    html += '<div>';
     
-    // Tracer ligne de tendance
-    if (tranches.length > 0) {
-        var points = [];
-        for (var t = 0; t < tranches.length; t++) {
-            if (tranches[t].count > 0) {
-                var x = 50 + (t * 120);
-                var y = 160 - (tranches[t].moyenne * 1.4);
-                points.push({ x: x, y: y });
-                
-                // Point
-                var couleur = tranches[t].moyenne >= 70 ? '#059669' : (tranches[t].moyenne >= 50 ? '#f59e0b' : '#ef4444');
-                html += '<div style="position: absolute; left: ' + (x - 6) + 'px; top: ' + (y - 6) + 'px; width: 12px; height: 12px; background-color: ' + couleur + '; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>';
-            }
-        }
-        
-        // Ligne de tendance
-        for (var i = 0; i < points.length - 1; i++) {
-            var p1 = points[i];
-            var p2 = points[i + 1];
-            
-            var longueur = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-            var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
-            
-            html += '<div style="position: absolute; left: ' + p1.x + 'px; top: ' + p1.y + 'px; width: ' + longueur + 'px; height: 2px; background-color: #3b82f6; transform-origin: 0 0; transform: rotate(' + angle + 'deg); opacity: 0.6;"></div>';
-        }
-    }
-    
+    // En-tête
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">';
+    html += '<div style="display: flex; align-items: center; gap: 10px;">';
+    html += '<span style="font-size: 15px;">' + emoji + '</span>';
+    html += '<span style="font-size: 14px; font-weight: 600; color: #374151;">' + tranche.label + '</span>';
+    html += '</div>';
+    html += '<div style="display: flex; align-items: center; gap: 16px;">';
+    html += '<span style="font-size: 13px; color: #6b7280;">📍 ' + tranche.count + ' zone' + (tranche.count > 1 ? 's' : '') + '</span>';
+    html += '<span style="font-size: 16px; font-weight: bold; color: ' + couleurBarre + ';">' + tranche.moyenne + '%</span>';
     html += '</div></div>';
     
+    // Barre de progression
+    html += '<div style="background-color: ' + couleurBg + '; height: 40px; border-radius: 8px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">';
+    
+    // Barre remplie
+    html += '<div style="width: ' + tranche.moyenne + '%; height: 100%; background: linear-gradient(90deg, ' + couleurBarre + ' 0%, ' + couleurBarre + 'cc 100%); display: flex; align-items: center; padding-left: 12px; color: white; font-weight: bold; font-size: 13px; transition: width 0.5s;">';
+    if (tranche.moyenne > 15) html += tranche.moyenne + '%';
+    html += '</div>';
+    
+    // Ligne objectif 70%
+    html += '<div style="position: absolute; left: 70%; top: 0; bottom: 0; width: 2px; background-color: #2563eb; opacity: 0.5;"></div>';
+    html += '<div style="position: absolute; left: 70%; top: -22px; font-size: 10px; color: #2563eb; font-weight: bold; background-color: white; padding: 2px 4px; border-radius: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">Objectif 70%</div>';
+    
+    html += '</div>';
+    
+    // Barre de distance (mini-indicateur visuel)
+    html += '<div style="margin-top: 6px; height: 6px; background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%); border-radius: 3px; opacity: 0.3; position: relative;">';
+    
+    // Curseur de position
+    var positionPourcent = 0;
+    if (tranche.label === '< 1 km') positionPourcent = 10;
+    else if (tranche.label === '1-2 km') positionPourcent = 30;
+    else if (tranche.label === '2-3 km') positionPourcent = 50;
+    else if (tranche.label === '3-4 km') positionPourcent = 70;
+    else if (tranche.label === '> 4 km') positionPourcent = 90;
+    
+    html += '<div style="position: absolute; left: ' + positionPourcent + '%; top: -2px; width: 10px; height: 10px; background-color: #374151; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>';
+    html += '</div>';
+    
+    html += '</div>';
+}
+
+html += '</div>';
+
+// Légende de la barre de distance
+html += '<div style="margin-top: 16px; padding: 12px; background-color: #f9fafb; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">';
+html += '<span style="font-size: 12px; color: #059669; font-weight: 600;">🟢 Proximité</span>';
+html += '<div style="flex: 1; height: 2px; background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%); margin: 0 12px;"></div>';
+html += '<span style="font-size: 12px; color: #ef4444; font-weight: 600;">🔴 Éloignement</span>';
+html += '</div>';
+
+// Interprétation visuelle
+html += '<div style="margin-top: 16px; padding: 14px; background-color: ' + (correlation < -0.5 ? '#fee2e2' : '#d1fae5') + '; border-left: 4px solid ' + (correlation < -0.5 ? '#dc2626' : '#059669') + '; border-radius: 4px;">';
+html += '<div style="font-size: 13px; font-weight: bold; color: ' + (correlation < -0.5 ? '#991b1b' : '#065f46') + '; margin-bottom: 6px;">📊 Interprétation</div>';
+html += '<div style="font-size: 12px; color: ' + (correlation < -0.5 ? '#7f1d1d' : '#047857') + '; line-height: 1.6;">';
+
+if (correlation < -0.5) {
+    html += '⚠️ <strong>Impact négatif confirmé :</strong> Plus la distance augmente, plus le taux de scolarisation diminue. La construction de nouvelles écoles dans les zones éloignées est <strong>prioritaire</strong>.';
+} else {
+    html += '✅ <strong>Impact limité :</strong> La distance n\'est pas le facteur principal. Concentrer les efforts sur la qualité des écoles existantes et les facteurs socio-économiques.';
+}
+
+html += '</div></div>';
+
+html += '</div></div>';
     // Recommandations finales
     html += '<div style="margin-top: 20px; padding: 16px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">';
     html += '<h5 style="color: #92400e; margin: 0 0 12px 0; font-size: 14px; font-weight: bold;">💡 Recommandations Stratégiques</h5>';
