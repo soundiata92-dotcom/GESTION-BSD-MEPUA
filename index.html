@@ -6974,7 +6974,29 @@ html += '</div></div>';
     html += '</div>';
     
     html += '</div>';
-    
+    // 🔥 BESOIN EN SALLES DE CLASSE
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🏫 Besoin en Salles de Classe par Préfecture</h4>';
+html += '<div id="tableau-besoin-salles" style="margin-top: 16px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
+
+// 🔥 ZONES NÉCESSITANT NOUVELLES ÉCOLES
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📍 Zones Nécessitant de Nouvelles Écoles (Distance > 3 km)</h4>';
+html += '<div id="tableau-nouvelles-ecoles" style="margin-top: 16px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
+
+// 🔥 IMPACT DISTANCE SUR SCOLARISATION
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Impact de la Distance sur la Scolarisation</h4>';
+html += '<div id="graph-impact-distance" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 350px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
+
+html += '</div>'; 
+
     html += '</div>'; // Fin Section B
     
     // ========== SECTION C : ÉQUITÉ D'ACCÈS ==========
@@ -7432,6 +7454,9 @@ afficherCarteChaleureInteractive(dataFiltrees);
 afficherEvolutionTemporelle(dataFiltrees);
 afficherCartographieEcartsGenre(dataFiltrees);
 afficherDisparitesGenre(dataFiltrees);
+afficherBesoinSallesClasse(dataFiltrees);
+afficherZonesNouvellesEcoles(dataFiltrees);
+afficherImpactDistance(dataFiltrees);
 }
 
 function calculerIndicateursAcces(dataFiltrees) {
@@ -8073,6 +8098,574 @@ html += '<div style="margin-top: 16px; padding: 14px; background-color: #fef3c7;
     html += '<p style="font-size: 13px; color: #92400e; margin: 0;"><strong>📌 Critère :</strong> Sont affichées uniquement les préfectures avec un écart ≥ 5 points entre filles et garçons.</p>';
     html += '<p style="font-size: 13px; color: #92400e; margin: 8px 0 0 0;"><strong>💡 Recommandation :</strong> Mettre en place des programmes ciblés pour réduire ces disparités (bourses, sensibilisation, infrastructures adaptées).</p>';
     html += '</div>';
+    
+    container.innerHTML = html;
+}
+// ========== SECTION B : INFRASTRUCTURE - NOUVELLES FONCTIONS ==========
+
+// 1️⃣ BESOIN EN SALLES DE CLASSE
+function afficherBesoinSallesClasse(dataFiltrees) {
+    var container = document.getElementById('tableau-besoin-salles');
+    if (!container) return;
+    
+    if (dataFiltrees.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Norme : 45 élèves par classe maximum
+    var NORME_ELEVES_PAR_CLASSE = 45;
+    
+    // Grouper par préfecture
+    var dataParPref = {};
+    
+    for (var i = 0; i < dataFiltrees.length; i++) {
+        var stat = dataFiltrees[i];
+        var key = stat.prefecture;
+        
+        if (!dataParPref[key]) {
+            dataParPref[key] = {
+                region: stat.region,
+                ratios: [],
+                sallesActuelles: 0,
+                elevesEstimes: 0
+            };
+        }
+        
+        if (stat.ratio_eleves_classe) {
+            dataParPref[key].ratios.push(stat.ratio_eleves_classe);
+        }
+    }
+    
+    // Calculer besoins
+    var prefectures = [];
+    
+    for (var pref in dataParPref) {
+        var data = dataParPref[pref];
+        
+        if (data.ratios.length === 0) continue;
+        
+        var ratioMoyen = data.ratios.reduce(function(a,b){return a+b;},0) / data.ratios.length;
+        
+        // Estimation nombre de salles actuelles (fictif basé sur ratio)
+        // On estime qu'il y a environ 500 élèves par préfecture par niveau
+        var elevesEstimes = 500 * data.ratios.length; // Approximation
+        var sallesActuelles = Math.round(elevesEstimes / ratioMoyen);
+        
+        // Calcul salles nécessaires selon norme
+        var sallesNecessaires = Math.ceil(elevesEstimes / NORME_ELEVES_PAR_CLASSE);
+        
+        // Déficit (négatif = surplus)
+        var deficit = sallesNecessaires - sallesActuelles;
+        
+        prefectures.push({
+            nom: pref,
+            region: data.region,
+            ratioMoyen: Math.round(ratioMoyen * 10) / 10,
+            sallesActuelles: sallesActuelles,
+            sallesNecessaires: sallesNecessaires,
+            deficit: deficit,
+            priorite: deficit > 10 ? 'Haute' : (deficit > 5 ? 'Moyenne' : (deficit > 0 ? 'Faible' : 'OK'))
+        });
+    }
+    
+    // Trier par déficit décroissant
+    prefectures.sort(function(a, b) { return b.deficit - a.deficit; });
+    
+    // Afficher tableau
+    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #2563eb; color: white;">';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Préfecture</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Région</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ratio Actuel</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Salles Actuelles</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Salles Nécessaires</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Déficit/Surplus</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Priorité</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        var p = prefectures[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        // Couleur selon priorité
+        var couleurPriorite, bgPriorite;
+        if (p.priorite === 'Haute') {
+            couleurPriorite = '#991b1b';
+            bgPriorite = '#fee2e2';
+        } else if (p.priorite === 'Moyenne') {
+            couleurPriorite = '#92400e';
+            bgPriorite = '#fef3c7';
+        } else if (p.priorite === 'Faible') {
+            couleurPriorite = '#1e40af';
+            bgPriorite = '#dbeafe';
+        } else {
+            couleurPriorite = '#065f46';
+            bgPriorite = '#d1fae5';
+        }
+        
+        // Couleur déficit
+        var deficitText = p.deficit > 0 ? '+' + p.deficit : p.deficit;
+        var couleurDeficit = p.deficit > 0 ? '#dc2626' : '#059669';
+        
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + p.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.ratioMoyen + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.sallesActuelles + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + p.sallesNecessaires + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="color: ' + couleurDeficit + '; font-weight: bold; font-size: 15px;">' + deficitText + '</span></td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: ' + bgPriorite + '; color: ' + couleurPriorite + '; padding: 6px 12px; border-radius: 6px; font-weight: bold;">' + p.priorite + '</span></td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // Synthèse
+    var totalDeficit = 0;
+    var hautesPriorites = 0;
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        if (prefectures[i].deficit > 0) totalDeficit += prefectures[i].deficit;
+        if (prefectures[i].priorite === 'Haute') hautesPriorites++;
+    }
+    
+    html += '<div style="margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
+    
+    html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #dc2626;">';
+    html += '<div style="font-size: 12px; color: #991b1b; margin-bottom: 6px; font-weight: bold;">Déficit Total National</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #991b1b;">+' + totalDeficit + '</div>';
+    html += '<div style="font-size: 11px; color: #7f1d1d; margin-top: 4px;">salles de classe</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">';
+    html += '<div style="font-size: 12px; color: #92400e; margin-bottom: 6px; font-weight: bold;">Préfectures Prioritaires</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #92400e;">' + hautesPriorites + '</div>';
+    html += '<div style="font-size: 11px; color: #78350f; margin-top: 4px;">priorité haute</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb;">';
+    html += '<div style="font-size: 12px; color: #1e40af; margin-bottom: 6px; font-weight: bold;">Norme Appliquée</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #1e40af;">≤ ' + NORME_ELEVES_PAR_CLASSE + '</div>';
+    html += '<div style="font-size: 11px; color: #1e3a8a; margin-top: 4px;">élèves / classe</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Note
+    html += '<div style="margin-top: 16px; padding: 14px; background-color: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 4px;">';
+    html += '<p style="font-size: 13px; color: #0c4a6e; margin: 0;"><strong>📌 Méthodologie :</strong> Calcul basé sur la norme nationale de 45 élèves maximum par classe. Le déficit indique le nombre de salles supplémentaires nécessaires pour respecter cette norme.</p>';
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+// 2️⃣ ZONES NÉCESSITANT NOUVELLES ÉCOLES
+function afficherZonesNouvellesEcoles(dataFiltrees) {
+    var container = document.getElementById('tableau-nouvelles-ecoles');
+    if (!container) return;
+    
+    if (dataFiltrees.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Norme : Distance maximum acceptable = 3 km
+    var DISTANCE_MAX = 3;
+    
+    // Identifier les zones avec distance > 3 km
+    var zonesProblematiques = [];
+    
+    for (var i = 0; i < dataFiltrees.length; i++) {
+        var stat = dataFiltrees[i];
+        
+        if (stat.distance_moyenne_ecole_domicile && stat.distance_moyenne_ecole_domicile > DISTANCE_MAX) {
+            zonesProblematiques.push({
+                region: stat.region,
+                prefecture: stat.prefecture,
+                zone: stat.zone,
+                niveau: stat.niveau,
+                distance: Math.round(stat.distance_moyenne_ecole_domicile * 10) / 10,
+                tauxScol: stat.taux_scolarisation_total || 0,
+                urgence: stat.distance_moyenne_ecole_domicile > 5 ? 'Très Urgente' : (stat.distance_moyenne_ecole_domicile > 4 ? 'Urgente' : 'Modérée')
+            });
+        }
+    }
+    
+    if (zonesProblematiques.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; background-color: #d1fae5; border-radius: 8px; border-left: 4px solid #059669;">';
+        container.innerHTML += '<p style="color: #065f46; font-size: 16px; font-weight: bold;">✅ Excellente nouvelle !</p>';
+        container.innerHTML += '<p style="color: #047857; font-size: 14px; margin-top: 8px;">Toutes les zones respectent la norme de distance (≤ 3 km)</p>';
+        container.innerHTML += '</div>';
+        return;
+    }
+    
+    // Trier par distance décroissante
+    zonesProblematiques.sort(function(a, b) { return b.distance - a.distance; });
+    
+    // Tableau
+    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626; color: white;">';
+    html += '<th style="padding: 12px; border: 1px solid #b91c1c;">Rang</th>';
+    html += '<th style="padding: 12px; border: 1px solid #b91c1c;">Région</th>';
+    html += '<th style="padding: 12px; border: 1px solid #b91c1c;">Préfecture</th>';
+    html += '<th style="padding: 12px; border: 1px solid #b91c1c;">Zone</th>';
+    html += '<th style="padding: 12px; border: 1px solid #b91c1c;">Niveau</th>';
+    html += '<th style="padding: 12px; border: 1px solid #b91c1c; text-align: center;">Distance (km)</th>';
+    html += '<th style="padding: 12px; border: 1px solid #b91c1c; text-align: center;">Taux Scol. (%)</th>';
+    html += '<th style="padding: 12px; border: 1px solid #b91c1c; text-align: center;">Urgence</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < zonesProblematiques.length; i++) {
+        var z = zonesProblematiques[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
+        
+        // Couleur urgence
+        var couleurUrgence, bgUrgence;
+        if (z.urgence === 'Très Urgente') {
+            couleurUrgence = '#7f1d1d';
+            bgUrgence = '#fecaca';
+        } else if (z.urgence === 'Urgente') {
+            couleurUrgence = '#92400e';
+            bgUrgence = '#fed7aa';
+        } else {
+            couleurUrgence = '#9a3412';
+            bgUrgence = '#fef3c7';
+        }
+        
+        // Indicateur selon distance
+        var indicateur = z.distance > 5 ? '🔴🔴' : (z.distance > 4 ? '🔴' : '🟡');
+        
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + indicateur + ' ' + (i + 1) + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + z.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + z.prefecture + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + z.zone + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;"><span class="badge badge-blue">' + z.niveau + '</span></td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="font-size: 16px; font-weight: bold; color: #dc2626;">' + z.distance + ' km</span></td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + z.tauxScol + '%</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: ' + bgUrgence + '; color: ' + couleurUrgence + '; padding: 6px 12px; border-radius: 6px; font-weight: bold;">' + z.urgence + '</span></td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // Statistiques
+    var tresUrgentes = 0;
+    var urgentes = 0;
+    var moderees = 0;
+    var distanceMoyenne = 0;
+    
+    for (var i = 0; i < zonesProblematiques.length; i++) {
+        if (zonesProblematiques[i].urgence === 'Très Urgente') tresUrgentes++;
+        else if (zonesProblematiques[i].urgence === 'Urgente') urgentes++;
+        else moderees++;
+        distanceMoyenne += zonesProblematiques[i].distance;
+    }
+    
+    distanceMoyenne = Math.round((distanceMoyenne / zonesProblematiques.length) * 10) / 10;
+    
+    html += '<div style="margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+    
+    html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #dc2626;">';
+    html += '<div style="font-size: 12px; color: #991b1b; margin-bottom: 6px; font-weight: bold;">🔴 Très Urgentes</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #991b1b;">' + tresUrgentes + '</div>';
+    html += '<div style="font-size: 11px; color: #7f1d1d; margin-top: 4px;">zones (> 5 km)</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #fed7aa; padding: 16px; border-radius: 8px; border-left: 4px solid #ea580c;">';
+    html += '<div style="font-size: 12px; color: #9a3412; margin-bottom: 6px; font-weight: bold;">🟠 Urgentes</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #9a3412;">' + urgentes + '</div>';
+    html += '<div style="font-size: 11px; color: #7c2d12; margin-top: 4px;">zones (4-5 km)</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">';
+    html += '<div style="font-size: 12px; color: #92400e; margin-bottom: 6px; font-weight: bold;">🟡 Modérées</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #92400e;">' + moderees + '</div>';
+    html += '<div style="font-size: 11px; color: #78350f; margin-top: 4px;">zones (3-4 km)</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb;">';
+    html += '<div style="font-size: 12px; color: #1e40af; margin-bottom: 6px; font-weight: bold;">📏 Distance Moyenne</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #1e40af;">' + distanceMoyenne + '</div>';
+    html += '<div style="font-size: 11px; color: #1e3a8a; margin-top: 4px;">kilomètres</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Recommandations
+    html += '<div style="margin-top: 16px; padding: 14px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">';
+    html += '<h5 style="color: #92400e; margin: 0 0 10px 0; font-size: 14px; font-weight: bold;">💡 Recommandations Stratégiques</h5>';
+    html += '<ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #78350f; line-height: 1.8;">';
+    html += '<li><strong>Priorité 1 :</strong> Construire immédiatement ' + tresUrgentes + ' nouvelles écoles dans les zones très urgentes</li>';
+    html += '<li><strong>Priorité 2 :</strong> Planifier ' + urgentes + ' écoles supplémentaires pour les zones urgentes</li>';
+    html += '<li><strong>Alternative :</strong> Mettre en place des systèmes de transport scolaire dans les zones modérées</li>';
+    html += '<li><strong>Suivi :</strong> Réévaluer la situation après chaque construction</li>';
+    html += '</ul></div>';
+    
+    container.innerHTML = html;
+}
+
+// 3️⃣ IMPACT DISTANCE SUR SCOLARISATION
+function afficherImpactDistance(dataFiltrees) {
+    var container = document.getElementById('graph-impact-distance');
+    if (!container) return;
+    
+    if (dataFiltrees.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune données</p>';
+        return;
+    }
+    
+    // Regrouper par tranches de distance
+    var tranches = [
+        { min: 0, max: 1, label: '< 1 km', scol: [], count: 0 },
+        { min: 1, max: 2, label: '1-2 km', scol: [], count: 0 },
+        { min: 2, max: 3, label: '2-3 km', scol: [], count: 0 },
+        { min: 3, max: 4, label: '3-4 km', scol: [], count: 0 },
+        { min: 4, max: 100, label: '> 4 km', scol: [], count: 0 }
+    ];
+    
+    for (var i = 0; i < dataFiltrees.length; i++) {
+        var stat = dataFiltrees[i];
+        
+        if (!stat.distance_moyenne_ecole_domicile || !stat.taux_scolarisation_total) continue;
+        
+        var dist = stat.distance_moyenne_ecole_domicile;
+        var scol = stat.taux_scolarisation_total;
+        
+        for (var t = 0; t < tranches.length; t++) {
+            if (dist >= tranches[t].min && dist < tranches[t].max) {
+                tranches[t].scol.push(scol);
+                tranches[t].count++;
+                break;
+            }
+        }
+    }
+    
+    // Calculer moyennes
+    for (var t = 0; t < tranches.length; t++) {
+        if (tranches[t].scol.length > 0) {
+            tranches[t].moyenne = Math.round(tranches[t].scol.reduce(function(a,b){return a+b;},0) / tranches[t].scol.length * 10) / 10;
+        } else {
+            tranches[t].moyenne = 0;
+        }
+    }
+    
+    // Calculer corrélation (coefficient de Pearson simplifié)
+    var distances = [];
+    var scolarisations = [];
+    
+    for (var i = 0; i < dataFiltrees.length; i++) {
+        if (dataFiltrees[i].distance_moyenne_ecole_domicile && dataFiltrees[i].taux_scolarisation_total) {
+            distances.push(dataFiltrees[i].distance_moyenne_ecole_domicile);
+            scolarisations.push(dataFiltrees[i].taux_scolarisation_total);
+        }
+    }
+    
+    var correlation = 0;
+    if (distances.length > 1) {
+        var moyDist = distances.reduce(function(a,b){return a+b;},0) / distances.length;
+        var moyScol = scolarisations.reduce(function(a,b){return a+b;},0) / scolarisations.length;
+        
+        var numerateur = 0;
+        var denomDist = 0;
+        var denomScol = 0;
+        
+        for (var i = 0; i < distances.length; i++) {
+            var diffDist = distances[i] - moyDist;
+            var diffScol = scolarisations[i] - moyScol;
+            numerateur += diffDist * diffScol;
+            denomDist += diffDist * diffDist;
+            denomScol += diffScol * diffScol;
+        }
+        
+        if (denomDist > 0 && denomScol > 0) {
+            correlation = numerateur / Math.sqrt(denomDist * denomScol);
+            correlation = Math.round(correlation * 100) / 100;
+        }
+    }
+    
+    // Interprétation
+    var interpretationCorr = '';
+    var couleurCorr = '';
+    if (correlation < -0.7) {
+        interpretationCorr = '🔴 Corrélation négative forte : La distance impacte fortement la scolarisation';
+        couleurCorr = '#dc2626';
+    } else if (correlation < -0.4) {
+        interpretationCorr = '🟠 Corrélation négative modérée : La distance a un impact notable';
+        couleurCorr = '#ea580c';
+    } else if (correlation < -0.2) {
+        interpretationCorr = '🟡 Corrélation négative faible : Impact limité de la distance';
+        couleurCorr = '#f59e0b';
+    } else {
+        interpretationCorr = '🟢 Pas de corrélation significative : Autres facteurs dominent';
+        couleurCorr = '#059669';
+    }
+
+// Graphique en barres
+    var html = '<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">';
+    
+    // PARTIE GAUCHE : Graphique
+    html += '<div>';
+    html += '<h5 style="color: #374151; margin-bottom: 16px; font-size: 15px;">📊 Taux de Scolarisation par Tranche de Distance</h5>';
+    html += '<div style="display: flex; flex-direction: column; gap: 16px;">';
+    
+    for (var t = 0; t < tranches.length; t++) {
+        var tranche = tranches[t];
+        
+        // Couleur selon la moyenne
+        var couleur = tranche.moyenne >= 70 ? '#059669' : (tranche.moyenne >= 50 ? '#f59e0b' : '#ef4444');
+        var bgCouleur = tranche.moyenne >= 70 ? '#d1fae5' : (tranche.moyenne >= 50 ? '#fef3c7' : '#fee2e2');
+        
+        html += '<div>';
+        html += '<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">';
+        html += '<span style="font-size: 13px; font-weight: 600; color: #374151;">' + tranche.label + '</span>';
+        html += '<span style="font-size: 13px; font-weight: bold; color: ' + couleur + ';">' + tranche.moyenne + '% (' + tranche.count + ' zones)</span>';
+        html += '</div>';
+        
+        html += '<div style="background-color: ' + bgCouleur + '; height: 32px; border-radius: 6px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
+        html += '<div style="width: ' + tranche.moyenne + '%; height: 100%; background: linear-gradient(90deg, ' + couleur + ' 0%, ' + couleur + 'dd 100%); transition: width 0.5s;"></div>';
+        
+        // Ligne objectif à 70%
+        html += '<div style="position: absolute; left: 70%; top: 0; bottom: 0; width: 2px; background-color: #2563eb; opacity: 0.4;"></div>';
+        html += '<div style="position: absolute; left: 70%; top: -18px; font-size: 10px; color: #2563eb; font-weight: bold;">Objectif</div>';
+        
+        html += '</div></div>';
+    }
+    
+    html += '</div></div>';
+    
+    // PARTIE DROITE : Analyse statistique
+    html += '<div>';
+    html += '<h5 style="color: #374151; margin-bottom: 16px; font-size: 15px;">📈 Analyse Statistique</h5>';
+    
+    // Carte corrélation
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid ' + couleurCorr + '; margin-bottom: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #6b7280; margin-bottom: 10px;">Coefficient de Corrélation</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: ' + couleurCorr + '; margin-bottom: 10px;">' + correlation + '</div>';
+    html += '<div style="font-size: 12px; color: #374151; line-height: 1.6;">' + interpretationCorr + '</div>';
+    html += '</div>';
+    
+    // Observations clés
+    html += '<div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb;">';
+    html += '<div style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 10px;">🔍 Observations Clés</div>';
+    html += '<ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #1e3a8a; line-height: 1.8;">';
+    
+    // Observation 1 : Meilleure tranche
+    var meilleureTranche = tranches[0];
+    for (var t = 1; t < tranches.length; t++) {
+        if (tranches[t].moyenne > meilleureTranche.moyenne) {
+            meilleureTranche = tranches[t];
+        }
+    }
+    html += '<li><strong>Meilleur taux :</strong> ' + meilleureTranche.moyenne + '% pour ' + meilleureTranche.label + '</li>';
+    
+    // Observation 2 : Pire tranche
+    var pireTranche = tranches[0];
+    for (var t = 1; t < tranches.length; t++) {
+        if (tranches[t].moyenne < pireTranche.moyenne && tranches[t].count > 0) {
+            pireTranche = tranches[t];
+        }
+    }
+    html += '<li><strong>Pire taux :</strong> ' + pireTranche.moyenne + '% pour ' + pireTranche.label + '</li>';
+    
+    // Observation 3 : Écart
+    var ecart = Math.round((meilleureTranche.moyenne - pireTranche.moyenne) * 10) / 10;
+    html += '<li><strong>Écart :</strong> ' + ecart + ' points entre extrêmes</li>';
+    
+    // Observation 4 : Zones problématiques
+    var zonesProblematiques = tranches[4].count; // > 4 km
+    if (zonesProblematiques > 0) {
+        html += '<li><strong>⚠️ ' + zonesProblematiques + ' zones</strong> avec distance > 4 km</li>';
+    } else {
+        html += '<li><strong>✅ Aucune zone</strong> avec distance > 4 km</li>';
+    }
+    
+    html += '</ul></div>';
+    
+    html += '</div>'; // Fin partie droite
+    html += '</div>'; // Fin grid
+    
+    // Graphique de tendance (nuage de points simplifié)
+    html += '<div style="margin-top: 24px;">';
+    html += '<h5 style="color: #374151; margin-bottom: 12px; font-size: 15px;">📉 Tendance Générale : Distance vs Scolarisation</h5>';
+    html += '<div style="background-color: white; padding: 20px; border-radius: 8px; position: relative; height: 200px; border: 1px solid #e5e7eb;">';
+    
+    // Axes
+    html += '<div style="position: absolute; bottom: 30px; left: 40px; right: 20px; border-top: 2px solid #e5e7eb;"></div>';
+    html += '<div style="position: absolute; bottom: 20px; left: 40px; top: 20px; border-left: 2px solid #e5e7eb;"></div>';
+    
+    // Labels axes
+    html += '<div style="position: absolute; left: 5px; top: 10px; font-size: 10px; color: #6b7280; transform: rotate(-90deg); transform-origin: left;">Scolarisation (%)</div>';
+    html += '<div style="position: absolute; bottom: 5px; right: 10px; font-size: 10px; color: #6b7280;">Distance (km)</div>';
+    
+    // Labels Y
+    for (var i = 0; i <= 4; i++) {
+        var valeur = i * 25;
+        var posY = 160 - (i * 35);
+        html += '<div style="position: absolute; left: 10px; top: ' + posY + 'px; font-size: 10px; color: #6b7280;">' + valeur + '</div>';
+    }
+    
+    // Tracer ligne de tendance
+    if (tranches.length > 0) {
+        var points = [];
+        for (var t = 0; t < tranches.length; t++) {
+            if (tranches[t].count > 0) {
+                var x = 50 + (t * 120);
+                var y = 160 - (tranches[t].moyenne * 1.4);
+                points.push({ x: x, y: y });
+                
+                // Point
+                var couleur = tranches[t].moyenne >= 70 ? '#059669' : (tranches[t].moyenne >= 50 ? '#f59e0b' : '#ef4444');
+                html += '<div style="position: absolute; left: ' + (x - 6) + 'px; top: ' + (y - 6) + 'px; width: 12px; height: 12px; background-color: ' + couleur + '; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>';
+            }
+        }
+        
+        // Ligne de tendance
+        for (var i = 0; i < points.length - 1; i++) {
+            var p1 = points[i];
+            var p2 = points[i + 1];
+            
+            var longueur = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+            
+            html += '<div style="position: absolute; left: ' + p1.x + 'px; top: ' + p1.y + 'px; width: ' + longueur + 'px; height: 2px; background-color: #3b82f6; transform-origin: 0 0; transform: rotate(' + angle + 'deg); opacity: 0.6;"></div>';
+        }
+    }
+    
+    html += '</div></div>';
+    
+    // Recommandations finales
+    html += '<div style="margin-top: 20px; padding: 16px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">';
+    html += '<h5 style="color: #92400e; margin: 0 0 12px 0; font-size: 14px; font-weight: bold;">💡 Recommandations Stratégiques</h5>';
+    html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">';
+    
+    // Recommandations selon corrélation
+    html += '<div>';
+    html += '<div style="font-weight: bold; color: #78350f; margin-bottom: 8px; font-size: 13px;">📌 Actions Prioritaires</div>';
+    html += '<ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #92400e; line-height: 1.8;">';
+    
+    if (correlation < -0.5) {
+        html += '<li>Construire des écoles dans les zones éloignées (> 3 km)</li>';
+        html += '<li>Mettre en place un transport scolaire gratuit</li>';
+        html += '<li>Créer des internats dans les zones rurales</li>';
+    } else {
+        html += '<li>Identifier et traiter les autres facteurs (pauvreté, sensibilisation)</li>';
+        html += '<li>Renforcer la qualité des écoles existantes</li>';
+        html += '<li>Améliorer les infrastructures routières</li>';
+    }
+    
+    html += '</ul></div>';
+    
+    // Indicateurs de suivi
+    html += '<div>';
+    html += '<div style="font-weight: bold; color: #78350f; margin-bottom: 8px; font-size: 13px;">📊 Indicateurs de Suivi</div>';
+    html += '<ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #92400e; line-height: 1.8;">';
+    html += '<li>Mesurer l\'évolution du coefficient de corrélation</li>';
+    html += '<li>Suivre le taux de scolarisation dans les zones > 4 km</li>';
+    html += '<li>Évaluer l\'impact après chaque nouvelle école</li>';
+    html += '<li>Cartographier les abandons selon la distance</li>';
+    html += '</ul></div>';
+    
+    html += '</div></div>';
     
     container.innerHTML = html;
 }
