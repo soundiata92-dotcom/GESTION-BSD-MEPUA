@@ -7635,7 +7635,7 @@ function afficherTableauEquite(dataFiltrees) {
     prefectures.sort(function(a, b) { return b.score - a.score; });
     
     // Afficher tableau
-    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #2563eb; color: white;">';
+var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="blue"><tr style="background-color: #2563eb !important; color: white;">';
     html += '<th style="padding: 12px; border: 1px solid #1e40af;">Rang</th>';
     html += '<th style="padding: 12px; border: 1px solid #1e40af;">Préfecture</th>';
     html += '<th style="padding: 12px; border: 1px solid #1e40af;">Région</th>';
@@ -8065,7 +8065,7 @@ function afficherDisparitesGenre(dataFiltrees) {
     }
     
     // Tableau
-    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #ef4444; color: white;">';
+    var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="red"><tr style="background-color: #ef4444 !important; color: white;">';
     html += '<th style="padding: 12px; border: 1px solid #dc2626;">Rang</th>';
     html += '<th style="padding: 12px; border: 1px solid #dc2626;">Préfecture</th>';
     html += '<th style="padding: 12px; border: 1px solid #dc2626;">Région</th>';
@@ -8173,7 +8173,7 @@ function afficherBesoinSallesClasse(dataFiltrees) {
     prefectures.sort(function(a, b) { return b.deficit - a.deficit; });
     
     // Afficher tableau
-    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #2563eb; color: white;">';
+var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="blue"><tr style="background-color: #2563eb !important; color: white;">';
     html += '<th style="padding: 12px; border: 1px solid #1e40af;">Préfecture</th>';
     html += '<th style="padding: 12px; border: 1px solid #1e40af;">Région</th>';
     html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ratio Actuel</th>';
@@ -8303,7 +8303,7 @@ function afficherZonesNouvellesEcoles(dataFiltrees) {
     zonesProblematiques.sort(function(a, b) { return b.distance - a.distance; });
     
     // Tableau
-    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626; color: white;">';
+var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="red"><tr style="background-color: #dc2626 !important; color: white;">';
     html += '<th style="padding: 12px; border: 1px solid #b91c1c;">Rang</th>';
     html += '<th style="padding: 12px; border: 1px solid #b91c1c;">Région</th>';
     html += '<th style="padding: 12px; border: 1px solid #b91c1c;">Préfecture</th>';
@@ -9713,7 +9713,7 @@ function afficherClassementAlpha(alphaFiltre) {
     prefectures.sort(function(a, b) { return b.score - a.score; });
     
     // Tableau complet
-    var html = '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #f59e0b; color: white;">';
+var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="orange"><tr style="background-color: #f59e0b !important; color: white;">';
     html += '<th style="padding: 12px; border: 1px solid #d97706;">Rang</th>';
     html += '<th style="padding: 12px; border: 1px solid #d97706;">Préfecture</th>';
     html += '<th style="padding: 12px; border: 1px solid #d97706;">Région</th>';
