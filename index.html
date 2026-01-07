@@ -7380,8 +7380,27 @@ function renderAnalyseAlphabetisation() {
     html += '<div id="analyse-alpha-impact">';
     html += '<p style="color: #1e3a8a; font-size: 14px;">Chargement de l\'analyse...</p>';
     html += '</div></div>';
-    
-    html += '</div>'; // Fin Section C
+    // 🔥 CAUSES D'ABANDON
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🔍 Causes Identifiées d\'Abandon Scolaire</h4>';
+html += '<div id="analyse-causes-abandon" style="margin-top: 16px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
+
+// 🔥 CORRÉLATION ABANDON/RATIO
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Corrélation Abandon / Ratio Élèves-Enseignant</h4>';
+html += '<div id="graph-correlation-abandon-ratio" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 350px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
+
+// 🔥 CORRÉLATION ABANDON/DISTANCE
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📍 Corrélation Abandon / Distance École</h4>';
+html += '<div id="graph-correlation-abandon-distance" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 350px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
+html += '</div>'; // Fin Section C
     
     return html;
 }
@@ -8902,6 +8921,9 @@ function appliquerFiltresQualite() {
    afficherPriorisationRecrutement(statsFiltre);
     afficherGraphiqueAbandon(statsFiltre);
     afficherClassementPrefectures(examensFiltre);
+    afficherCausesAbandon(statsFiltre);
+afficherCorrelationAbandonRatio(statsFiltre);
+afficherCorrelationAbandonDistance(statsFiltre);
 }
 function calculerIndicateursQualite(examensFiltre, statsFiltre) {
     if (examensFiltre.length === 0) {
@@ -9867,6 +9889,655 @@ function afficherGraphiqueAbandon(statsFiltre) {
     html += '</div>';
     container.innerHTML = html;
 }
+function afficherCausesAbandon(statsFiltre) {
+    var container = document.getElementById('analyse-causes-abandon');
+    if (!container) return;
+    
+    if (statsFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Analyser les corrélations pour identifier les causes
+    var donnees = [];
+    
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        
+        if (stat.taux_abandon_total && stat.taux_abandon_total > 0) {
+            donnees.push({
+                abandon: stat.taux_abandon_total,
+                distance: stat.distance_moyenne_ecole_domicile || 0,
+                ratio: stat.ratio_eleves_enseignant || 0,
+                scolarisation: stat.taux_scolarisation_total || 0,
+                zone: stat.zone,
+                niveau: stat.niveau
+            });
+        }
+    }
+    
+    if (donnees.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Données insuffisantes</p>';
+        return;
+    }
+    
+    // Analyser par zone (Urbaine vs Rurale)
+    var abandonUrbain = [];
+    var abandonRural = [];
+    
+    for (var i = 0; i < donnees.length; i++) {
+        if (donnees[i].zone === 'Urbaine') {
+            abandonUrbain.push(donnees[i].abandon);
+        } else {
+            abandonRural.push(donnees[i].abandon);
+        }
+    }
+    
+    var moyAbandonUrbain = abandonUrbain.length > 0 ? Math.round(abandonUrbain.reduce(function(a,b){return a+b;},0) / abandonUrbain.length * 10) / 10 : 0;
+    var moyAbandonRural = abandonRural.length > 0 ? Math.round(abandonRural.reduce(function(a,b){return a+b;},0) / abandonRural.length * 10) / 10 : 0;
+    
+    // Analyser par distance
+    var abandonDistanceProche = []; // < 3 km
+    var abandonDistanceEloigne = []; // >= 3 km
+    
+    for (var i = 0; i < donnees.length; i++) {
+        if (donnees[i].distance < 3) {
+            abandonDistanceProche.push(donnees[i].abandon);
+        } else {
+            abandonDistanceEloigne.push(donnees[i].abandon);
+        }
+    }
+    
+    var moyAbandonProche = abandonDistanceProche.length > 0 ? Math.round(abandonDistanceProche.reduce(function(a,b){return a+b;},0) / abandonDistanceProche.length * 10) / 10 : 0;
+    var moyAbandonEloigne = abandonDistanceEloigne.length > 0 ? Math.round(abandonDistanceEloigne.reduce(function(a,b){return a+b;},0) / abandonDistanceEloigne.length * 10) / 10 : 0;
+    
+    // Analyser par ratio (surcharge vs normal)
+    var abandonSurcharge = []; // ratio > 45
+    var abandonNormal = []; // ratio <= 45
+    
+    for (var i = 0; i < donnees.length; i++) {
+        if (donnees[i].ratio > 45) {
+            abandonSurcharge.push(donnees[i].abandon);
+        } else {
+            abandonNormal.push(donnees[i].abandon);
+        }
+    }
+    
+    var moyAbandonSurcharge = abandonSurcharge.length > 0 ? Math.round(abandonSurcharge.reduce(function(a,b){return a+b;},0) / abandonSurcharge.length * 10) / 10 : 0;
+    var moyAbandonNormal = abandonNormal.length > 0 ? Math.round(abandonNormal.reduce(function(a,b){return a+b;},0) / abandonNormal.length * 10) / 10 : 0;
+    
+    // Analyser par niveau
+    var abandonParNiveau = {};
+    var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
+    
+    for (var i = 0; i < niveaux.length; i++) {
+        abandonParNiveau[niveaux[i]] = [];
+    }
+    
+    for (var i = 0; i < donnees.length; i++) {
+        if (abandonParNiveau[donnees[i].niveau]) {
+            abandonParNiveau[donnees[i].niveau].push(donnees[i].abandon);
+        }
+    }
+    
+    // Identifier les causes principales
+    var causes = [];
+    
+    // Cause 1 : Zone rurale
+    if (moyAbandonRural > moyAbandonUrbain + 3) {
+        causes.push({
+            cause: 'Zone Rurale',
+            impact: 'Élevé',
+            ecart: Math.round((moyAbandonRural - moyAbandonUrbain) * 10) / 10,
+            description: 'L\'abandon est significativement plus élevé en zone rurale (+' + Math.round((moyAbandonRural - moyAbandonUrbain) * 10) / 10 + ' pts)',
+            recommandation: 'Développer infrastructures rurales, internats, transport scolaire',
+            couleur: '#dc2626'
+        });
+    }
+    
+    // Cause 2 : Distance
+    if (moyAbandonEloigne > moyAbandonProche + 3) {
+        causes.push({
+            cause: 'Distance École',
+            impact: 'Élevé',
+            ecart: Math.round((moyAbandonEloigne - moyAbandonProche) * 10) / 10,
+            description: 'L\'éloignement des écoles augmente l\'abandon (+' + Math.round((moyAbandonEloigne - moyAbandonProche) * 10) / 10 + ' pts pour distance > 3km)',
+            recommandation: 'Construire écoles de proximité, organiser transport',
+            couleur: '#ea580c'
+        });
+    }
+    
+    // Cause 3 : Surcharge classes
+    if (moyAbandonSurcharge > moyAbandonNormal + 2) {
+        causes.push({
+            cause: 'Surcharge Classes',
+            impact: 'Modéré',
+            ecart: Math.round((moyAbandonSurcharge - moyAbandonNormal) * 10) / 10,
+            description: 'Les classes surchargées (>45 élèves) augmentent l\'abandon (+' + Math.round((moyAbandonSurcharge - moyAbandonNormal) * 10) / 10 + ' pts)',
+            recommandation: 'Recruter enseignants, construire salles de classe',
+            couleur: '#f59e0b'
+        });
+    }
+    
+    // Cause 4 : Niveau scolaire critique
+    var niveauMax = '';
+    var abandonMax = 0;
+    for (var niveau in abandonParNiveau) {
+        if (abandonParNiveau[niveau].length > 0) {
+            var moy = abandonParNiveau[niveau].reduce(function(a,b){return a+b;},0) / abandonParNiveau[niveau].length;
+            if (moy > abandonMax) {
+                abandonMax = moy;
+                niveauMax = niveau;
+            }
+        }
+    }
+    
+    if (abandonMax > 12) {
+        causes.push({
+            cause: 'Niveau ' + niveauMax,
+            impact: 'Élevé',
+            ecart: Math.round(abandonMax * 10) / 10,
+            description: 'Le niveau ' + niveauMax + ' présente le taux d\'abandon le plus élevé (' + Math.round(abandonMax * 10) / 10 + '%)',
+            recommandation: 'Programme spécifique de rétention pour ' + niveauMax,
+            couleur: '#dc2626'
+        });
+    }
+    
+    // Cause 5 : Pauvreté (corrélation scolarisation basse)
+    var abandonPauvrete = [];
+    for (var i = 0; i < donnees.length; i++) {
+        if (donnees[i].scolarisation < 60) {
+            abandonPauvrete.push(donnees[i].abandon);
+        }
+    }
+    
+    if (abandonPauvrete.length > 0) {
+        var moyAbandonPauvrete = Math.round(abandonPauvrete.reduce(function(a,b){return a+b;},0) / abandonPauvrete.length * 10) / 10;
+        if (moyAbandonPauvrete > 12) {
+            causes.push({
+                cause: 'Facteurs Socio-Économiques',
+                impact: 'Élevé',
+                ecart: moyAbandonPauvrete,
+                description: 'Zones à faible scolarisation (<60%) présentent abandon élevé (' + moyAbandonPauvrete + '%)',
+                recommandation: 'Bourses, cantines scolaires, sensibilisation parents',
+                couleur: '#7c3aed'
+            });
+        }
+    }
+    
+    // Trier par écart décroissant
+    causes.sort(function(a, b) { return b.ecart - a.ecart; });
+    
+    // Affichage
+    var html = '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">';
+    
+    for (var i = 0; i < causes.length; i++) {
+        var cause = causes[i];
+        
+        html += '<div style="background-color: white; padding: 20px; border-radius: 12px; border-left: 4px solid ' + cause.couleur + '; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+        
+        // En-tête
+        html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">';
+        html += '<h5 style="margin: 0; color: ' + cause.couleur + '; font-size: 15px; font-weight: bold;">' + (i + 1) + '. ' + cause.cause + '</h5>';
+        html += '<span style="background-color: ' + cause.couleur + '; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold;">' + cause.impact + '</span>';
+        html += '</div>';
+        
+        // Description
+        html += '<p style="font-size: 13px; color: #374151; margin: 10px 0; line-height: 1.6;">' + cause.description + '</p>';
+        
+        // Recommandation
+        html += '<div style="background-color: #f9fafb; padding: 10px; border-radius: 6px; margin-top: 12px;">';
+        html += '<div style="font-size: 11px; font-weight: bold; color: #6b7280; margin-bottom: 4px;">💡 Recommandation</div>';
+        html += '<div style="font-size: 12px; color: #374151;">' + cause.recommandation + '</div>';
+        html += '</div>';
+        
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    
+    // Synthèse des données
+    html += '<div style="margin-top: 20px; padding: 16px; background-color: #eff6ff; border-left: 4px solid #2563eb; border-radius: 4px;">';
+    html += '<h5 style="color: #1e40af; margin: 0 0 12px 0; font-size: 14px; font-weight: bold;">📊 Synthèse des Données</h5>';
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 12px; color: #1e3a8a;">';
+    
+    html += '<div><strong>Zone Urbaine :</strong> ' + moyAbandonUrbain + '% abandon</div>';
+    html += '<div><strong>Zone Rurale :</strong> ' + moyAbandonRural + '% abandon</div>';
+    html += '<div><strong>Écart Urbain/Rural :</strong> ' + Math.abs(moyAbandonRural - moyAbandonUrbain) + ' pts</div>';
+    
+    html += '<div><strong>Distance < 3km :</strong> ' + moyAbandonProche + '% abandon</div>';
+    html += '<div><strong>Distance ≥ 3km :</strong> ' + moyAbandonEloigne + '% abandon</div>';
+    html += '<div><strong>Écart Distance :</strong> ' + Math.abs(moyAbandonEloigne - moyAbandonProche) + ' pts</div>';
+    
+    html += '<div><strong>Ratio ≤ 45 :</strong> ' + moyAbandonNormal + '% abandon</div>';
+    html += '<div><strong>Ratio > 45 :</strong> ' + moyAbandonSurcharge + '% abandon</div>';
+    html += '<div><strong>Écart Surcharge :</strong> ' + Math.abs(moyAbandonSurcharge - moyAbandonNormal) + ' pts</div>';
+    
+    html += '</div></div>';
+    
+    container.innerHTML = html;
+}
+// 🔥 NOUVELLE FONCTION : Corrélation Abandon/Ratio Enseignant
+function afficherCorrelationAbandonRatio(statsFiltre) {
+    var container = document.getElementById('graph-correlation-abandon-ratio');
+    if (!container) return;
+    
+    if (statsFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Extraire données pour corrélation
+    var ratios = [];
+    var abandons = [];
+    
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        if (stat.ratio_eleves_enseignant && stat.taux_abandon_total) {
+            ratios.push(stat.ratio_eleves_enseignant);
+            abandons.push(stat.taux_abandon_total);
+        }
+    }
+    
+    if (ratios.length < 2) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Données insuffisantes pour corrélation</p>';
+        return;
+    }
+    
+    // Calculer coefficient de corrélation de Pearson
+    var moyRatio = ratios.reduce(function(a,b){return a+b;},0) / ratios.length;
+    var moyAbandon = abandons.reduce(function(a,b){return a+b;},0) / abandons.length;
+    
+    var numerateur = 0;
+    var denomRatio = 0;
+    var denomAbandon = 0;
+    
+    for (var i = 0; i < ratios.length; i++) {
+        var diffRatio = ratios[i] - moyRatio;
+        var diffAbandon = abandons[i] - moyAbandon;
+        numerateur += diffRatio * diffAbandon;
+        denomRatio += diffRatio * diffRatio;
+        denomAbandon += diffAbandon * diffAbandon;
+    }
+    
+    var correlation = 0;
+    if (denomRatio > 0 && denomAbandon > 0) {
+        correlation = numerateur / Math.sqrt(denomRatio * denomAbandon);
+        correlation = Math.round(correlation * 100) / 100;
+    }
+    
+    // Interprétation
+    var interpretation = '';
+    var couleurCorr = '';
+    if (correlation > 0.7) {
+        interpretation = '🔴 Corrélation positive forte : Plus le ratio augmente, plus l\'abandon augmente';
+        couleurCorr = '#dc2626';
+    } else if (correlation > 0.4) {
+        interpretation = '🟠 Corrélation positive modérée : Le ratio influence l\'abandon';
+        couleurCorr = '#ea580c';
+    } else if (correlation > 0.2) {
+        interpretation = '🟡 Corrélation positive faible : Lien limité';
+        couleurCorr = '#f59e0b';
+    } else if (correlation < -0.2) {
+        interpretation = '🟢 Corrélation négative : Phénomène inhabituel à investiguer';
+        couleurCorr = '#10b981';
+    } else {
+        interpretation = '⚪ Pas de corrélation significative : Autres facteurs dominent';
+        couleurCorr = '#6b7280';
+    }
+    
+    // Grouper par tranches de ratio
+    var tranches = [
+        { min: 0, max: 30, label: '< 30', data: [] },
+        { min: 30, max: 40, label: '30-40', data: [] },
+        { min: 40, max: 50, label: '40-50', data: [] },
+        { min: 50, max: 60, label: '50-60', data: [] },
+        { min: 60, max: 200, label: '> 60', data: [] }
+    ];
+    
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        if (!stat.ratio_eleves_enseignant || !stat.taux_abandon_total) continue;
+        
+        for (var t = 0; t < tranches.length; t++) {
+            if (stat.ratio_eleves_enseignant >= tranches[t].min && stat.ratio_eleves_enseignant < tranches[t].max) {
+                tranches[t].data.push(stat.taux_abandon_total);
+                break;
+            }
+        }
+    }
+    
+    // Calculer moyennes
+    for (var t = 0; t < tranches.length; t++) {
+        if (tranches[t].data.length > 0) {
+            tranches[t].moyenne = Math.round(tranches[t].data.reduce(function(a,b){return a+b;},0) / tranches[t].data.length * 10) / 10;
+            tranches[t].count = tranches[t].data.length;
+        } else {
+            tranches[t].moyenne = 0;
+            tranches[t].count = 0;
+        }
+    }
+    
+    // Graphique en courbe
+    var html = '<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">';
+    
+    // PARTIE GAUCHE : Graphique
+    html += '<div>';
+    html += '<div style="position: relative; height: 280px; padding: 20px;">';
+    
+    // Axes
+    html += '<div style="position: absolute; bottom: 40px; left: 60px; right: 30px; border-top: 2px solid #e5e7eb;"></div>';
+    html += '<div style="position: absolute; bottom: 30px; left: 60px; top: 20px; border-left: 2px solid #e5e7eb;"></div>';
+    
+    // Labels Y (Abandon 0-30%)
+    for (var i = 0; i <= 6; i++) {
+        var valeur = i * 5;
+        var posY = 240 - (i * 36);
+        html += '<div style="position: absolute; left: 20px; top: ' + posY + 'px; font-size: 11px; color: #6b7280; font-weight: 600;">' + valeur + '%</div>';
+    }
+    
+    // Label axe Y
+    html += '<div style="position: absolute; left: 5px; top: 100px; font-size: 12px; color: #374151; font-weight: bold; transform: rotate(-90deg); transform-origin: left;">Taux Abandon</div>';
+    
+    // Label axe X
+    html += '<div style="position: absolute; bottom: 10px; right: 20px; font-size: 12px; color: #374151; font-weight: bold;">Ratio Élèves/Enseignant</div>';
+    
+    // Tracer courbe
+    var tranchesValides = tranches.filter(function(t) { return t.count > 0; });
+    
+    if (tranchesValides.length > 0) {
+        var largeurUtile = 80;
+        var ecartX = tranchesValides.length > 1 ? largeurUtile / (tranchesValides.length - 1) : 0;
+        
+        // Ligne
+        for (var i = 0; i < tranchesValides.length - 1; i++) {
+            var x1 = 70 + (i * ecartX * 6);
+            var y1 = 240 - (tranchesValides[i].moyenne * 7.2);
+            var x2 = 70 + ((i + 1) * ecartX * 6);
+            var y2 = 240 - (tranchesValides[i + 1].moyenne * 7.2);
+            
+            var longueur = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            var angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+            
+            var couleurSegment = tranchesValides[i + 1].moyenne > tranchesValides[i].moyenne ? '#ef4444' : '#10b981';
+            
+            html += '<div style="position: absolute; left: ' + x1 + 'px; top: ' + y1 + 'px; width: ' + longueur + 'px; height: 3px; background-color: ' + couleurSegment + '; transform-origin: 0 0; transform: rotate(' + angle + 'deg); opacity: 0.8;"></div>';
+        }
+        
+        // Points
+        for (var i = 0; i < tranchesValides.length; i++) {
+            var tranche = tranchesValides[i];
+            var x = 70 + (i * ecartX * 6);
+            var y = 240 - (tranche.moyenne * 7.2);
+            
+            var couleur = tranche.moyenne >= 15 ? '#dc2626' : (tranche.moyenne >= 10 ? '#f59e0b' : '#10b981');
+            
+            // Point
+            html += '<div style="position: absolute; left: ' + (x - 6) + 'px; top: ' + (y - 6) + 'px; width: 12px; height: 12px; background-color: ' + couleur + '; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 10;"></div>';
+            
+            // Étiquette
+            html += '<div style="position: absolute; left: ' + (x - 20) + 'px; top: ' + (y - 35) + 'px; width: 40px; text-align: center; font-size: 11px; font-weight: bold; color: ' + couleur + '; background-color: white; padding: 4px 6px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); border: 1px solid ' + couleur + ';">' + tranche.moyenne + '%</div>';
+            
+            // Label X
+            html += '<div style="position: absolute; left: ' + (x - 25) + 'px; bottom: 15px; font-size: 11px; color: #374151; font-weight: 600; text-align: center; width: 50px;">' + tranche.label + '</div>';
+            
+            // Nombre de zones
+            html += '<div style="position: absolute; left: ' + (x - 25) + 'px; bottom: 2px; font-size: 9px; color: #9ca3af; text-align: center; width: 50px;">(' + tranche.count + ')</div>';
+        }
+        
+        // Ligne objectif 10%
+        var yObjectif = 240 - (10 * 7.2);
+        html += '<div style="position: absolute; left: 60px; right: 30px; top: ' + yObjectif + 'px; border-top: 2px dashed #2563eb; opacity: 0.5;"></div>';
+        html += '<div style="position: absolute; right: 35px; top: ' + (yObjectif - 20) + 'px; font-size: 11px; color: #2563eb; font-weight: bold; background-color: white; padding: 2px 6px; border-radius: 3px; border: 1px solid #2563eb;">Objectif 10%</div>';
+    }
+    
+    html += '</div></div>';
+    
+    // PARTIE DROITE : Statistiques
+    html += '<div>';
+    
+    // Carte corrélation
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid ' + couleurCorr + '; margin-bottom: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #6b7280; margin-bottom: 10px;">Coefficient de Corrélation</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: ' + couleurCorr + '; margin-bottom: 10px;">' + correlation + '</div>';
+    html += '<div style="font-size: 12px; color: #374151; line-height: 1.6;">' + interpretation + '</div>';
+    html += '</div>';
+    
+    // Observations
+    html += '<div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb;">';
+    html += '<div style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 10px;">🔍 Observations</div>';
+    html += '<ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #1e3a8a; line-height: 1.8;">';
+    
+    if (correlation > 0.4) {
+        html += '<li><strong>Impact confirmé :</strong> Le sureffectif augmente l\'abandon</li>';
+        html += '<li><strong>Action prioritaire :</strong> Recruter des enseignants</li>';
+        html += '<li><strong>Zones critiques :</strong> Ratio > 50</li>';
+    } else {
+        html += '<li><strong>Impact limité :</strong> Le ratio n\'est pas déterminant</li>';
+        html += '<li><strong>Autres facteurs :</strong> Distance, pauvreté, infrastructures</li>';
+        html += '<li><strong>Approche globale nécessaire</strong></li>';
+    }
+    
+    html += '</ul></div>';
+    
+    html += '</div></div>';
+    
+    container.innerHTML = html;
+}
+// 🔥 NOUVELLE FONCTION : Corrélation Abandon/Distance
+function afficherCorrelationAbandonDistance(statsFiltre) {
+    var container = document.getElementById('graph-correlation-abandon-distance');
+    if (!container) return;
+    
+    if (statsFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Extraire données
+    var distances = [];
+    var abandons = [];
+    
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        if (stat.distance_moyenne_ecole_domicile && stat.taux_abandon_total) {
+            distances.push(stat.distance_moyenne_ecole_domicile);
+            abandons.push(stat.taux_abandon_total);
+        }
+    }
+    
+    if (distances.length < 2) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Données insuffisantes</p>';
+        return;
+    }
+    
+    // Calculer corrélation
+    var moyDistance = distances.reduce(function(a,b){return a+b;},0) / distances.length;
+    var moyAbandon = abandons.reduce(function(a,b){return a+b;},0) / abandons.length;
+    
+    var numerateur = 0;
+    var denomDistance = 0;
+    var denomAbandon = 0;
+    
+    for (var i = 0; i < distances.length; i++) {
+        var diffDist = distances[i] - moyDistance;
+        var diffAbandon = abandons[i] - moyAbandon;
+        numerateur += diffDist * diffAbandon;
+        denomDistance += diffDist * diffDist;
+        denomAbandon += diffAbandon * diffAbandon;
+    }
+    
+    var correlation = 0;
+    if (denomDistance > 0 && denomAbandon > 0) {
+        correlation = numerateur / Math.sqrt(denomDistance * denomAbandon);
+        correlation = Math.round(correlation * 100) / 100;
+    }
+    
+    // Interprétation
+    var interpretation = '';
+    var couleurCorr = '';
+    if (correlation > 0.7) {
+interpretation = '🔴 Corrélation positive forte : Plus la distance augmente, plus l\'abandon augmente';
+        couleurCorr = '#dc2626';
+    } else if (correlation > 0.4) {
+        interpretation = '🟠 Corrélation positive modérée : La distance influence l\'abandon';
+        couleurCorr = '#ea580c';
+    } else if (correlation > 0.2) {
+        interpretation = '🟡 Corrélation positive faible : Lien limité';
+        couleurCorr = '#f59e0b';
+    } else if (correlation < -0.2) {
+        interpretation = '🟢 Corrélation négative : Phénomène inhabituel';
+        couleurCorr = '#10b981';
+    } else {
+        interpretation = '⚪ Pas de corrélation : Autres facteurs dominent';
+        couleurCorr = '#6b7280';
+    }
+    
+    // Grouper par tranches de distance
+    var tranches = [
+        { min: 0, max: 1, label: '< 1 km', data: [] },
+        { min: 1, max: 2, label: '1-2 km', data: [] },
+        { min: 2, max: 3, label: '2-3 km', data: [] },
+        { min: 3, max: 4, label: '3-4 km', data: [] },
+        { min: 4, max: 100, label: '> 4 km', data: [] }
+    ];
+    
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        if (!stat.distance_moyenne_ecole_domicile || !stat.taux_abandon_total) continue;
+        
+        for (var t = 0; t < tranches.length; t++) {
+            if (stat.distance_moyenne_ecole_domicile >= tranches[t].min && stat.distance_moyenne_ecole_domicile < tranches[t].max) {
+                tranches[t].data.push(stat.taux_abandon_total);
+                break;
+            }
+        }
+    }
+    
+    // Calculer moyennes
+    for (var t = 0; t < tranches.length; t++) {
+        if (tranches[t].data.length > 0) {
+            tranches[t].moyenne = Math.round(tranches[t].data.reduce(function(a,b){return a+b;},0) / tranches[t].data.length * 10) / 10;
+            tranches[t].count = tranches[t].data.length;
+        } else {
+            tranches[t].moyenne = 0;
+            tranches[t].count = 0;
+        }
+    }
+    
+    // Graphique en courbe
+    var html = '<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">';
+    
+    // PARTIE GAUCHE : Graphique
+    html += '<div>';
+    html += '<div style="position: relative; height: 280px; padding: 20px;">';
+    
+    // Axes
+    html += '<div style="position: absolute; bottom: 40px; left: 60px; right: 30px; border-top: 2px solid #e5e7eb;"></div>';
+    html += '<div style="position: absolute; bottom: 30px; left: 60px; top: 20px; border-left: 2px solid #e5e7eb;"></div>';
+    
+    // Labels Y (Abandon 0-30%)
+    for (var i = 0; i <= 6; i++) {
+        var valeur = i * 5;
+        var posY = 240 - (i * 36);
+        html += '<div style="position: absolute; left: 20px; top: ' + posY + 'px; font-size: 11px; color: #6b7280; font-weight: 600;">' + valeur + '%</div>';
+    }
+    
+    // Label axe Y
+    html += '<div style="position: absolute; left: 5px; top: 100px; font-size: 12px; color: #374151; font-weight: bold; transform: rotate(-90deg); transform-origin: left;">Taux Abandon</div>';
+    
+    // Label axe X
+    html += '<div style="position: absolute; bottom: 10px; right: 20px; font-size: 12px; color: #374151; font-weight: bold;">Distance École (km)</div>';
+    
+    // Tracer courbe
+    var tranchesValides = tranches.filter(function(t) { return t.count > 0; });
+    
+    if (tranchesValides.length > 0) {
+        var largeurUtile = 80;
+        var ecartX = tranchesValides.length > 1 ? largeurUtile / (tranchesValides.length - 1) : 0;
+        
+        // Ligne
+        for (var i = 0; i < tranchesValides.length - 1; i++) {
+            var x1 = 70 + (i * ecartX * 6);
+            var y1 = 240 - (tranchesValides[i].moyenne * 7.2);
+            var x2 = 70 + ((i + 1) * ecartX * 6);
+            var y2 = 240 - (tranchesValides[i + 1].moyenne * 7.2);
+            
+            var longueur = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            var angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+            
+            var couleurSegment = tranchesValides[i + 1].moyenne > tranchesValides[i].moyenne ? '#ef4444' : '#10b981';
+            
+            html += '<div style="position: absolute; left: ' + x1 + 'px; top: ' + y1 + 'px; width: ' + longueur + 'px; height: 3px; background-color: ' + couleurSegment + '; transform-origin: 0 0; transform: rotate(' + angle + 'deg); opacity: 0.8;"></div>';
+        }
+        
+        // Points
+        for (var i = 0; i < tranchesValides.length; i++) {
+            var tranche = tranchesValides[i];
+            var x = 70 + (i * ecartX * 6);
+            var y = 240 - (tranche.moyenne * 7.2);
+            
+            var couleur = tranche.moyenne >= 15 ? '#dc2626' : (tranche.moyenne >= 10 ? '#f59e0b' : '#10b981');
+            
+            // Point
+            html += '<div style="position: absolute; left: ' + (x - 6) + 'px; top: ' + (y - 6) + 'px; width: 12px; height: 12px; background-color: ' + couleur + '; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 10;"></div>';
+            
+            // Étiquette
+            html += '<div style="position: absolute; left: ' + (x - 20) + 'px; top: ' + (y - 35) + 'px; width: 40px; text-align: center; font-size: 11px; font-weight: bold; color: ' + couleur + '; background-color: white; padding: 4px 6px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); border: 1px solid ' + couleur + ';">' + tranche.moyenne + '%</div>';
+            
+            // Label X
+            html += '<div style="position: absolute; left: ' + (x - 25) + 'px; bottom: 15px; font-size: 11px; color: #374151; font-weight: 600; text-align: center; width: 50px;">' + tranche.label + '</div>';
+            
+            // Nombre de zones
+            html += '<div style="position: absolute; left: ' + (x - 25) + 'px; bottom: 2px; font-size: 9px; color: #9ca3af; text-align: center; width: 50px;">(' + tranche.count + ')</div>';
+        }
+        
+        // Ligne objectif 10%
+        var yObjectif = 240 - (10 * 7.2);
+        html += '<div style="position: absolute; left: 60px; right: 30px; top: ' + yObjectif + 'px; border-top: 2px dashed #2563eb; opacity: 0.5;"></div>';
+        html += '<div style="position: absolute; right: 35px; top: ' + (yObjectif - 20) + 'px; font-size: 11px; color: #2563eb; font-weight: bold; background-color: white; padding: 2px 6px; border-radius: 3px; border: 1px solid #2563eb;">Objectif 10%</div>';
+        
+        // Ligne critique 3km
+        var x3km = 70 + (2 * ecartX * 6); // Position approximative de 3km
+        html += '<div style="position: absolute; left: ' + x3km + 'px; bottom: 30px; top: 20px; width: 2px; background-color: #dc2626; opacity: 0.3;"></div>';
+        html += '<div style="position: absolute; left: ' + (x3km + 5) + 'px; top: 20px; font-size: 10px; color: #dc2626; font-weight: bold; background-color: white; padding: 2px 4px; border-radius: 3px;">Limite 3km</div>';
+    }
+    
+    html += '</div></div>';
+    
+    // PARTIE DROITE : Statistiques
+    html += '<div>';
+    
+    // Carte corrélation
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid ' + couleurCorr + '; margin-bottom: 16px;">';
+    html += '<div style="font-size: 12px; font-weight: bold; color: #6b7280; margin-bottom: 10px;">Coefficient de Corrélation</div>';
+    html += '<div style="font-size: 36px; font-weight: bold; color: ' + couleurCorr + '; margin-bottom: 10px;">' + correlation + '</div>';
+    html += '<div style="font-size: 12px; color: #374151; line-height: 1.6;">' + interpretation + '</div>';
+    html += '</div>';
+    
+    // Observations
+    html += '<div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb;">';
+    html += '<div style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 10px;">🔍 Observations</div>';
+    html += '<ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #1e3a8a; line-height: 1.8;">';
+    
+    if (correlation > 0.4) {
+        html += '<li><strong>Impact confirmé :</strong> L\'éloignement augmente l\'abandon</li>';
+        html += '<li><strong>Zone critique :</strong> Au-delà de 3 km</li>';
+        html += '<li><strong>Solution :</strong> Construire écoles de proximité</li>';
+        html += '<li><strong>Alternative :</strong> Transport scolaire gratuit</li>';
+    } else {
+        html += '<li><strong>Impact limité :</strong> La distance n\'est pas déterminante</li>';
+        html += '<li><strong>Autres facteurs :</strong> Qualité enseignement, pauvreté</li>';
+        html += '<li><strong>Priorité :</strong> Améliorer écoles existantes</li>';
+    }
+    
+    html += '</ul></div>';
+    
+    html += '</div></div>';
+    
+    container.innerHTML = html;
+}
+
 function afficherClassementPrefectures(examensFiltre) {
     var container = document.getElementById('tableau-qualite-classement');
     if (!container) return;
