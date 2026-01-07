@@ -9340,18 +9340,18 @@ function afficherProgressionRegression(examensFiltre, annee, regionId, prefectur
     
     var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
     
-    // TOP 5 PROGRESSIONS
-    html += '<div>';
-    html += '<h4 style="color: #059669; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📈</span> Top 5 Progressions</h4>';
-    
-    if (progressions.length > 0) {
-        html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead class="green"><tr style="background-color: #059669 !important; color: white;">';
-        html += '<th style="padding: 10px; border: 1px solid #047857;">Rang</th>';
-        html += '<th style="padding: 10px; border: 1px solid #047857;">Préfecture</th>';
-        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center;">' + anneePrecedente.split('-')[0] + '</th>';
-        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center;">' + annee.split('-')[0] + '</th>';
-        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center;">Évolution</th>';
-        html += '</tr></thead><tbody>';
+// TOP 5 PROGRESSIONS
+html += '<div>';
+html += '<h4 style="color: #059669; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📈</span> Top 5 Progressions</h4>';
+
+if (progressions.length > 0) {
+    html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead><tr style="background-color: #059669 !important; color: white;">';
+    html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Rang</th>';
+    html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Préfecture</th>';
+    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">' + anneePrecedente.split('-')[0] + '</th>';
+    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">' + annee.split('-')[0] + '</th>';
+    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">Évolution</th>';
+    html += '</tr></thead><tbody>';
         
         for (var i = 0; i < progressions.length; i++) {
             var p = progressions[i];
@@ -9374,20 +9374,18 @@ function afficherProgressionRegression(examensFiltre, annee, regionId, prefectur
     }
     
     html += '</div>';
-    
-    // TOP 5 RÉGRESSIONS
-    html += '<div>';
-    html += '<h4 style="color: #dc2626; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📉</span> Top 5 Régressions</h4>';
-    
-    if (regressions.length > 0) {
-        html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead class="red"><tr style="background-color: #dc2626 !important; color: white;">';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Rang</th>';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Préfecture</th>';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">' + anneePrecedente.split('-')[0] + '</th>';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">' + annee.split('-')[0] + '</th>';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">Évolution</th>';
-        html += '</tr></thead><tbody>';
-        
+// TOP 5 RÉGRESSIONS
+html += '<div>';
+html += '<h4 style="color: #dc2626; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📉</span> Top 5 Régressions</h4>';
+
+if (regressions.length > 0) {
+    html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead><tr style="background-color: #dc2626 !important; color: white;">';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Rang</th>';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Préfecture</th>';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">' + anneePrecedente.split('-')[0] + '</th>';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">' + annee.split('-')[0] + '</th>';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">Évolution</th>';
+    html += '</tr></thead><tbody>';
         for (var i = 0; i < regressions.length; i++) {
             var p = regressions[i];
             var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
@@ -9565,18 +9563,18 @@ function afficherDeficitEnseignants(statsFiltre) {
     
     // Trier par déficit décroissant
     prefectures.sort(function(a, b) { return b.deficit - a.deficit; });
-    
-    // Tableau
-    var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="blue"><tr style="background-color: #2563eb !important; color: white;">';
-    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Préfecture</th>';
-    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Région</th>';
-    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ratio Actuel</th>';
-    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ens. Actuels</th>';
-    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ens. Nécessaires</th>';
-    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Déficit/Surplus</th>';
-    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">% Écart</th>';
-    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Priorité</th>';
-    html += '</tr></thead><tbody>';
+// Tableau
+var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead><tr style="background-color: #ea580c !important; color: white;">';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; background-color: #ea580c !important; color: white !important;">Rang</th>';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; background-color: #ea580c !important; color: white !important;">Préfecture</th>';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; background-color: #ea580c !important; color: white !important;">Région</th>';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center; background-color: #ea580c !important; color: white !important;">Déficit Ens.</th>';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center; background-color: #ea580c !important; color: white !important;">Ratio</th>';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center; background-color: #ea580c !important; color: white !important;">Scol. (%)</th>';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center; background-color: #ea580c !important; color: white !important;">Abandon (%)</th>';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center; background-color: #ea580c !important; color: white !important;">Score Priorité</th>';
+html += '<th style="padding: 12px; border: 1px solid #c2410c; background-color: #ea580c !important; color: white !important;">Recommandations</th>';
+html += '</tr></thead><tbody>';
     
     for (var i = 0; i < prefectures.length; i++) {
         var p = prefectures[i];
@@ -10588,14 +10586,13 @@ function afficherClassementPrefectures(examensFiltre) {
     var bottom5 = prefectures.slice(-5).reverse();
     var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
     // TOP 5
-    html += '<div>';
-    html += '<h4 style="color: #059669; margin-bottom: 12px; font-size: 16px;">🏆 Top 5 - Meilleures Performances</h4>';
-    html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #059669; color: white;">';
-    html += '<th style="padding: 10px; border: 1px solid #047857;">Rang</th>';
-    html += '<th style="padding: 10px; border: 1px solid #047857;">Préfecture</th>';
-    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center;">Moyenne</th>';
-    html += '</tr></thead><tbody>';
-    
+html += '<div>';
+html += '<h4 style="color: #059669; margin-bottom: 12px; font-size: 16px;">🏆 Top 5 - Meilleures Performances</h4>';
+html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #059669 !important; color: white;">';
+html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Rang</th>';
+html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Préfecture</th>';
+html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">Moyenne</th>';
+html += '</tr></thead><tbody>';
     for (var i = 0; i < top5.length; i++) {
         var p = top5[i];
         var bgColor = i % 2 === 0 ? '#ffffff' : '#f0fdf4';
@@ -10607,14 +10604,14 @@ function afficherClassementPrefectures(examensFiltre) {
         html += '</tr>';
     }  
     html += '</tbody></table></div></div>';
-    // BOTTOM 5
-    html += '<div>';
-    html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ Bottom 5 - À Améliorer</h4>';
-    html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626; color: white;">';
-    html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Rang</th>';
-    html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Préfecture</th>';
-    html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">Moyenne</th>';
-    html += '</tr></thead><tbody>';
+// BOTTOM 5
+html += '<div>';
+html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ Bottom 5 - À Améliorer</h4>';
+html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626 !important; color: white;">';
+html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Rang</th>';
+html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Préfecture</th>';
+html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">Moyenne</th>';
+html += '</tr></thead><tbody>';
     for (var i = 0; i < bottom5.length; i++) {
         var p = bottom5[i];
         var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
