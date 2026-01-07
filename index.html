@@ -7110,7 +7110,11 @@ function renderAnalyseQualite() {
     html += '<div id="graph-qualite-evolution" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 250px;">';
     html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
     html += '</div></div>';
-    
+    html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🔄 Préfectures en Progression/Régression</h4>';
+html += '<div id="tableau-progression-regression" style="margin-top: 16px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
     html += '</div>'; // Fin Section A
     
     // ========== SECTION B : RESSOURCES PÉDAGOGIQUES ==========
@@ -8879,6 +8883,7 @@ function appliquerFiltresQualite() {
     calculerIndicateursQualite(examensFiltre, statsFiltre);
     afficherGraphiqueExamens(examensFiltre);
     afficherGraphiqueEvolution(annee, regionId, prefecture, niveau);
+    afficherProgressionRegression(examensFiltre, annee, regionId, prefecture, niveau);
     afficherGraphiqueRatio(statsFiltre);
     afficherGraphiqueAbandon(statsFiltre);
     afficherClassementPrefectures(examensFiltre);
@@ -8959,37 +8964,135 @@ function calculerIndicateursQualite(examensFiltre, statsFiltre) {
 function afficherGraphiqueExamens(examensFiltre) {
     var container = document.getElementById('graph-qualite-examens');
     if (!container) return;
+    
     if (examensFiltre.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
         return;
     }
     
     var examens = ['CEE', 'BEPC', 'BAC'];
-    var html = '<div style="display: flex; flex-direction: column; gap: 24px;">';
+    var html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">';
+    
     for (var e = 0; e < examens.length; e++) {
         var exam = examens[e];
         var field = 'taux_reussite_' + exam.toLowerCase();
+        
         var moyF = calculerMoyenneParGenre(examensFiltre, field, 'Filles');
         var moyG = calculerMoyenneParGenre(examensFiltre, field, 'Garcons');
         var moyT = calculerMoyenneParGenre(examensFiltre, field, 'Total');
-        html += '<div>';
-        html += '<div style="font-weight: bold; margin-bottom: 10px; color: #374151; font-size: 15px;">' + exam + '</div>';
-        html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
-        // Filles
-        html += '<div><div style="font-size: 12px; color: #9f1239; margin-bottom: 6px; font-weight: 600;">👧 Filles: ' + moyF + '%</div>';
-        html += '<div style="background-color: #fee2e2; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
-        html += '<div style="width: ' + moyF + '%; height: 100%; background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);"></div></div></div>';
-        // Garçons
-        html += '<div><div style="font-size: 12px; color: #1e3a8a; margin-bottom: 6px; font-weight: 600;">👦 Garçons: ' + moyG + '%</div>';
-        html += '<div style="background-color: #dbeafe; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
-        html += '<div style="width: ' + moyG + '%; height: 100%; background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);"></div></div></div>';
-        // Total
-        html += '<div><div style="font-size: 12px; color: #065f46; margin-bottom: 6px; font-weight: 600;">📊 Total: ' + moyT + '%</div>';
-        html += '<div style="background-color: #d1fae5; height: 28px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">';
-        html += '<div style="width: ' + moyT + '%; height: 100%; background: linear-gradient(90deg, #059669 0%, #10b981 100%);"></div></div></div>';
-        html += '</div></div>';
+        
+        // Couleur selon l'examen
+        var couleurExam = exam === 'CEE' ? '#3b82f6' : (exam === 'BEPC' ? '#059669' : '#f59e0b');
+        var bgExam = exam === 'CEE' ? '#dbeafe' : (exam === 'BEPC' ? '#d1fae5' : '#fef3c7');
+        
+        html += '<div style="background-color: white; padding: 20px; border-radius: 12px; border: 2px solid ' + couleurExam + ';">';
+        
+        // Titre
+        html += '<h4 style="text-align: center; color: ' + couleurExam + '; margin-bottom: 16px; font-size: 16px; font-weight: bold;">📘 ' + exam + '</h4>';
+        
+        // Graphique radar
+        html += '<div style="position: relative; width: 200px; height: 200px; margin: 0 auto;">';
+        
+        // Cercles concentriques (20%, 40%, 60%, 80%, 100%)
+        var rayons = [80, 64, 48, 32, 16];
+        for (var r = 0; r < rayons.length; r++) {
+            var opacite = 0.1 + (r * 0.05);
+            html += '<div style="position: absolute; left: 50%; top: 50%; width: ' + (rayons[r] * 2) + 'px; height: ' + (rayons[r] * 2) + 'px; border: 1px solid ' + couleurExam + '; border-radius: 50%; transform: translate(-50%, -50%); opacity: ' + opacite + ';"></div>';
+        }
+        
+        // Labels des cercles
+        var pourcentages = [20, 40, 60, 80, 100];
+        for (var p = 0; p < pourcentages.length; p++) {
+            html += '<div style="position: absolute; left: 50%; top: ' + (100 - rayons[p] - 10) + 'px; font-size: 9px; color: #9ca3af; transform: translateX(-50%);">' + pourcentages[p] + '%</div>';
+        }
+        
+        // 3 axes pour F/G/T (triangle)
+        var categories = [
+            { label: 'Filles', valeur: moyF, angle: -90, couleur: '#ec4899' },
+            { label: 'Garçons', valeur: moyG, angle: 30, couleur: '#3b82f6' },
+            { label: 'Total', valeur: moyT, angle: 150, couleur: '#10b981' }
+        ];
+        
+        // Tracer les axes
+        for (var c = 0; c < categories.length; c++) {
+            var angleRad = categories[c].angle * Math.PI / 180;
+            var xEnd = 100 + 90 * Math.cos(angleRad);
+            var yEnd = 100 + 90 * Math.sin(angleRad);
+            
+            html += '<div style="position: absolute; left: 100px; top: 100px; width: 90px; height: 1px; background-color: #e5e7eb; transform-origin: 0 0; transform: rotate(' + categories[c].angle + 'deg);"></div>';
+            
+            // Label de l'axe
+            var xLabel = 100 + 105 * Math.cos(angleRad);
+            var yLabel = 100 + 105 * Math.sin(angleRad);
+            html += '<div style="position: absolute; left: ' + (xLabel - 25) + 'px; top: ' + (yLabel - 10) + 'px; width: 50px; text-align: center; font-size: 10px; font-weight: bold; color: ' + categories[c].couleur + ';">' + categories[c].label + '</div>';
+        }
+        
+        // Tracer le polygone (triangle)
+        var points = [];
+        for (var c = 0; c < categories.length; c++) {
+            var angleRad = categories[c].angle * Math.PI / 180;
+            var rayon = (categories[c].valeur / 100) * 80;
+            var x = 100 + rayon * Math.cos(angleRad);
+            var y = 100 + rayon * Math.sin(angleRad);
+            points.push(x + ',' + y);
+        }
+        
+        // SVG pour le polygone
+        html += '<svg style="position: absolute; left: 0; top: 0; width: 200px; height: 200px; pointer-events: none;">';
+        html += '<polygon points="' + points.join(' ') + '" fill="' + couleurExam + '" fill-opacity="0.3" stroke="' + couleurExam + '" stroke-width="2"/>';
+        html += '</svg>';
+        
+        // Points sur les sommets
+        for (var c = 0; c < categories.length; c++) {
+            var angleRad = categories[c].angle * Math.PI / 180;
+            var rayon = (categories[c].valeur / 100) * 80;
+            var x = 100 + rayon * Math.cos(angleRad);
+            var y = 100 + rayon * Math.sin(angleRad);
+            
+            html += '<div style="position: absolute; left: ' + (x - 6) + 'px; top: ' + (y - 6) + 'px; width: 12px; height: 12px; background-color: ' + categories[c].couleur + '; border: 2px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;"></div>';
+            
+            // Valeur
+            var xVal = 100 + (rayon - 15) * Math.cos(angleRad);
+            var yVal = 100 + (rayon - 15) * Math.sin(angleRad);
+            html += '<div style="position: absolute; left: ' + (xVal - 15) + 'px; top: ' + (yVal - 8) + 'px; width: 30px; text-align: center; font-size: 11px; font-weight: bold; color: ' + categories[c].couleur + '; background-color: white; padding: 2px 4px; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">' + categories[c].valeur + '%</div>';
+        }
+        
+        // Point central
+        html += '<div style="position: absolute; left: 94px; top: 94px; width: 12px; height: 12px; background-color: #374151; border: 2px solid white; border-radius: 50%; z-index: 11;"></div>';
+        
+        html += '</div>';
+        
+        // Moyenne générale
+        html += '<div style="text-align: center; margin-top: 16px; padding: 10px; background-color: ' + bgExam + '; border-radius: 6px;">';
+        html += '<div style="font-size: 11px; color: ' + couleurExam + '; font-weight: bold; margin-bottom: 4px;">Moyenne Générale</div>';
+        html += '<div style="font-size: 24px; font-weight: bold; color: ' + couleurExam + ';">' + Math.round((moyF + moyG + moyT) / 3 * 10) / 10 + '%</div>';
+        html += '</div>';
+        
+        html += '</div>';
     }
+    
     html += '</div>';
+    
+    // Légende commune
+    html += '<div style="margin-top: 20px; padding: 16px; background-color: #f9fafb; border-radius: 8px; display: flex; gap: 24px; justify-content: center;">';
+    
+    html += '<div style="display: flex; align-items: center; gap: 8px;">';
+    html += '<div style="width: 14px; height: 14px; background-color: #ec4899; border-radius: 50%;"></div>';
+    html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">Filles</span>';
+    html += '</div>';
+    
+    html += '<div style="display: flex; align-items: center; gap: 8px;">';
+    html += '<div style="width: 14px; height: 14px; background-color: #3b82f6; border-radius: 50%;"></div>';
+    html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">Garçons</span>';
+    html += '</div>';
+    
+    html += '<div style="display: flex; align-items: center; gap: 8px;">';
+    html += '<div style="width: 14px; height: 14px; background-color: #10b981; border-radius: 50%;"></div>';
+    html += '<span style="font-size: 12px; color: #374151; font-weight: 600;">Total</span>';
+    html += '</div>';
+    
+    html += '</div>';
+    
     container.innerHTML = html;
 }
 function afficherGraphiqueEvolution(annee, regionId, prefecture, niveau) {
@@ -9087,6 +9190,191 @@ function afficherGraphiqueEvolution(annee, regionId, prefecture, niveau) {
     
     container.innerHTML = html;
 }
+// 🔥 NOUVELLE FONCTION : Préfectures en Progression/Régression
+function afficherProgressionRegression(examensFiltre, annee, regionId, prefecture, niveau) {
+    var container = document.getElementById('tableau-progression-regression');
+    if (!container) return;
+    
+    // Comparer avec l'année précédente
+    var anneePrecedente = '';
+    if (annee === '2024-2025') anneePrecedente = '2023-2024';
+    else if (annee === '2023-2024') anneePrecedente = '2022-2023';
+    else {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Pas de données antérieures pour comparaison</p>';
+        return;
+    }
+    
+    // Récupérer données année actuelle et précédente
+    var dataActuelle = {};
+    var dataPrecedente = {};
+    
+    // Année actuelle
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire !== annee) continue;
+        
+        var examRegionId = '';
+        for (var r = 0; r < regionsData.length; r++) {
+            if (regionsData[r].nom === exam.region) {
+                examRegionId = regionsData[r].id.toString();
+                break;
+            }
+        }
+        
+        var inclure = true;
+        if (regionId && regionId !== '' && examRegionId !== regionId) inclure = false;
+        if (inclure && prefecture && prefecture !== '' && exam.prefecture !== prefecture) inclure = false;
+        if (inclure && niveau && niveau !== '' && exam.niveau !== niveau) inclure = false;
+        
+        if (!inclure) continue;
+        
+        var key = exam.prefecture;
+        if (!dataActuelle[key]) {
+            dataActuelle[key] = { region: exam.region, scores: [] };
+        }
+        
+        if (exam.taux_reussite_cee_total) dataActuelle[key].scores.push(exam.taux_reussite_cee_total);
+        if (exam.taux_reussite_bepc_total) dataActuelle[key].scores.push(exam.taux_reussite_bepc_total);
+        if (exam.taux_reussite_bac_total) dataActuelle[key].scores.push(exam.taux_reussite_bac_total);
+    }
+    
+    // Année précédente
+    for (var i = 0; i < reussiteExamensData.length; i++) {
+        var exam = reussiteExamensData[i];
+        if (exam.annee_scolaire !== anneePrecedente) continue;
+        
+        var examRegionId = '';
+        for (var r = 0; r < regionsData.length; r++) {
+            if (regionsData[r].nom === exam.region) {
+                examRegionId = regionsData[r].id.toString();
+                break;
+            }
+        }
+        
+        var inclure = true;
+        if (regionId && regionId !== '' && examRegionId !== regionId) inclure = false;
+        if (inclure && prefecture && prefecture !== '' && exam.prefecture !== prefecture) inclure = false;
+        if (inclure && niveau && niveau !== '' && exam.niveau !== niveau) inclure = false;
+        
+        if (!inclure) continue;
+        
+        var key = exam.prefecture;
+        if (!dataPrecedente[key]) {
+            dataPrecedente[key] = { region: exam.region, scores: [] };
+        }
+        
+        if (exam.taux_reussite_cee_total) dataPrecedente[key].scores.push(exam.taux_reussite_cee_total);
+        if (exam.taux_reussite_bepc_total) dataPrecedente[key].scores.push(exam.taux_reussite_bepc_total);
+        if (exam.taux_reussite_bac_total) dataPrecedente[key].scores.push(exam.taux_reussite_bac_total);
+    }
+    
+    // Calculer évolutions
+    var evolutions = [];
+    
+    for (var pref in dataActuelle) {
+        if (!dataPrecedente[pref]) continue;
+        
+        var moyActuelle = dataActuelle[pref].scores.reduce(function(a,b){return a+b;},0) / dataActuelle[pref].scores.length;
+        var moyPrecedente = dataPrecedente[pref].scores.reduce(function(a,b){return a+b;},0) / dataPrecedente[pref].scores.length;
+        
+        var evolution = Math.round((moyActuelle - moyPrecedente) * 10) / 10;
+        
+        evolutions.push({
+            prefecture: pref,
+            region: dataActuelle[pref].region,
+            actuelle: Math.round(moyActuelle * 10) / 10,
+            precedente: Math.round(moyPrecedente * 10) / 10,
+            evolution: evolution,
+            evolutionPourcent: moyPrecedente > 0 ? Math.round((evolution / moyPrecedente) * 100 * 10) / 10 : 0
+        });
+    }
+    
+    if (evolutions.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Pas de données pour comparaison</p>';
+        return;
+    }
+    
+    // Trier par évolution décroissante
+    evolutions.sort(function(a, b) { return b.evolution - a.evolution; });
+    
+    // Top 5 progressions et Top 5 régressions
+    var progressions = evolutions.filter(function(e) { return e.evolution > 0; }).slice(0, 5);
+    var regressions = evolutions.filter(function(e) { return e.evolution < 0; }).slice(0, 5);
+    
+    var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
+    
+    // TOP 5 PROGRESSIONS
+    html += '<div>';
+    html += '<h4 style="color: #059669; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📈</span> Top 5 Progressions</h4>';
+    
+    if (progressions.length > 0) {
+        html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead class="green"><tr style="background-color: #059669 !important; color: white;">';
+        html += '<th style="padding: 10px; border: 1px solid #047857;">Rang</th>';
+        html += '<th style="padding: 10px; border: 1px solid #047857;">Préfecture</th>';
+        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center;">' + anneePrecedente.split('-')[0] + '</th>';
+        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center;">' + annee.split('-')[0] + '</th>';
+        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center;">Évolution</th>';
+        html += '</tr></thead><tbody>';
+        
+        for (var i = 0; i < progressions.length; i++) {
+            var p = progressions[i];
+            var bgColor = i % 2 === 0 ? '#ffffff' : '#f0fdf4';
+            
+            var emoji = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : ''));
+            
+            html += '<tr style="background-color: ' + bgColor + ';">';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; font-size: 16px;">' + emoji + ' ' + (i + 1) + '</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.prefecture + '</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.precedente + '%</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #059669;">' + p.actuelle + '%</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #d1fae5; color: #065f46; padding: 6px 10px; border-radius: 6px; font-weight: bold;">+' + p.evolution + ' pts</span></td>';
+            html += '</tr>';
+        }
+        
+        html += '</tbody></table></div>';
+    } else {
+        html += '<p style="text-align: center; color: #9ca3af; padding: 40px; background-color: #f9fafb; border-radius: 8px;">Aucune progression enregistrée</p>';
+    }
+    
+    html += '</div>';
+    
+    // TOP 5 RÉGRESSIONS
+    html += '<div>';
+    html += '<h4 style="color: #dc2626; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📉</span> Top 5 Régressions</h4>';
+    
+    if (regressions.length > 0) {
+        html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead class="red"><tr style="background-color: #dc2626 !important; color: white;">';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Rang</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Préfecture</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">' + anneePrecedente.split('-')[0] + '</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">' + annee.split('-')[0] + '</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">Évolution</th>';
+        html += '</tr></thead><tbody>';
+        
+        for (var i = 0; i < regressions.length; i++) {
+            var p = regressions[i];
+            var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
+            
+            html += '<tr style="background-color: ' + bgColor + ';">';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + (i + 1) + '</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.prefecture + '</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.precedente + '%</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #dc2626;">' + p.actuelle + '%</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #fee2e2; color: #991b1b; padding: 6px 10px; border-radius: 6px; font-weight: bold;">' + p.evolution + ' pts</span></td>';
+            html += '</tr>';
+        }
+        
+        html += '</tbody></table></div>';
+    } else {
+        html += '<p style="text-align: center; color: #9ca3af; padding: 40px; background-color: #f9fafb; border-radius: 8px;">Aucune régression enregistrée</p>';
+    }
+    
+    html += '</div>';
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
 function afficherGraphiqueRatio(statsFiltre) {
     var container = document.getElementById('graph-qualite-ratio');
     if (!container) return;
