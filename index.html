@@ -10594,7 +10594,8 @@ function afficherClassementPrefectures(examensFiltre) {
     prefectures.sort(function(a, b) { return b.moyenne - a.moyenne; });
     // Afficher Top 5 et Bottom 5
     var top5 = prefectures.slice(0, 5);
-    var bottom5 = prefectures.slice(-5).reverse();
+    // Bottom 5 : Les 5 dernières (pires)
+    var bottom5 = prefectures.slice(-5); // Ne PAS reverse, garder l'ordre croissant
     var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
     // TOP 5
 html += '<div>';
@@ -10616,18 +10617,24 @@ html += '</tr></thead><tbody>';
     }  
     html += '</tbody></table></div></div>';
     // BOTTOM 5
-html += '<div>';
-html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ Bottom 5 - À Améliorer</h4>';
-html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626 !important; color: white;">';
-html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Rang</th>';
-html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Préfecture</th>';
-html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">Moyenne</th>';
-html += '</tr></thead><tbody>';
+    html += '<div>';
+    html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ Bottom 5 - À Améliorer</h4>';
+    html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626 !important; color: white;">';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Rang</th>';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Préfecture</th>';
+    html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">Moyenne</th>';
+    html += '</tr></thead><tbody>';
+    
+    // Parcourir du pire au moins pire
     for (var i = 0; i < bottom5.length; i++) {
         var p = bottom5[i];
         var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
+        
+        // Rang réel dans le classement global (du dernier au 5e avant-dernier)
+        var rangGlobal = prefectures.length - bottom5.length + i + 1;
+        
         html += '<tr style="background-color: ' + bgColor + ';">';
-        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + (prefectures.length - bottom5.length + i + 1) + '</td>';
+        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + rangGlobal + '</td>';
         html += '<td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
         html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: bold;">' + p.moyenne + '%</span></td>';
         html += '</tr>';
