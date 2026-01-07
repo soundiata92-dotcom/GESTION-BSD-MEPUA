@@ -10597,26 +10597,56 @@ function afficherClassementPrefectures(examensFiltre) {
     // Trier par moyenne décroissante
     prefectures.sort(function(a, b) { return b.moyenne - a.moyenne; });
     
-    console.log('📊 Nombre total de préfectures:', prefectures.length);
+    var nbTotal = prefectures.length;
+    console.log('📊 Nombre total de préfectures:', nbTotal);
     
-    // Si moins de 2 préfectures, ne rien afficher
-    if (prefectures.length < 2) {
-        container.innerHTML = '<div style="text-align: center; padding: 40px; background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;"><p style="color: #92400e; font-size: 16px; font-weight: bold;">⚠️ Données insuffisantes</p><p style="color: #78350f; font-size: 14px; margin-top: 8px;">Il faut au moins 2 préfectures pour afficher un classement.</p></div>';
-        return;
+    // Déterminer combien afficher à gauche et à droite
+    var nbGauche, nbDroite, top5, bottom5;
+    
+    if (nbTotal === 1) {
+        // 1 seule préfecture : afficher seulement à gauche
+        nbGauche = 1;
+        nbDroite = 0;
+        top5 = prefectures.slice(0, 1);
+        bottom5 = [];
+    } else if (nbTotal === 2) {
+        // 2 préfectures : meilleure à gauche, autre à droite
+        nbGauche = 1;
+        nbDroite = 1;
+        top5 = prefectures.slice(0, 1);
+        bottom5 = prefectures.slice(1, 2);
+    } else if (nbTotal <= 5) {
+        // 3 à 5 préfectures : toutes sauf la dernière à gauche, la dernière à droite
+        nbGauche = nbTotal - 1;
+        nbDroite = 1;
+        top5 = prefectures.slice(0, nbGauche);
+        bottom5 = prefectures.slice(nbGauche);
+    } else if (nbTotal <= 10) {
+        // 6 à 10 préfectures : 5 meilleures à gauche, le reste à droite
+        nbGauche = 5;
+        nbDroite = nbTotal - 5;
+        top5 = prefectures.slice(0, 5);
+        bottom5 = prefectures.slice(5);
+    } else {
+        // Plus de 10 : Top 5 à gauche, Bottom 5 à droite
+        nbGauche = 5;
+        nbDroite = 5;
+        top5 = prefectures.slice(0, 5);
+        bottom5 = prefectures.slice(-5);
     }
+    
+    console.log('👈 Gauche:', nbGauche, '| 👉 Droite:', nbDroite);
     
     var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
     
-    // ========== TOP 5 - MEILLEURES PERFORMANCES ==========
+    // ========== GAUCHE : TOP 5 (ou moins) ==========
     html += '<div>';
-    html += '<h4 style="color: #059669; margin-bottom: 12px; font-size: 16px;">🏆 Top 5 - Meilleures Performances</h4>';
+    html += '<h4 style="color: #059669; margin-bottom: 12px; font-size: 16px;">🏆 Top ' + nbGauche + ' - Meilleures Performances</h4>';
     html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #059669 !important; color: white;">';
     html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Rang</th>';
     html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Préfecture</th>';
     html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">Moyenne</th>';
     html += '</tr></thead><tbody>';
-    
-    var top5 = prefectures.slice(0, Math.min(5, prefectures.length));
     
     for (var i = 0; i < top5.length; i++) {
         var p = top5[i];
@@ -10631,31 +10661,31 @@ function afficherClassementPrefectures(examensFiltre) {
     
     html += '</tbody></table></div></div>';
     
-    // ========== BOTTOM 5 - À AMÉLIORER (EXCLURE LE TOP 5) ==========
+    // ========== DROITE : BOTTOM (variable) ==========
     html += '<div>';
-    html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ Bottom 5 - À Améliorer</h4>';
     
-    // Vérifier qu'il reste au moins 1 préfecture après exclusion du Top 5
-    if (prefectures.length > top5.length) {
+    if (nbDroite > 0) {
+        var titreBottom = nbTotal <= 10 ? 'Bottom ' + nbDroite : 'Bottom 5';
+        html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ ' + titreBottom + ' - À Améliorer</h4>';
         html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626 !important; color: white;">';
         html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Rang</th>';
         html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Préfecture</th>';
         html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">Moyenne</th>';
         html += '</tr></thead><tbody>';
         
-        // Exclure les préfectures du Top 5
-        var prefecturesRestantes = prefectures.slice(top5.length);
-        
-        // Prendre les 5 dernières des préfectures restantes
-        var nbBottom = Math.min(5, prefecturesRestantes.length);
-        var bottom5 = prefecturesRestantes.slice(-nbBottom);
-        
         for (var i = 0; i < bottom5.length; i++) {
             var p = bottom5[i];
             var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
             
-            // Calculer le rang global (position dans le classement complet)
-            var rangGlobal = prefectures.length - nbBottom + i + 1;
+            // Calculer le rang global
+            var rangGlobal;
+            if (nbTotal <= 10) {
+                // Si 6-10 préfectures : rang = nbGauche + i + 1
+                rangGlobal = nbGauche + i + 1;
+            } else {
+                // Si > 10 : rang = nbTotal - 5 + i + 1
+                rangGlobal = nbTotal - 5 + i + 1;
+            }
             
             html += '<tr style="background-color: ' + bgColor + ';">';
             html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + rangGlobal + '</td>';
@@ -10666,9 +10696,9 @@ function afficherClassementPrefectures(examensFiltre) {
         
         html += '</tbody></table></div>';
     } else {
+        html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ À Améliorer</h4>';
         html += '<div style="text-align: center; padding: 40px; background-color: #f0fdf4; border-radius: 8px; border-left: 4px solid #059669;">';
-        html += '<p style="color: #065f46; font-size: 14px; margin: 0;">✅ Toutes les préfectures sont déjà dans le Top 5 !</p>';
-        html += '<p style="color: #047857; font-size: 12px; margin-top: 8px;">Il n\'y a pas de préfectures à améliorer.</p>';
+        html += '<p style="color: #065f46; font-size: 14px; margin: 0;">✅ Toutes les préfectures performent bien !</p>';
         html += '</div>';
     }
     
