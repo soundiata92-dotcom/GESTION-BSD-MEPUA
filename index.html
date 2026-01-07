@@ -9226,130 +9226,136 @@ function afficherGraphiqueEvolution(annee, regionId, prefecture, niveau) {
     
     container.innerHTML = html;
 }
-// 🔥 NOUVELLE FONCTION : Préfectures en Progression/Régression
+// 🔥 NOUVELLE FONCTION : Préfectures en Progression/Régression (3 ans constants)
 function afficherProgressionRegression(examensFiltre, annee, regionId, prefecture, niveau) {
     var container = document.getElementById('tableau-progression-regression');
     if (!container) return;
     
-    // Comparer avec l'année précédente
-    var anneePrecedente = '';
-    if (annee === '2024-2025') anneePrecedente = '2023-2024';
-    else if (annee === '2023-2024') anneePrecedente = '2022-2023';
-    else {
-        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Pas de données antérieures pour comparaison</p>';
-        return;
-    }
+    // Récupérer les données des 3 années
+    var annees = ['2022-2023', '2023-2024', '2024-2025'];
     
-    // Récupérer données année actuelle et précédente
-    var dataActuelle = {};
-    var dataPrecedente = {};
+    // Stocker les moyennes par préfecture pour chaque année
+    var dataParPrefecture = {};
     
-    // Année actuelle
-    for (var i = 0; i < reussiteExamensData.length; i++) {
-        var exam = reussiteExamensData[i];
-        if (exam.annee_scolaire !== annee) continue;
+    for (var a = 0; a < annees.length; a++) {
+        var anneeActuelle = annees[a];
         
-        var examRegionId = '';
-        for (var r = 0; r < regionsData.length; r++) {
-            if (regionsData[r].nom === exam.region) {
-                examRegionId = regionsData[r].id.toString();
-                break;
+        for (var i = 0; i < reussiteExamensData.length; i++) {
+            var exam = reussiteExamensData[i];
+            
+            if (exam.annee_scolaire !== anneeActuelle) continue;
+            
+            var examRegionId = '';
+            for (var r = 0; r < regionsData.length; r++) {
+                if (regionsData[r].nom === exam.region) {
+                    examRegionId = regionsData[r].id.toString();
+                    break;
+                }
+            }
+            
+            var inclure = true;
+            if (regionId && regionId !== '' && examRegionId !== regionId) inclure = false;
+            if (inclure && prefecture && prefecture !== '' && exam.prefecture !== prefecture) inclure = false;
+            if (inclure && niveau && niveau !== '' && exam.niveau !== niveau) inclure = false;
+            
+            if (!inclure) continue;
+            
+            // Initialiser la structure
+            if (!dataParPrefecture[exam.prefecture]) {
+                dataParPrefecture[exam.prefecture] = {
+                    region: exam.region,
+                    annee2023: [],
+                    annee2024: [],
+                    annee2025: []
+                };
+            }
+            
+            // Calculer moyenne CEE + BEPC + BAC
+            var scores = [];
+            if (exam.taux_reussite_cee_total) scores.push(exam.taux_reussite_cee_total);
+            if (exam.taux_reussite_bepc_total) scores.push(exam.taux_reussite_bepc_total);
+            if (exam.taux_reussite_bac_total) scores.push(exam.taux_reussite_bac_total);
+            
+            if (scores.length > 0) {
+                var moyenne = scores.reduce(function(a,b){return a+b;},0) / scores.length;
+                
+                if (anneeActuelle === '2022-2023') {
+                    dataParPrefecture[exam.prefecture].annee2023.push(moyenne);
+                } else if (anneeActuelle === '2023-2024') {
+                    dataParPrefecture[exam.prefecture].annee2024.push(moyenne);
+                } else if (anneeActuelle === '2024-2025') {
+                    dataParPrefecture[exam.prefecture].annee2025.push(moyenne);
+                }
             }
         }
+    }
+    
+    // Calculer moyennes et identifier progressions/régressions constantes
+    var progressions = [];
+    var regressions = [];
+    
+    for (var pref in dataParPrefecture) {
+        var data = dataParPrefecture[pref];
         
-        var inclure = true;
-        if (regionId && regionId !== '' && examRegionId !== regionId) inclure = false;
-        if (inclure && prefecture && prefecture !== '' && exam.prefecture !== prefecture) inclure = false;
-        if (inclure && niveau && niveau !== '' && exam.niveau !== niveau) inclure = false;
+        // Calculer moyennes pour chaque année
+        var moy2023 = data.annee2023.length > 0 ? 
+            Math.round(data.annee2023.reduce(function(a,b){return a+b;},0) / data.annee2023.length * 10) / 10 : null;
+        var moy2024 = data.annee2024.length > 0 ? 
+            Math.round(data.annee2024.reduce(function(a,b){return a+b;},0) / data.annee2024.length * 10) / 10 : null;
+        var moy2025 = data.annee2025.length > 0 ? 
+            Math.round(data.annee2025.reduce(function(a,b){return a+b;},0) / data.annee2025.length * 10) / 10 : null;
         
-        if (!inclure) continue;
+        // Vérifier que les 3 années ont des données
+        if (moy2023 === null || moy2024 === null || moy2025 === null) continue;
         
-        var key = exam.prefecture;
-        if (!dataActuelle[key]) {
-            dataActuelle[key] = { region: exam.region, scores: [] };
+        // PROGRESSION CONSTANTE : 2023 <= 2024 <= 2025
+        if (moy2023 <= moy2024 && moy2024 <= moy2025 && moy2023 < moy2025) {
+            progressions.push({
+                prefecture: pref,
+                region: data.region,
+                moy2023: moy2023,
+                moy2024: moy2024,
+                moy2025: moy2025,
+                evolution: Math.round((moy2025 - moy2023) * 10) / 10
+            });
         }
         
-        if (exam.taux_reussite_cee_total) dataActuelle[key].scores.push(exam.taux_reussite_cee_total);
-        if (exam.taux_reussite_bepc_total) dataActuelle[key].scores.push(exam.taux_reussite_bepc_total);
-        if (exam.taux_reussite_bac_total) dataActuelle[key].scores.push(exam.taux_reussite_bac_total);
-    }
-    
-    // Année précédente
-    for (var i = 0; i < reussiteExamensData.length; i++) {
-        var exam = reussiteExamensData[i];
-        if (exam.annee_scolaire !== anneePrecedente) continue;
-        
-        var examRegionId = '';
-        for (var r = 0; r < regionsData.length; r++) {
-            if (regionsData[r].nom === exam.region) {
-                examRegionId = regionsData[r].id.toString();
-                break;
-            }
+        // RÉGRESSION CONSTANTE : 2023 >= 2024 >= 2025
+        if (moy2023 >= moy2024 && moy2024 >= moy2025 && moy2023 > moy2025) {
+            regressions.push({
+                prefecture: pref,
+                region: data.region,
+                moy2023: moy2023,
+                moy2024: moy2024,
+                moy2025: moy2025,
+                evolution: Math.round((moy2025 - moy2023) * 10) / 10
+            });
         }
-        
-        var inclure = true;
-        if (regionId && regionId !== '' && examRegionId !== regionId) inclure = false;
-        if (inclure && prefecture && prefecture !== '' && exam.prefecture !== prefecture) inclure = false;
-        if (inclure && niveau && niveau !== '' && exam.niveau !== niveau) inclure = false;
-        
-        if (!inclure) continue;
-        
-        var key = exam.prefecture;
-        if (!dataPrecedente[key]) {
-            dataPrecedente[key] = { region: exam.region, scores: [] };
-        }
-        
-        if (exam.taux_reussite_cee_total) dataPrecedente[key].scores.push(exam.taux_reussite_cee_total);
-        if (exam.taux_reussite_bepc_total) dataPrecedente[key].scores.push(exam.taux_reussite_bepc_total);
-        if (exam.taux_reussite_bac_total) dataPrecedente[key].scores.push(exam.taux_reussite_bac_total);
     }
     
-    // Calculer évolutions
-    var evolutions = [];
+    // Trier par évolution
+    progressions.sort(function(a, b) { return b.evolution - a.evolution; });
+    regressions.sort(function(a, b) { return a.evolution - b.evolution; });
     
-    for (var pref in dataActuelle) {
-        if (!dataPrecedente[pref]) continue;
-        
-        var moyActuelle = dataActuelle[pref].scores.reduce(function(a,b){return a+b;},0) / dataActuelle[pref].scores.length;
-        var moyPrecedente = dataPrecedente[pref].scores.reduce(function(a,b){return a+b;},0) / dataPrecedente[pref].scores.length;
-        
-        var evolution = Math.round((moyActuelle - moyPrecedente) * 10) / 10;
-        
-        evolutions.push({
-            prefecture: pref,
-            region: dataActuelle[pref].region,
-            actuelle: Math.round(moyActuelle * 10) / 10,
-            precedente: Math.round(moyPrecedente * 10) / 10,
-            evolution: evolution,
-            evolutionPourcent: moyPrecedente > 0 ? Math.round((evolution / moyPrecedente) * 100 * 10) / 10 : 0
-        });
-    }
-    
-    if (evolutions.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Pas de données pour comparaison</p>';
-        return;
-    }
-    
-    // Trier par évolution décroissante
-    evolutions.sort(function(a, b) { return b.evolution - a.evolution; });
-    
-    // Top 5 progressions et Top 5 régressions
-    var progressions = evolutions.filter(function(e) { return e.evolution > 0; }).slice(0, 5);
-    var regressions = evolutions.filter(function(e) { return e.evolution < 0; }).slice(0, 5);
+    // Limiter aux 5 meilleurs
+    progressions = progressions.slice(0, 5);
+    regressions = regressions.slice(0, 5);
     
     var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
     
-    // TOP 5 PROGRESSIONS
-html += '<div>';
-html += '<h4 style="color: #059669; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📈</span> Top 5 Progressions</h4>';
-if (progressions.length > 0) {
-    html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead><tr style="background-color: #059669 !important; color: white;">';
-    html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Rang</th>';
-    html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Préfecture</th>';
-    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">2024</th>';
-    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">2025</th>';
-    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">Évolution</th>';
-    html += '</tr></thead><tbody>';
+    // ========== TOP 5 PROGRESSIONS ==========
+    html += '<div>';
+    html += '<h4 style="color: #059669; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📈</span> Top 5 Progressions Constantes</h4>';
+    
+    if (progressions.length > 0) {
+        html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead><tr style="background-color: #059669 !important; color: white;">';
+        html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Rang</th>';
+        html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Préfecture</th>';
+        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">2023</th>';
+        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">2024</th>';
+        html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">2025</th>';
+        html += '</tr></thead><tbody>';
+        
         for (var i = 0; i < progressions.length; i++) {
             var p = progressions[i];
             var bgColor = i % 2 === 0 ? '#ffffff' : '#f0fdf4';
@@ -9359,30 +9365,30 @@ if (progressions.length > 0) {
             html += '<tr style="background-color: ' + bgColor + ';">';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; font-size: 16px;">' + emoji + ' ' + (i + 1) + '</td>';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.prefecture + '</td>';
-            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.precedente + '%</td>';
-            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #059669;">' + p.actuelle + '%</td>';
-            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #d1fae5; color: #065f46; padding: 6px 10px; border-radius: 6px; font-weight: bold;">+' + p.evolution + ' pts</span></td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.moy2023 + '%</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + p.moy2024 + '%</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #059669;">' + p.moy2025 + '%</td>';
             html += '</tr>';
         }
         
         html += '</tbody></table></div>';
     } else {
-        html += '<p style="text-align: center; color: #9ca3af; padding: 40px; background-color: #f9fafb; border-radius: 8px;">Aucune progression enregistrée</p>';
+        html += '<p style="text-align: center; color: #9ca3af; padding: 40px; background-color: #f9fafb; border-radius: 8px;">Aucune progression constante détectée</p>';
     }
     
     html += '</div>';
     
-    // TOP 5 RÉGRESSIONS
+    // ========== TOP 5 RÉGRESSIONS ==========
     html += '<div>';
-    html += '<h4 style="color: #dc2626; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📉</span> Top 5 Régressions</h4>';
+    html += '<h4 style="color: #dc2626; margin-bottom: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px;"><span style="font-size: 24px;">📉</span> Top 5 Régressions Constantes</h4>';
     
     if (regressions.length > 0) {
-        html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead class="red"><tr style="background-color: #dc2626 !important; color: white;">';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Rang</th>';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c;">Préfecture</th>';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">' + anneePrecedente.split('-')[0] + '</th>';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">' + annee.split('-')[0] + '</th>';
-        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center;">Évolution</th>';
+        html += '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead><tr style="background-color: #dc2626 !important; color: white;">';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Rang</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Préfecture</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">2023</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">2024</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">2025</th>';
         html += '</tr></thead><tbody>';
         
         for (var i = 0; i < regressions.length; i++) {
@@ -9392,18 +9398,25 @@ if (progressions.length > 0) {
             html += '<tr style="background-color: ' + bgColor + ';">';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + (i + 1) + '</td>';
             html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.prefecture + '</td>';
-            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.precedente + '%</td>';
-            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #dc2626;">' + p.actuelle + '%</td>';
-            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #fee2e2; color: #991b1b; padding: 6px 10px; border-radius: 6px; font-weight: bold;">' + p.evolution + ' pts</span></td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.moy2023 + '%</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + p.moy2024 + '%</td>';
+            html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #dc2626;">' + p.moy2025 + '%</td>';
             html += '</tr>';
         }
         
         html += '</tbody></table></div>';
     } else {
-        html += '<p style="text-align: center; color: #9ca3af; padding: 40px; background-color: #f9fafb; border-radius: 8px;">Aucune régression enregistrée</p>';
+        html += '<p style="text-align: center; color: #9ca3af; padding: 40px; background-color: #f9fafb; border-radius: 8px;">Aucune régression constante détectée</p>';
     }
     
     html += '</div>';
+    html += '</div>';
+    
+    // Note explicative
+    html += '<div style="margin-top: 16px; padding: 14px; background-color: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 4px;">';
+    html += '<p style="font-size: 13px; color: #0c4a6e; margin: 0;"><strong>📌 Méthodologie :</strong> Seules les préfectures avec une évolution <strong>constante et unidirectionnelle</strong> sur les 3 années sont affichées.</p>';
+    html += '<p style="font-size: 13px; color: #0c4a6e; margin: 8px 0 0 0;">• <strong>Progression</strong> : 2023 ≤ 2024 ≤ 2025 (croissance continue)</p>';
+    html += '<p style="font-size: 13px; color: #0c4a6e; margin: 4px 0 0 0;">• <strong>Régression</strong> : 2023 ≥ 2024 ≥ 2025 (baisse continue)</p>';
     html += '</div>';
     
     container.innerHTML = html;
