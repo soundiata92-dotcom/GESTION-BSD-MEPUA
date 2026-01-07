@@ -7153,7 +7153,20 @@ html += '</div></div>';
     html += '<div id="graph-qualite-ratio" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 300px;">';
     html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
     html += '</div></div>';
-    
+    // 🔥 DÉFICIT/SURPLUS ENSEIGNANTS
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">👨‍🏫 Déficit/Surplus d\'Enseignants par Préfecture</h4>';
+html += '<div id="tableau-deficit-enseignants" style="margin-top: 16px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
+
+// 🔥 PRIORISATION RECRUTEMENT
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🎯 Priorisation du Recrutement</h4>';
+html += '<div id="tableau-priorisation-recrutement" style="margin-top: 16px;">';
+html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
+html += '</div></div>';
+
     html += '</div>'; // Fin Section B
     
     // ========== SECTION C : RÉTENTION SCOLAIRE ==========
@@ -8885,6 +8898,8 @@ function appliquerFiltresQualite() {
     afficherGraphiqueEvolution(annee, regionId, prefecture, niveau);
     afficherProgressionRegression(examensFiltre, annee, regionId, prefecture, niveau);
     afficherGraphiqueRatio(statsFiltre);
+    afficherDeficitEnseignants(statsFiltre);
+   afficherPriorisationRecrutement(statsFiltre);
     afficherGraphiqueAbandon(statsFiltre);
     afficherClassementPrefectures(examensFiltre);
 }
@@ -9436,6 +9451,371 @@ function afficherGraphiqueRatio(statsFiltre) {
     html += '</div>';
     container.innerHTML = html;
 }
+// 🔥 NOUVELLE FONCTION : Déficit/Surplus d'Enseignants
+function afficherDeficitEnseignants(statsFiltre) {
+    var container = document.getElementById('tableau-deficit-enseignants');
+    if (!container) return;
+    
+    if (statsFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Norme : 40 élèves par enseignant maximum (UNESCO)
+    var RATIO_CIBLE = 40;
+    
+    // Grouper par préfecture
+    var dataParPref = {};
+    
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        var key = stat.prefecture;
+        
+        if (!dataParPref[key]) {
+            dataParPref[key] = {
+                region: stat.region,
+                ratios: [],
+                elevesTotal: 0
+            };
+        }
+        
+        if (stat.ratio_eleves_enseignant) {
+            dataParPref[key].ratios.push(stat.ratio_eleves_enseignant);
+        }
+    }
+    
+    // Calculer déficit/surplus
+    var prefectures = [];
+    
+    for (var pref in dataParPref) {
+        var data = dataParPref[pref];
+        
+        if (data.ratios.length === 0) continue;
+        
+        var ratioMoyen = data.ratios.reduce(function(a,b){return a+b;},0) / data.ratios.length;
+        
+        // Estimation nombre d'élèves (approximation : 500 élèves par donnée)
+        var elevesEstimes = 500 * data.ratios.length;
+        
+        // Enseignants actuels
+        var enseignantsActuels = Math.round(elevesEstimes / ratioMoyen);
+        
+        // Enseignants nécessaires selon norme
+        var enseignantsNecessaires = Math.ceil(elevesEstimes / RATIO_CIBLE);
+        
+        // Déficit (positif = manque, négatif = surplus)
+        var deficit = enseignantsNecessaires - enseignantsActuels;
+        var deficitPourcent = enseignantsActuels > 0 ? Math.round((deficit / enseignantsActuels) * 100) : 0;
+        
+        // Catégorie de priorité
+        var priorite = '';
+        var urgence = 0;
+        if (deficit > 50) {
+            priorite = 'Critique';
+            urgence = 4;
+        } else if (deficit > 30) {
+            priorite = 'Très Haute';
+            urgence = 3;
+        } else if (deficit > 15) {
+            priorite = 'Haute';
+            urgence = 2;
+        } else if (deficit > 0) {
+            priorite = 'Moyenne';
+            urgence = 1;
+        } else {
+            priorite = 'OK';
+            urgence = 0;
+        }
+        
+        prefectures.push({
+            nom: pref,
+            region: data.region,
+            ratioMoyen: Math.round(ratioMoyen * 10) / 10,
+            elevesEstimes: elevesEstimes,
+            enseignantsActuels: enseignantsActuels,
+            enseignantsNecessaires: enseignantsNecessaires,
+            deficit: deficit,
+            deficitPourcent: deficitPourcent,
+            priorite: priorite,
+            urgence: urgence
+        });
+    }
+    
+    // Trier par déficit décroissant
+    prefectures.sort(function(a, b) { return b.deficit - a.deficit; });
+    
+    // Tableau
+    var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="blue"><tr style="background-color: #2563eb !important; color: white;">';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Préfecture</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af;">Région</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ratio Actuel</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ens. Actuels</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Ens. Nécessaires</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Déficit/Surplus</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">% Écart</th>';
+    html += '<th style="padding: 12px; border: 1px solid #1e40af; text-align: center;">Priorité</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        var p = prefectures[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb';
+        
+        // Couleur selon priorité
+        var couleurPriorite, bgPriorite;
+        if (p.priorite === 'Critique') {
+            couleurPriorite = '#7f1d1d';
+            bgPriorite = '#fecaca';
+        } else if (p.priorite === 'Très Haute') {
+            couleurPriorite = '#991b1b';
+            bgPriorite = '#fee2e2';
+        } else if (p.priorite === 'Haute') {
+            couleurPriorite = '#9a3412';
+            bgPriorite = '#fed7aa';
+        } else if (p.priorite === 'Moyenne') {
+            couleurPriorite = '#92400e';
+            bgPriorite = '#fef3c7';
+        } else {
+            couleurPriorite = '#065f46';
+            bgPriorite = '#d1fae5';
+        }
+        
+        // Texte déficit
+        var deficitText = p.deficit > 0 ? '+' + p.deficit : p.deficit;
+        var couleurDeficit = p.deficit > 0 ? '#dc2626' : '#059669';
+        
+        // Emoji selon urgence
+        var emoji = p.urgence === 4 ? '🔴🔴' : (p.urgence === 3 ? '🔴' : (p.urgence === 2 ? '🟡' : (p.urgence === 1 ? '🟢' : '✅')));
+        
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + p.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.ratioMoyen + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.enseignantsActuels + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + p.enseignantsNecessaires + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="color: ' + couleurDeficit + '; font-weight: bold; font-size: 15px;">' + deficitText + '</span></td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + (p.deficitPourcent > 0 ? '+' : '') + p.deficitPourcent + '%</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: ' + bgPriorite + '; color: ' + couleurPriorite + '; padding: 6px 12px; border-radius: 6px; font-weight: bold;">' + emoji + ' ' + p.priorite + '</span></td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // Statistiques globales
+    var totalDeficit = 0;
+    var critiques = 0;
+    var tresHautes = 0;
+    var hautes = 0;
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        if (prefectures[i].deficit > 0) totalDeficit += prefectures[i].deficit;
+        if (prefectures[i].priorite === 'Critique') critiques++;
+        else if (prefectures[i].priorite === 'Très Haute') tresHautes++;
+        else if (prefectures[i].priorite === 'Haute') hautes++;
+    }
+    
+    html += '<div style="margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+    
+    html += '<div style="background-color: #fee2e2; padding: 16px; border-radius: 8px; border-left: 4px solid #dc2626;">';
+    html += '<div style="font-size: 12px; color: #991b1b; margin-bottom: 6px; font-weight: bold;">📊 Déficit National</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #991b1b;">+' + totalDeficit + '</div>';
+    html += '<div style="font-size: 11px; color: #7f1d1d; margin-top: 4px;">enseignants manquants</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #fecaca; padding: 16px; border-radius: 8px; border-left: 4px solid #7f1d1d;">';
+    html += '<div style="font-size: 12px; color: #7f1d1d; margin-bottom: 6px; font-weight: bold;">🔴 Critiques</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #7f1d1d;">' + critiques + '</div>';
+    html += '<div style="font-size: 11px; color: #7f1d1d; margin-top: 4px;">préfectures</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #fed7aa; padding: 16px; border-radius: 8px; border-left: 4px solid #ea580c;">';
+    html += '<div style="font-size: 12px; color: #9a3412; margin-bottom: 6px; font-weight: bold;">🟠 Très Hautes + Hautes</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #9a3412;">' + (tresHautes + hautes) + '</div>';
+    html += '<div style="font-size: 11px; color: #7c2d12; margin-top: 4px;">préfectures</div>';
+    html += '</div>';
+    
+    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; border-left: 4px solid #2563eb;">';
+    html += '<div style="font-size: 12px; color: #1e40af; margin-bottom: 6px; font-weight: bold;">🎯 Ratio Cible</div>';
+    html += '<div style="font-size: 28px; font-weight: bold; color: #1e40af;">≤ ' + RATIO_CIBLE + '</div>';
+    html += '<div style="font-size: 11px; color: #1e3a8a; margin-top: 4px;">élèves/enseignant</div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Note méthodologie
+    html += '<div style="margin-top: 16px; padding: 14px; background-color: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 4px;">';
+    html += '<p style="font-size: 13px; color: #0c4a6e; margin: 0;"><strong>📌 Méthodologie :</strong> Calcul basé sur la norme UNESCO/UNICEF de 40 élèves maximum par enseignant. Le déficit indique le nombre d\'enseignants supplémentaires nécessaires pour respecter cette norme.</p>';
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+// 🔥 NOUVELLE FONCTION : Priorisation Recrutement
+function afficherPriorisationRecrutement(statsFiltre) {
+    var container = document.getElementById('tableau-priorisation-recrutement');
+    if (!container) return;
+    
+    if (statsFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Récupérer les données de déficit (même calcul que précédemment)
+    var RATIO_CIBLE = 40;
+    var dataParPref = {};
+    
+    for (var i = 0; i < statsFiltre.length; i++) {
+        var stat = statsFiltre[i];
+        var key = stat.prefecture;
+        
+        if (!dataParPref[key]) {
+            dataParPref[key] = {
+                region: stat.region,
+                ratios: [],
+                scolarisation: [],
+                abandon: []
+            };
+        }
+        
+        if (stat.ratio_eleves_enseignant) dataParPref[key].ratios.push(stat.ratio_eleves_enseignant);
+        if (stat.taux_scolarisation_total) dataParPref[key].scolarisation.push(stat.taux_scolarisation_total);
+        if (stat.taux_abandon_total) dataParPref[key].abandon.push(stat.taux_abandon_total);
+    }
+    
+    // Calculer score de priorisation
+    var prefectures = [];
+    
+    for (var pref in dataParPref) {
+        var data = dataParPref[pref];
+        
+        if (data.ratios.length === 0) continue;
+        
+        var ratioMoyen = data.ratios.reduce(function(a,b){return a+b;},0) / data.ratios.length;
+        var elevesEstimes = 500 * data.ratios.length;
+        var enseignantsActuels = Math.round(elevesEstimes / ratioMoyen);
+        var enseignantsNecessaires = Math.ceil(elevesEstimes / RATIO_CIBLE);
+        var deficit = enseignantsNecessaires - enseignantsActuels;
+        
+        if (deficit <= 0) continue; // Seulement les préfectures en déficit
+        
+        // Facteurs de priorisation
+        var tauxScol = data.scolarisation.length > 0 ? data.scolarisation.reduce(function(a,b){return a+b;},0) / data.scolarisation.length : 50;
+        var tauxAbandon = data.abandon.length > 0 ? data.abandon.reduce(function(a,b){return a+b;},0) / data.abandon.length : 10;
+        
+        // Score composite (0-100)
+        // Plus le déficit est élevé, plus le score est élevé
+        // Plus la scolarisation est basse, plus le score est élevé
+        // Plus l'abandon est élevé, plus le score est élevé
+        var scoreDeficit = Math.min((deficit / 100) * 100, 100); // Max 100
+        var scoreScol = 100 - tauxScol; // Inversé : basse scol = score élevé
+        var scoreAbandon = Math.min(tauxAbandon * 2, 100); // Max 100
+        
+        var scoreFinal = Math.round((scoreDeficit * 0.5 + scoreScol * 0.3 + scoreAbandon * 0.2));
+        
+        // Recommandations
+        var recommandations = [];
+        if (deficit > 30) recommandations.push('Recrutement massif immédiat');
+        else if (deficit > 15) recommandations.push('Recrutement prioritaire');
+        else recommandations.push('Recrutement progressif');
+        
+        if (tauxScol < 60) recommandations.push('Campagne de sensibilisation');
+        if (tauxAbandon > 15) recommandations.push('Programme de rétention');
+        if (ratioMoyen > 50) recommandations.push('Infrastructures supplémentaires');
+        
+        prefectures.push({
+            nom: pref,
+            region: data.region,
+            deficit: deficit,
+            ratioMoyen: Math.round(ratioMoyen * 10) / 10,
+            tauxScol: Math.round(tauxScol * 10) / 10,
+            tauxAbandon: Math.round(tauxAbandon * 10) / 10,
+            scoreFinal: scoreFinal,
+            recommandations: recommandations
+        });
+    }
+    
+    // Trier par score décroissant
+    prefectures.sort(function(a, b) { return b.scoreFinal - a.scoreFinal; });
+    
+    // Tableau
+    var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="orange"><tr style="background-color: #ea580c !important; color: white;">';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c;">Rang</th>';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c;">Préfecture</th>';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c;">Région</th>';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center;">Déficit Ens.</th>';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center;">Ratio</th>';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center;">Scol. (%)</th>';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center;">Abandon (%)</th>';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c; text-align: center;">Score Priorité</th>';
+    html += '<th style="padding: 12px; border: 1px solid #c2410c;">Recommandations</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        var p = prefectures[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#fff7ed';
+        
+        // Couleur selon score
+        var couleurScore, bgScore;
+        if (p.scoreFinal >= 80) {
+            couleurScore = '#7f1d1d';
+            bgScore = '#fecaca';
+        } else if (p.scoreFinal >= 60) {
+            couleurScore = '#991b1b';
+            bgScore = '#fee2e2';
+        } else if (p.scoreFinal >= 40) {
+            couleurScore = '#9a3412';
+            bgScore = '#fed7aa';
+        } else {
+            couleurScore = '#92400e';
+            bgScore = '#fef3c7';
+        }
+        
+        // Emoji selon rang
+        var emoji = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : ''));
+        
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; font-size: 16px;">' + emoji + ' ' + (i + 1) + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + p.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #dc2626;">+' + p.deficit + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.ratioMoyen + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.tauxScol + '%</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.tauxAbandon + '%</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: ' + bgScore + '; color: ' + couleurScore + '; padding: 8px 14px; border-radius: 6px; font-weight: bold; font-size: 16px;">' + p.scoreFinal + '</span></td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;"><ul style="margin: 0; padding-left: 18px; font-size: 11px;">';
+        
+        for (var r = 0; r < p.recommandations.length; r++) {
+            html += '<li style="margin-bottom: 4px;">' + p.recommandations[r] + '</li>';
+        }
+        
+        html += '</ul></td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // Légende du score
+    html += '<div style="margin-top: 16px; padding: 16px; background-color: #f9fafb; border-radius: 8px;">';
+    html += '<h5 style="color: #374151; margin: 0 0 12px 0; font-size: 14px; font-weight: bold;">📊 Méthodologie de Priorisation</h5>';
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 12px; color: #6b7280;">';
+    
+    html += '<div><strong style="color: #374151;">50% Déficit</strong><br>Nombre d\'enseignants manquants</div>';
+    html += '<div><strong style="color: #374151;">30% Scolarisation</strong><br>Plus c\'est bas, plus c\'est prioritaire</div>';
+    html += '<div><strong style="color: #374151;">20% Abandon</strong><br>Impact sur la rétention scolaire</div>';
+    
+    html += '</div></div>';
+    
+    // Recommandations stratégiques globales
+    html += '<div style="margin-top: 16px; padding: 14px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">';
+    html += '<h5 style="color: #92400e; margin: 0 0 10px 0; font-size: 14px; font-weight: bold;">💡 Plan d\'Action Recommandé</h5>';
+    html += '<ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #78350f; line-height: 1.8;">';
+    html += '<li><strong>Phase 1 (0-6 mois) :</strong> Recrutement immédiat dans les ' + Math.min(5, prefectures.length) + ' préfectures les plus critiques</li>';
+    html += '<li><strong>Phase 2 (6-12 mois) :</strong> Redéploiement stratégique des enseignants excédentaires</li>';
+    html += '<li><strong>Phase 3 (1-2 ans) :</strong> Formation continue et amélioration des conditions</li>';
+    html += '<li><strong>Suivi :</strong> Évaluation trimestrielle de l\'impact sur scolarisation et abandon</li>';
+    html += '</ol></div>';
+    
+    container.innerHTML = html;
+}
+
 function afficherGraphiqueAbandon(statsFiltre) {
     var container = document.getElementById('graph-qualite-abandon');
     if (!container) return;
