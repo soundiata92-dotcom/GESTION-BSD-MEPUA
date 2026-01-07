@@ -10546,7 +10546,6 @@ interpretation = '🔴 Corrélation positive forte : Plus la distance augmente, 
     
     container.innerHTML = html;
 }
-
 function afficherClassementPrefectures(examensFiltre) {
     var container = document.getElementById('tableau-qualite-classement');
     if (!container) return;
@@ -10554,7 +10553,8 @@ function afficherClassementPrefectures(examensFiltre) {
     if (examensFiltre.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
         return;
-    }  
+    }
+    
     // Grouper par préfecture et calculer moyenne globale
     var dataParPref = {};
     for (var i = 0; i < examensFiltre.length; i++) {
@@ -10567,20 +10567,23 @@ function afficherClassementPrefectures(examensFiltre) {
                 bepc: [],
                 bac: []
             };
-        } 
+        }
         if (exam.taux_reussite_cee_total) dataParPref[key].cee.push(exam.taux_reussite_cee_total);
         if (exam.taux_reussite_bepc_total) dataParPref[key].bepc.push(exam.taux_reussite_bepc_total);
         if (exam.taux_reussite_bac_total) dataParPref[key].bac.push(exam.taux_reussite_bac_total);
-    }    
+    }
+    
     // Calculer moyennes
-    var prefectures = [];  
+    var prefectures = [];
     for (var pref in dataParPref) {
         var data = dataParPref[pref];
         
         var moyenneCEE = data.cee.length > 0 ? data.cee.reduce(function(a,b){return a+b;},0) / data.cee.length : 0;
         var moyenneBEPC = data.bepc.length > 0 ? data.bepc.reduce(function(a,b){return a+b;},0) / data.bepc.length : 0;
         var moyenneBAC = data.bac.length > 0 ? data.bac.reduce(function(a,b){return a+b;},0) / data.bac.length : 0;
-        var moyenneGlobale = Math.round((moyenneCEE + moyenneBEPC + moyenneBAC) / 3 * 10) / 10;   
+        
+        var moyenneGlobale = Math.round((moyenneCEE + moyenneBEPC + moyenneBAC) / 3 * 10) / 10;
+        
         prefectures.push({
             nom: pref,
             region: data.region,
@@ -10590,21 +10593,31 @@ function afficherClassementPrefectures(examensFiltre) {
             moyenne: moyenneGlobale
         });
     }
+    
     // Trier par moyenne décroissante
     prefectures.sort(function(a, b) { return b.moyenne - a.moyenne; });
-    // Afficher Top 5 et Bottom 5
-    var top5 = prefectures.slice(0, 5);
-    // Bottom 5 : Les 5 dernières (pires)
-    var bottom5 = prefectures.slice(-5); // Ne PAS reverse, garder l'ordre croissant
+    
+    console.log('📊 Nombre total de préfectures:', prefectures.length);
+    
+    // Si moins de 2 préfectures, ne rien afficher
+    if (prefectures.length < 2) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;"><p style="color: #92400e; font-size: 16px; font-weight: bold;">⚠️ Données insuffisantes</p><p style="color: #78350f; font-size: 14px; margin-top: 8px;">Il faut au moins 2 préfectures pour afficher un classement.</p></div>';
+        return;
+    }
+    
     var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
-    // TOP 5
-html += '<div>';
-html += '<h4 style="color: #059669; margin-bottom: 12px; font-size: 16px;">🏆 Top 5 - Meilleures Performances</h4>';
-html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #059669 !important; color: white;">';
-html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Rang</th>';
-html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Préfecture</th>';
-html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">Moyenne</th>';
-html += '</tr></thead><tbody>';
+    
+    // ========== TOP 5 - MEILLEURES PERFORMANCES ==========
+    html += '<div>';
+    html += '<h4 style="color: #059669; margin-bottom: 12px; font-size: 16px;">🏆 Top 5 - Meilleures Performances</h4>';
+    html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #059669 !important; color: white;">';
+    html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Rang</th>';
+    html += '<th style="padding: 10px; border: 1px solid #047857; background-color: #059669 !important; color: white !important;">Préfecture</th>';
+    html += '<th style="padding: 10px; border: 1px solid #047857; text-align: center; background-color: #059669 !important; color: white !important;">Moyenne</th>';
+    html += '</tr></thead><tbody>';
+    
+    var top5 = prefectures.slice(0, Math.min(5, prefectures.length));
+    
     for (var i = 0; i < top5.length; i++) {
         var p = top5[i];
         var bgColor = i % 2 === 0 ? '#ffffff' : '#f0fdf4';
@@ -10614,33 +10627,54 @@ html += '</tr></thead><tbody>';
         html += '<td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
         html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 6px; font-weight: bold;">' + p.moyenne + '%</span></td>';
         html += '</tr>';
-    }  
+    }
+    
     html += '</tbody></table></div></div>';
-    // BOTTOM 5
+    
+    // ========== BOTTOM 5 - À AMÉLIORER (EXCLURE LE TOP 5) ==========
     html += '<div>';
     html += '<h4 style="color: #dc2626; margin-bottom: 12px; font-size: 16px;">⚠️ Bottom 5 - À Améliorer</h4>';
-    html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626 !important; color: white;">';
-    html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Rang</th>';
-    html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Préfecture</th>';
-    html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">Moyenne</th>';
-    html += '</tr></thead><tbody>';
     
-    // Parcourir du pire au moins pire
-    for (var i = 0; i < bottom5.length; i++) {
-        var p = bottom5[i];
-        var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
+    // Vérifier qu'il reste au moins 1 préfecture après exclusion du Top 5
+    if (prefectures.length > top5.length) {
+        html += '<div class="table-container"><table style="width: 100%;"><thead><tr style="background-color: #dc2626 !important; color: white;">';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Rang</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; background-color: #dc2626 !important; color: white !important;">Préfecture</th>';
+        html += '<th style="padding: 10px; border: 1px solid #b91c1c; text-align: center; background-color: #dc2626 !important; color: white !important;">Moyenne</th>';
+        html += '</tr></thead><tbody>';
         
-        // Rang réel dans le classement global (du dernier au 5e avant-dernier)
-        var rangGlobal = prefectures.length - bottom5.length + i + 1;
+        // Exclure les préfectures du Top 5
+        var prefecturesRestantes = prefectures.slice(top5.length);
         
-        html += '<tr style="background-color: ' + bgColor + ';">';
-        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + rangGlobal + '</td>';
-        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
-        html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: bold;">' + p.moyenne + '%</span></td>';
-        html += '</tr>';
+        // Prendre les 5 dernières des préfectures restantes
+        var nbBottom = Math.min(5, prefecturesRestantes.length);
+        var bottom5 = prefecturesRestantes.slice(-nbBottom);
+        
+        for (var i = 0; i < bottom5.length; i++) {
+            var p = bottom5[i];
+            var bgColor = i % 2 === 0 ? '#ffffff' : '#fef2f2';
+            
+            // Calculer le rang global (position dans le classement complet)
+            var rangGlobal = prefectures.length - nbBottom + i + 1;
+            
+            html += '<tr style="background-color: ' + bgColor + ';">';
+            html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + rangGlobal + '</td>';
+            html += '<td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+            html += '<td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: bold;">' + p.moyenne + '%</span></td>';
+            html += '</tr>';
+        }
+        
+        html += '</tbody></table></div>';
+    } else {
+        html += '<div style="text-align: center; padding: 40px; background-color: #f0fdf4; border-radius: 8px; border-left: 4px solid #059669;">';
+        html += '<p style="color: #065f46; font-size: 14px; margin: 0;">✅ Toutes les préfectures sont déjà dans le Top 5 !</p>';
+        html += '<p style="color: #047857; font-size: 12px; margin-top: 8px;">Il n\'y a pas de préfectures à améliorer.</p>';
+        html += '</div>';
     }
-    html += '</tbody></table></div></div>';
+    
     html += '</div>';
+    html += '</div>';
+    
     container.innerHTML = html;
 }
 // ========== FONCTIONS ANALYSE ALPHABÉTISATION ==========
