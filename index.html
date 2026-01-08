@@ -7300,6 +7300,17 @@ function renderAnalyseAlphabetisation() {
     html += '</div>';
     
     html += '</div>';
+// Zones Blanches
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px; font-size: 15px;">🚨 Zones Blanches (sans programme)</h4>';
+html += '<div id="zones-blanches-alpha"></div>';
+html += '</div>';
+
+// Couverture Population
+html += '<div style="margin-top: 24px;">';
+html += '<h4 style="color: #4b5563; margin-bottom: 12px; font-size: 15px;">📊 Taux de Couverture Population Cible</h4>';
+html += '<div id="couverture-population-alpha"></div>';
+html += '</div>';
     
     // Graphique : Évolution couverture 2023-2025
     html += '<div style="margin-top: 24px;">';
@@ -10786,6 +10797,7 @@ function appliquerFiltresAlpha() {
     afficherGraphiqueGenreAlpha(alphaFiltre);
     afficherClassementAlpha(alphaFiltre);
     afficherAnalyseImpact(alphaFiltre);
+    afficherCouverturePopulation(alphaFiltre);
 }
 
 function calculerIndicateursAlpha(alphaFiltre) {
@@ -11038,6 +11050,201 @@ function afficherCarteRegionsAlpha(alphaFiltre) {
         html += '</div>';
     }
     
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+// 🔥 NOUVELLE FONCTION : Zones Blanches (Préfectures sans programme)
+function afficherZonesBlanches(alphaFiltre) {
+    var container = document.getElementById('zones-blanches-alpha');
+    if (!container) return;
+    
+    // Identifier les préfectures présentes dans les données d'alphabétisation
+    var prefecturesAvecProgramme = {};
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        prefecturesAvecProgramme[alphaFiltre[i].prefecture] = true;
+    }
+    
+    // Identifier les zones blanches (préfectures sans programme)
+    var zonesBlanches = [];
+    
+    for (var i = 0; i < prefecturesData.length; i++) {
+        var prefecture = prefecturesData[i].nom;
+        
+        if (!prefecturesAvecProgramme[prefecture]) {
+            // Trouver la région
+            var regionNom = '';
+            for (var r = 0; r < regionsData.length; r++) {
+                if (regionsData[r].id == prefecturesData[i].region_id) {
+                    regionNom = regionsData[r].nom;
+                    break;
+                }
+            }
+            
+            zonesBlanches.push({
+                prefecture: prefecture,
+                region: regionNom
+            });
+        }
+    }
+    
+    if (zonesBlanches.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; background-color: #d1fae5; border-radius: 8px; border-left: 4px solid #059669;">';
+        container.innerHTML += '<p style="color: #065f46; font-size: 18px; font-weight: bold;">✅ Excellente couverture !</p>';
+        container.innerHTML += '<p style="color: #047857; font-size: 14px; margin-top: 8px;">Toutes les préfectures ont un programme d\'alphabétisation.</p>';
+        container.innerHTML += '</div>';
+        return;
+    }
+    
+    // Grouper par région
+    var parRegion = {};
+    for (var i = 0; i < zonesBlanches.length; i++) {
+        var zb = zonesBlanches[i];
+        if (!parRegion[zb.region]) {
+            parRegion[zb.region] = [];
+        }
+        parRegion[zb.region].push(zb.prefecture);
+    }
+    
+    var html = '<div style="background-color: #fee2e2; padding: 20px; border-radius: 12px; border-left: 4px solid #dc2626; margin-bottom: 20px;">';
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">';
+    html += '<h5 style="margin: 0; color: #991b1b; font-size: 16px; font-weight: bold;">🚨 Zones Blanches Identifiées</h5>';
+    html += '<span style="background-color: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 18px;">' + zonesBlanches.length + '</span>';
+    html += '</div>';
+    
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
+    
+    for (var region in parRegion) {
+        html += '<div style="background-color: white; padding: 14px; border-radius: 8px; border-left: 3px solid #dc2626;">';
+        html += '<div style="font-weight: bold; color: #991b1b; margin-bottom: 8px; font-size: 14px;">📍 ' + region + '</div>';
+        html += '<ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #7f1d1d;">';
+        for (var i = 0; i < parRegion[region].length; i++) {
+            html += '<li style="margin-bottom: 4px;">' + parRegion[region][i] + '</li>';
+        }
+        html += '</ul></div>';
+    }
+    
+    html += '</div>';
+    
+    // Recommandations
+    html += '<div style="margin-top: 16px; padding: 14px; background-color: white; border-radius: 6px;">';
+    html += '<div style="font-weight: bold; color: #991b1b; margin-bottom: 8px; font-size: 13px;">💡 Actions Recommandées</div>';
+    html += '<ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #7f1d1d; line-height: 1.8;">';
+    html += '<li>Étendre les programmes d\'alphabétisation à ces ' + zonesBlanches.length + ' préfectures</li>';
+    html += '<li>Prioriser les régions avec le plus grand nombre de zones blanches</li>';
+    html += '<li>Mobiliser des partenaires locaux pour la mise en œuvre</li>';
+    html += '</ul></div>';
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+// 🔥 NOUVELLE FONCTION : Taux de Couverture Population Cible
+function afficherCouverturePopulation(alphaFiltre) {
+    var container = document.getElementById('couverture-population-alpha');
+    if (!container) return;
+    
+    if (alphaFiltre.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Aucune donnée</p>';
+        return;
+    }
+    
+    // Grouper par préfecture
+    var dataParPref = {};
+    
+    for (var i = 0; i < alphaFiltre.length; i++) {
+        var alpha = alphaFiltre[i];
+        var key = alpha.prefecture;
+        
+        if (!dataParPref[key]) {
+            dataParPref[key] = {
+                region: alpha.region,
+                beneficiaires: 0
+            };
+        }
+        
+        if (alpha.beneficiaires_total) {
+            dataParPref[key].beneficiaires += alpha.beneficiaires_total;
+        }
+    }
+    
+    // Estimer population cible (analphabètes adultes 15-49 ans)
+    // Hypothèse : 30% population totale = adultes analphabètes cible
+    var TAUX_CIBLE = 0.30;
+    var POPULATION_MOYENNE_PAR_PREFECTURE = 50000; // À ajuster selon vos données
+    
+    var prefectures = [];
+    
+    for (var pref in dataParPref) {
+        var data = dataParPref[pref];
+        
+        var populationCible = POPULATION_MOYENNE_PAR_PREFECTURE * TAUX_CIBLE;
+        var tauxCouverture = Math.round((data.beneficiaires / populationCible) * 100 * 10) / 10;
+        
+        // Limiter à 100%
+        tauxCouverture = Math.min(tauxCouverture, 100);
+        
+        prefectures.push({
+            nom: pref,
+            region: data.region,
+            beneficiaires: data.beneficiaires,
+            populationCible: Math.round(populationCible),
+            tauxCouverture: tauxCouverture
+        });
+    }
+    
+    // Trier par taux de couverture décroissant
+    prefectures.sort(function(a, b) { return b.tauxCouverture - a.tauxCouverture; });
+    
+    // Tableau
+    var html = '<div class="table-container" style="max-height: 400px;"><table style="width: 100%;"><thead><tr style="background-color: #f59e0b !important; color: white;">';
+    html += '<th style="padding: 10px; border: 1px solid #d97706; background-color: #f59e0b !important; color: white !important;">Préfecture</th>';
+    html += '<th style="padding: 10px; border: 1px solid #d97706; background-color: #f59e0b !important; color: white !important;">Région</th>';
+    html += '<th style="padding: 10px; border: 1px solid #d97706; text-align: center; background-color: #f59e0b !important; color: white !important;">Bénéficiaires</th>';
+    html += '<th style="padding: 10px; border: 1px solid #d97706; text-align: center; background-color: #f59e0b !important; color: white !important;">Pop. Cible</th>';
+    html += '<th style="padding: 10px; border: 1px solid #d97706; text-align: center; background-color: #f59e0b !important; color: white !important;">Taux Couverture</th>';
+    html += '<th style="padding: 10px; border: 1px solid #d97706; text-align: center; background-color: #f59e0b !important; color: white !important;">Statut</th>';
+    html += '</tr></thead><tbody>';
+    
+    for (var i = 0; i < prefectures.length; i++) {
+        var p = prefectures[i];
+        var bgColor = i % 2 === 0 ? '#ffffff' : '#fffbeb';
+        
+        // Couleur selon taux
+        var couleurTaux, bgTaux, statut;
+        if (p.tauxCouverture >= 70) {
+            couleurTaux = '#065f46';
+            bgTaux = '#d1fae5';
+            statut = '🟢 Excellent';
+        } else if (p.tauxCouverture >= 50) {
+            couleurTaux = '#92400e';
+            bgTaux = '#fef3c7';
+            statut = '🟡 Moyen';
+        } else if (p.tauxCouverture >= 30) {
+            couleurTaux = '#9a3412';
+            bgTaux = '#fed7aa';
+            statut = '🟠 Faible';
+        } else {
+            couleurTaux = '#991b1b';
+            bgTaux = '#fee2e2';
+            statut = '🔴 Critique';
+        }
+        
+        html += '<tr style="background-color: ' + bgColor + ';">';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">' + p.nom + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb;">' + p.region + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">' + p.beneficiaires.toLocaleString() + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;">' + p.populationCible.toLocaleString() + '</td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center;"><span style="background-color: ' + bgTaux + '; color: ' + couleurTaux + '; padding: 6px 12px; border-radius: 6px; font-weight: bold;">' + p.tauxCouverture + '%</span></td>';
+        html += '<td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: 600;">' + statut + '</td>';
+        html += '</tr>';
+    }
+    
+    html += '</tbody></table></div>';
+    
+    // Note méthodologique
+    html += '<div style="margin-top: 16px; padding: 14px; background-color: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 4px;">';
+    html += '<p style="font-size: 12px; color: #0c4a6e; margin: 0;"><strong>📌 Méthodologie :</strong> Population cible estimée à 30% de la population totale de chaque préfecture (adultes analphabètes 15-49 ans). Le taux de couverture indique le pourcentage de la population cible atteinte par les programmes.</p>';
     html += '</div>';
     
     container.innerHTML = html;
