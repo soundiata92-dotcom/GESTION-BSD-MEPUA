@@ -7395,30 +7395,6 @@ html += '</div>';
     html += '<div id="analyse-alpha-impact">';
     html += '<p style="color: #1e3a8a; font-size: 14px;">Chargement de l\'analyse...</p>';
     html += '</div></div>';
-    // 🔥 CAUSES D'ABANDON
-html += '<div style="margin-top: 24px;">';
-html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🔍 Causes Identifiées d\'Abandon Scolaire</h4>';
-html += '<div id="analyse-causes-abandon" style="margin-top: 16px;">';
-html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
-html += '</div></div>';
-
-// 🔥 CORRÉLATION ABANDON/RATIO
-html += '<div style="margin-top: 24px;">';
-html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Corrélation Abandon / Ratio Élèves-Enseignant</h4>';
-html += '<div id="graph-correlation-abandon-ratio" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 350px;">';
-html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
-html += '</div></div>';
-
-// 🔥 CORRÉLATION ABANDON/DISTANCE
-html += '<div style="margin-top: 24px;">';
-html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📍 Corrélation Abandon / Distance École</h4>';
-html += '<div id="graph-correlation-abandon-distance" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 350px;">';
-html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
-html += '</div></div>';
-html += '</div>'; // Fin Section C
-    
-    return html;
-}
 // 🔥 NOUVELLE FONCTION (remplace renderAnalyseDecisions)
 function renderAnalysePilotage() {
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
@@ -8935,9 +8911,6 @@ function appliquerFiltresQualite() {
    afficherPriorisationRecrutement(statsFiltre);
     afficherGraphiqueAbandon(statsFiltre);
     afficherClassementPrefectures(examensFiltre);
-    afficherCausesAbandon(statsFiltre);
-afficherCorrelationAbandonRatio(statsFiltre);
-afficherCorrelationAbandonDistance(statsFiltre);
 }
 function calculerIndicateursQualite(examensFiltre, statsFiltre) {
     if (examensFiltre.length === 0) {
@@ -11474,13 +11447,13 @@ function afficherClassementAlpha(alphaFiltre) {
     prefectures.sort(function(a, b) { return b.score - a.score; });
     
     // Tableau complet
-var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead class="orange"><tr style="background-color: #f59e0b !important; color: white;">';
-    html += '<th style="padding: 12px; border: 1px solid #d97706;">Rang</th>';
-    html += '<th style="padding: 12px; border: 1px solid #d97706;">Préfecture</th>';
-    html += '<th style="padding: 12px; border: 1px solid #d97706;">Région</th>';
-    html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center;">Taux (%)</th>';
-    html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center;">Bénéficiaires</th>';
-    html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center;">Score Global</th>';
+var html = '<div class="table-container" style="max-height: 500px;"><table style="width: 100%;"><thead><tr style="background-color: #f59e0b !important; color: white;">';
+html += '<th style="padding: 12px; border: 1px solid #d97706; background-color: #f59e0b !important; color: white !important;">Rang</th>';
+html += '<th style="padding: 12px; border: 1px solid #d97706; background-color: #f59e0b !important; color: white !important;">Préfecture</th>';
+html += '<th style="padding: 12px; border: 1px solid #d97706; background-color: #f59e0b !important; color: white !important;">Région</th>';
+html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center; background-color: #f59e0b !important; color: white !important;">Taux (%)</th>';
+html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center; background-color: #f59e0b !important; color: white !important;">Bénéficiaires</th>';
+html += '<th style="padding: 12px; border: 1px solid #d97706; text-align: center; background-color: #f59e0b !important; color: white !important;">Score Global</th>';
     html += '</tr></thead><tbody>';
     
     for (var i = 0; i < prefectures.length; i++) {
