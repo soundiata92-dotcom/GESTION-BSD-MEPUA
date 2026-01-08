@@ -7391,26 +7391,6 @@ html += '</div>';
     html += '<div id="analyse-alpha-impact">';
     html += '<p style="color: #1e3a8a; font-size: 14px;">Chargement de l\'analyse...</p>';
     html += '</div></div>';
-    // 🔥 CAUSES D'ABANDON
-html += '<div style="margin-top: 24px;">';
-html += '<h4 style="color: #4b5563; margin-bottom: 12px;">🔍 Causes Identifiées d\'Abandon Scolaire</h4>';
-html += '<div id="analyse-causes-abandon" style="margin-top: 16px;">';
-html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
-html += '</div></div>';
-
-// 🔥 CORRÉLATION ABANDON/RATIO
-html += '<div style="margin-top: 24px;">';
-html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📊 Corrélation Abandon / Ratio Élèves-Enseignant</h4>';
-html += '<div id="graph-correlation-abandon-ratio" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 350px;">';
-html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
-html += '</div></div>';
-
-// 🔥 CORRÉLATION ABANDON/DISTANCE
-html += '<div style="margin-top: 24px;">';
-html += '<h4 style="color: #4b5563; margin-bottom: 12px;">📍 Corrélation Abandon / Distance École</h4>';
-html += '<div id="graph-correlation-abandon-distance" style="background-color: #f9fafb; padding: 20px; border-radius: 8px; min-height: 350px;">';
-html += '<p style="text-align: center; color: #9ca3af; padding: 40px;">Chargement...</p>';
-html += '</div></div>';
 html += '</div>'; // Fin Section C
     
     return html;
@@ -8931,9 +8911,6 @@ function appliquerFiltresQualite() {
    afficherPriorisationRecrutement(statsFiltre);
     afficherGraphiqueAbandon(statsFiltre);
     afficherClassementPrefectures(examensFiltre);
-    afficherCausesAbandon(statsFiltre);
-afficherCorrelationAbandonRatio(statsFiltre);
-afficherCorrelationAbandonDistance(statsFiltre);
 }
 function calculerIndicateursQualite(examensFiltre, statsFiltre) {
     if (examensFiltre.length === 0) {
