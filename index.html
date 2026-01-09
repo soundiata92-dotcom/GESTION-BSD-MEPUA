@@ -5106,6 +5106,12 @@ setTimeout(function() {
         } else if (activeAnalyseTab === 'alphabetisation') {
             console.log('🎯 Initialisation Alphabétisation');
             appliquerFiltresAlpha();
+} else if (activeAnalyseTab === 'pilotage') {
+            console.log('🎯 Initialisation Pilotage Stratégique');
+            dessinerCarteNationale();
+            genererRecommandationsStrategiques();
+        }
+
         }
     }
 }, 100);
@@ -7398,12 +7404,411 @@ html += '</div>'; // Fin Section C
 // 🔥 NOUVELLE FONCTION (remplace renderAnalyseDecisions)
 function renderAnalysePilotage() {
     var html = '<div style="background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-    html += '<h3>🎯 Pilotage Stratégique</h3>';
-    html += '<p style="color: #6b7280; margin-top: 8px;">Tableau de bord stratégique national</p>';
-    html += '<p style="color: #6b7280; margin-top: 4px;">Contenu en cours de développement...</p>';
+    html += '<h3 style="color: #7c3aed; margin-bottom: 16px;">🎯 Pilotage Stratégique National</h3>';
+    
+    // ========== FILTRES ==========
+    html += '<div style="background-color: #f3e8ff; padding: 16px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #7c3aed;">';
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
+    
+    // Filtre Année
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📅 Année</label>';
+    html += '<select id="filter-pilotage-annee" class="form-control" onchange="appliquerFiltresPilotage()">';
+    html += '<option value="2024-2025">2025</option>';
+    html += '<option value="2023-2024">2024</option>';
+    html += '<option value="2022-2023">2023</option>';
+    html += '</select></div>';
+    
+    // Filtre Niveau
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">📚 Niveau</label>';
+    html += '<select id="filter-pilotage-niveau" class="form-control" onchange="appliquerFiltresPilotage()">';
+    html += '<option value="">Tous</option>';
+    html += '<option value="Préscolaire">Préscolaire</option>';
+    html += '<option value="Primaire">Primaire</option>';
+    html += '<option value="Collège">Collège</option>';
+    html += '<option value="Lycée">Lycée</option>';
+    html += '</select></div>';
+    
+    // Filtre Genre
+    html += '<div><label style="font-weight: bold; display: block; margin-bottom: 4px;">👤 Genre</label>';
+    html += '<select id="filter-pilotage-genre" class="form-control" onchange="appliquerFiltresPilotage()">';
+    html += '<option value="">Tous</option>';
+    html += '<option value="Filles">Filles</option>';
+    html += '<option value="Garcons">Garçons</option>';
+    html += '<option value="Total">Total</option>';
+    html += '</select></div>';
+    
+    html += '</div></div>';
+    
+    // ========== CARTE NATIONALE ==========
+    html += '<div id="carte-nationale-container" style="background-color: #f9fafb; padding: 24px; border-radius: 12px; margin-bottom: 20px;">';
+    html += '<h4 style="color: #374151; margin-bottom: 16px; text-align: center;">🇬🇳 Carte Nationale - Niveau d\'Urgence par Région</h4>';
+    html += '<div id="carte-nationale-svg"></div>';
     html += '</div>';
+    
+    // ========== LÉGENDE ==========
+    html += '<div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; padding: 16px; background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
+    html += '<div style="display: flex; align-items: center; gap: 8px;"><div style="width: 24px; height: 24px; background-color: #dc2626; border-radius: 50%;"></div><span style="font-size: 13px; font-weight: 600;">🔴 Urgence Haute</span></div>';
+    html += '<div style="display: flex; align-items: center; gap: 8px;"><div style="width: 24px; height: 24px; background-color: #f59e0b; border-radius: 50%;"></div><span style="font-size: 13px; font-weight: 600;">🟡 Urgence Moyenne</span></div>';
+    html += '<div style="display: flex; align-items: center; gap: 8px;"><div style="width: 24px; height: 24px; background-color: #10b981; border-radius: 50%;"></div><span style="font-size: 13px; font-weight: 600;">🟢 Urgence Basse</span></div>';
+    html += '</div>';
+    
+    // ========== CARTE RÉGIONALE (cachée au départ) ==========
+    html += '<div id="carte-regionale-container" style="display: none; background-color: #f9fafb; padding: 24px; border-radius: 12px; margin-bottom: 20px;"></div>';
+    
+    // ========== RECOMMANDATIONS STRATÉGIQUES ==========
+    html += '<div id="recommandations-strategiques" style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px;">';
+    html += '<h4 style="color: #7c3aed; margin-bottom: 16px;">💡 Recommandations Stratégiques</h4>';
+    html += '<div id="recommandations-content"></div>';
+    html += '</div>';
+    
+    html += '</div>';
+    
     return html;
 }
+function dessinerCarteNationale() {
+    var container = document.getElementById('carte-nationale-svg');
+    if (!container) return;
+    
+    // Coordonnées approximatives des régions (polygones simplifiés)
+    var regionsCoords = {
+        'Boké': 'M50,100 L150,80 L180,150 L100,180 Z',
+        'Kindia': 'M150,150 L250,140 L280,200 L180,220 Z',
+        'Conakry': 'M120,180 L180,170 L170,230 L110,225 Z',
+        'Labé': 'M200,50 L320,60 L340,130 L220,140 Z',
+        'Mamou': 'M250,140 L350,150 L360,210 L270,220 Z',
+        'Faranah': 'M350,150 L480,160 L490,240 L370,250 Z',
+        'Kankan': 'M480,180 L620,190 L630,280 L500,290 Z',
+        'N\'Zérékoré': 'M450,280 L600,290 L580,400 L430,390 Z'
+    };
+    
+    // Centres approximatifs pour placer les icônes
+    var regionsCentres = {
+        'Boké': {x: 120, y: 130},
+        'Kindia': {x: 220, y: 180},
+        'Conakry': {x: 145, y: 200},
+        'Labé': {x: 270, y: 95},
+        'Mamou': {x: 310, y: 180},
+        'Faranah': {x: 420, y: 200},
+        'Kankan': {x: 550, y: 235},
+        'N\'Zérékoré': {x: 515, y: 340}
+    };
+    
+    var html = '<svg viewBox="0 0 700 450" style="width: 100%; max-width: 900px; margin: 0 auto; display: block;">';
+    
+    // Dessiner les régions
+    for (var i = 0; i < regionsData.length; i++) {
+        var region = regionsData[i];
+        var coords = regionsCoords[region.nom];
+        var centre = regionsCentres[region.nom];
+        
+        if (!coords || !centre) continue;
+        
+        // Calculer le niveau d'urgence
+        var urgence = calculerUrgenceRegion(region.nom);
+        var couleur = urgence.couleur;
+        var emoji = urgence.emoji;
+        
+        // Polygone de la région
+        html += '<path d="' + coords + '" ';
+        html += 'fill="' + couleur + '" fill-opacity="0.3" ';
+        html += 'stroke="' + couleur + '" stroke-width="2" ';
+        html += 'style="cursor: pointer; transition: all 0.3s;" ';
+        html += 'onmouseover="this.setAttribute(\'fill-opacity\', \'0.6\')" ';
+        html += 'onmouseout="this.setAttribute(\'fill-opacity\', \'0.3\')" ';
+        html += 'onclick="afficherCarteRegionale(\'' + region.nom.replace(/'/g, "\\'") + '\')" />';
+        
+        // Icône KPI (cercle)
+        html += '<circle cx="' + centre.x + '" cy="' + centre.y + '" r="20" ';
+        html += 'fill="' + couleur + '" stroke="white" stroke-width="3" ';
+        html += 'style="cursor: pointer;" ';
+        html += 'onclick="afficherCarteRegionale(\'' + region.nom.replace(/'/g, "\\'") + '\')" />';
+        
+        // Emoji dans le cercle
+        html += '<text x="' + centre.x + '" y="' + (centre.y + 6) + '" ';
+        html += 'text-anchor="middle" font-size="16" style="pointer-events: none;">' + emoji + '</text>';
+        
+        // Nom de la région
+        html += '<text x="' + centre.x + '" y="' + (centre.y + 35) + '" ';
+        html += 'text-anchor="middle" font-size="13" font-weight="bold" ';
+        html += 'fill="#374151" style="pointer-events: none;">' + region.nom + '</text>';
+    }
+    
+    html += '</svg>';
+    
+    container.innerHTML = html;
+}
+function calculerUrgenceRegion(nomRegion) {
+    // Récupérer les filtres actifs
+    var anneeSelect = document.getElementById('filter-pilotage-annee');
+    var niveauSelect = document.getElementById('filter-pilotage-niveau');
+    var genreSelect = document.getElementById('filter-pilotage-genre');
+    
+    var annee = anneeSelect ? anneeSelect.value : '2024-2025';
+    var niveau = niveauSelect ? niveauSelect.value : '';
+    var genre = genreSelect ? genreSelect.value : '';
+    
+    // Filtrer les données
+    var statsRegion = [];
+    
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        if (stat.region !== nomRegion) continue;
+        if (stat.annee_scolaire !== annee) continue;
+        if (niveau && stat.niveau !== niveau) continue;
+        
+        statsRegion.push(stat);
+    }
+    
+    if (statsRegion.length === 0) {
+        return {urgence: 'basse', couleur: '#10b981', emoji: '🟢', score: 0};
+    }
+    
+    // Calculer score composite (0-100, plus c'est élevé plus c'est urgent)
+    var score = 0;
+    var count = 0;
+    
+    for (var i = 0; i < statsRegion.length; i++) {
+        var stat = statsRegion[i];
+        
+        // Facteurs d'urgence
+        var scoreScol = stat.taux_scolarisation_total ? (100 - stat.taux_scolarisation_total) : 0; // Inversé
+        var scoreAbandon = stat.taux_abandon_total ? stat.taux_abandon_total * 2 : 0;
+        var scoreRatio = stat.ratio_eleves_classe ? Math.max(0, (stat.ratio_eleves_classe - 30) * 2) : 0;
+        var scoreDistance = stat.distance_moyenne_ecole_domicile ? stat.distance_moyenne_ecole_domicile * 10 : 0;
+        
+        score += (scoreScol + scoreAbandon + scoreRatio + scoreDistance) / 4;
+        count++;
+    }
+    
+    score = count > 0 ? Math.round(score / count) : 0;
+    
+    // Déterminer le niveau d'urgence
+    var urgence, couleur, emoji;
+    
+    if (score >= 40) {
+        urgence = 'haute';
+        couleur = '#dc2626';
+        emoji = '🔴';
+    } else if (score >= 20) {
+        urgence = 'moyenne';
+        couleur = '#f59e0b';
+        emoji = '🟡';
+    } else {
+        urgence = 'basse';
+        couleur = '#10b981';
+        emoji = '🟢';
+    }
+    
+    return {urgence: urgence, couleur: couleur, emoji: emoji, score: score};
+}
+function afficherCarteRegionale(nomRegion) {
+    var container = document.getElementById('carte-regionale-container');
+    if (!container) return;
+    
+    console.log('📍 Affichage carte régionale:', nomRegion);
+    
+    // Récupérer les préfectures de cette région
+    var regionId = '';
+    for (var i = 0; i < regionsData.length; i++) {
+        if (regionsData[i].nom === nomRegion) {
+            regionId = regionsData[i].id;
+            break;
+        }
+    }
+    
+    var prefecturesRegion = [];
+    for (var i = 0; i < prefecturesData.length; i++) {
+        if (prefecturesData[i].region_id == regionId) {
+            prefecturesRegion.push(prefecturesData[i]);
+        }
+    }
+    
+    if (prefecturesRegion.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 40px;">Aucune préfecture trouvée</p>';
+        container.style.display = 'block';
+        return;
+    }
+    
+    var html = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">';
+    html += '<h4 style="margin: 0; color: #7c3aed;">📍 Région : ' + nomRegion + ' (' + prefecturesRegion.length + ' préfectures)</h4>';
+    html += '<button onclick="fermerCarteRegionale()" class="btn btn-secondary" style="font-size: 13px;">← Retour carte nationale</button>';
+    html += '</div>';
+    
+    // Grille de préfectures avec icônes KPI
+    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px;">';
+    
+    for (var i = 0; i < prefecturesRegion.length; i++) {
+        var pref = prefecturesRegion[i];
+        
+        // Calculer urgence de la préfecture
+        var urgence = calculerUrgencePrefecture(pref.nom, nomRegion);
+        
+        html += '<div style="background-color: white; padding: 20px; border-radius: 12px; border-left: 4px solid ' + urgence.couleur + '; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; cursor: pointer; transition: transform 0.2s;" ';
+        html += 'onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+        
+        html += '<div style="font-size: 48px; margin-bottom: 8px;">' + urgence.emoji + '</div>';
+        html += '<div style="font-weight: bold; color: #374151; margin-bottom: 8px; font-size: 14px;">' + pref.nom + '</div>';
+        html += '<div style="font-size: 11px; color: #6b7280;">Score: ' + urgence.score + '</div>';
+        html += '<div style="margin-top: 10px; padding: 6px; background-color: ' + urgence.couleur + '; color: white; border-radius: 6px; font-size: 11px; font-weight: bold;">' + urgence.urgence.toUpperCase() + '</div>';
+        
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+    container.style.display = 'block';
+    
+    // Scroll vers la carte régionale
+    container.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function fermerCarteRegionale() {
+    var container = document.getElementById('carte-regionale-container');
+    if (container) {
+        container.style.display = 'none';
+    }
+}
+
+function calculerUrgencePrefecture(nomPrefecture, nomRegion) {
+    var anneeSelect = document.getElementById('filter-pilotage-annee');
+    var niveauSelect = document.getElementById('filter-pilotage-niveau');
+    
+    var annee = anneeSelect ? anneeSelect.value : '2024-2025';
+    var niveau = niveauSelect ? niveauSelect.value : '';
+    
+    var statsPref = [];
+    
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        if (stat.prefecture !== nomPrefecture) continue;
+        if (stat.region !== nomRegion) continue;
+        if (stat.annee_scolaire !== annee) continue;
+        if (niveau && stat.niveau !== niveau) continue;
+        
+        statsPref.push(stat);
+    }
+    
+    if (statsPref.length === 0) {
+        return {urgence: 'basse', couleur: '#10b981', emoji: '🟢', score: 0};
+    }
+    
+    // Même calcul que pour les régions
+    var score = 0;
+    var count = 0;
+    
+    for (var i = 0; i < statsPref.length; i++) {
+        var stat = statsPref[i];
+        
+        var scoreScol = stat.taux_scolarisation_total ? (100 - stat.taux_scolarisation_total) : 0;
+        var scoreAbandon = stat.taux_abandon_total ? stat.taux_abandon_total * 2 : 0;
+        var scoreRatio = stat.ratio_eleves_classe ? Math.max(0, (stat.ratio_eleves_classe - 30) * 2) : 0;
+        var scoreDistance = stat.distance_moyenne_ecole_domicile ? stat.distance_moyenne_ecole_domicile * 10 : 0;
+        
+        score += (scoreScol + scoreAbandon + scoreRatio + scoreDistance) / 4;
+        count++;
+    }
+    
+    score = count > 0 ? Math.round(score / count) : 0;
+    
+    var urgence, couleur, emoji;
+    
+    if (score >= 40) {
+        urgence = 'haute';
+        couleur = '#dc2626';
+        emoji = '🔴';
+    } else if (score >= 20) {
+        urgence = 'moyenne';
+        couleur = '#f59e0b';
+        emoji = '🟡';
+    } else {
+        urgence = 'basse';
+        couleur = '#10b981';
+        emoji = '🟢';
+    }
+    
+    return {urgence: urgence, couleur: couleur, emoji: emoji, score: score};
+}
+function appliquerFiltresPilotage() {
+    console.log('🔍 Application des filtres Pilotage Stratégique');
+    
+    // Redessiner la carte nationale
+    dessinerCarteNationale();
+    
+    // Générer les recommandations
+    genererRecommandationsStrategiques();
+    
+    // Fermer la carte régionale si ouverte
+    fermerCarteRegionale();
+}
+function genererRecommandationsStrategiques() {
+    var container = document.getElementById('recommandations-content');
+    if (!container) return;
+    
+    // Identifier les 3 régions les plus urgentes
+    var regionsUrgence = [];
+    
+    for (var i = 0; i < regionsData.length; i++) {
+        var region = regionsData[i];
+        var urgence = calculerUrgenceRegion(region.nom);
+        
+        regionsUrgence.push({
+            nom: region.nom,
+            score: urgence.score,
+            urgence: urgence.urgence
+        });
+    }
+    
+    // Trier par score décroissant
+    regionsUrgence.sort(function(a, b) { return b.score - a.score; });
+    
+    var html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">';
+    
+    // Top 3 recommandations
+    for (var i = 0; i < Math.min(3, regionsUrgence.length); i++) {
+        var r = regionsUrgence[i];
+        
+        var couleur = r.urgence === 'haute' ? '#dc2626' : (r.urgence === 'moyenne' ? '#f59e0b' : '#10b981');
+        var emoji = r.urgence === 'haute' ? '🔴' : (r.urgence === 'moyenne' ? '🟡' : '🟢');
+        
+        html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border-left: 4px solid ' + couleur + ';">';
+        html += '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">';
+        html += '<span style="font-size: 32px;">' + emoji + '</span>';
+        html += '<h5 style="margin: 0; color: ' + couleur + '; font-size: 16px;">Priorité ' + (i + 1) + ' : ' + r.nom + '</h5>';
+        html += '</div>';
+        
+        html += '<div style="font-size: 13px; color: #374151; line-height: 1.6;">';
+        
+        if (r.urgence === 'haute') {
+            html += '<strong>Actions immédiates :</strong><br>';
+            html += '• Recruter enseignants d\'urgence<br>';
+            html += '• Construire nouvelles salles de classe<br>';
+            html += '• Programme anti-abandon renforcé<br>';
+            html += '• Audit complet infrastructures';
+        } else if (r.urgence === 'moyenne') {
+            html += '<strong>Actions à court terme :</strong><br>';
+            html += '• Améliorer qualité enseignement<br>';
+            html += '• Renforcer suivi élèves<br>';
+            html += '• Faciliter accès zones rurales<br>';
+            html += '• Campagnes de sensibilisation';
+        } else {
+            html += '<strong>Maintien qualité :</strong><br>';
+            html += '• Consolider acquis<br>';
+            html += '• Partager bonnes pratiques<br>';
+            html += '• Formation continue enseignants<br>';
+            html += '• Surveillance indicateurs';
+        }
+        
+        html += '</div></div>';
+    }
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
 // ========== FONCTIONS ANALYSE ACCÈS ÉQUITABLE ==========
 
 function updateAccesPrefectures() {
