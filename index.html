@@ -5208,20 +5208,25 @@ html += '<th style="padding: 8px; border: 1px solid #047857; white-space: nowrap
                     html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 700;">' + niveau + '</td>';
                     
                     // CEE F/G/T (9 inputs au total : 3 par examen)
-                    html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                    html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-                    html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
-                    
-                    // BEPC F/G/T
-                    html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                    html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-                    html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
-                    
-                    // BAC F/G/T
-                    html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="F"></td>';
-                    html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="G"></td>';
-                    html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px;" min="0" max="100" placeholder="T"></td>';
-                    
+var disabledCEE = niveau !== 'Primaire' ? 'disabled' : '';
+var styleCEE = niveau !== 'Primaire' ? 'background-color: #f3f4f6; cursor: not-allowed;' : '';
+html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleCEE + '" min="0" max="100" placeholder="F" ' + disabledCEE + '></td>';
+html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleCEE + '" min="0" max="100" placeholder="G" ' + disabledCEE + '></td>';
+html += '<td class="col-cee" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="cee_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleCEE + '" min="0" max="100" placeholder="T" ' + disabledCEE + '></td>';
+
+// BEPC F/G/T
+var disabledBEPC = niveau !== 'Collège' ? 'disabled' : '';
+var styleBEPC = niveau !== 'Collège' ? 'background-color: #f3f4f6; cursor: not-allowed;' : '';
+html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleBEPC + '" min="0" max="100" placeholder="F" ' + disabledBEPC + '></td>';
+html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleBEPC + '" min="0" max="100" placeholder="G" ' + disabledBEPC + '></td>';
+html += '<td class="col-bepc" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bepc_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleBEPC + '" min="0" max="100" placeholder="T" ' + disabledBEPC + '></td>';
+
+// BAC F/G/T
+var disabledBAC = niveau !== 'Lycée' ? 'disabled' : '';
+var styleBAC = niveau !== 'Lycée' ? 'background-color: #f3f4f6; cursor: not-allowed;' : '';
+html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_filles" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleBAC + '" min="0" max="100" placeholder="F" ' + disabledBAC + '></td>';
+html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_garcons" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleBAC + '" min="0" max="100" placeholder="G" ' + disabledBAC + '></td>';
+html += '<td class="col-bac" style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" step="0.01" class="form-control" data-row="' + rowIndex + '" data-field="bac_total" data-niveau="' + niveau + '" style="width: 100%; font-size: 11px; padding: 4px; ' + styleBAC + '" min="0" max="100" placeholder="T" ' + disabledBAC + '></td>';
                     html += '</tr>';
                     rowIndex++;
                 }
