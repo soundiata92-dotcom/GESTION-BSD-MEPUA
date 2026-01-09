@@ -7802,6 +7802,8 @@ for (var i = 0; i < prefecturesAvecUrgence.length; i++) {
     
     // Scroll vers la carte régionale
     container.scrollIntoView({behavior: 'smooth', block: 'start'});
+// Masquer les recommandations nationales
+genererRecommandationsStrategiques();
 }
 }
 
@@ -7810,8 +7812,13 @@ function fermerCarteRegionale() {
     if (container) {
         container.style.display = 'none';
     }
+    
+    // Réafficher les recommandations nationales
+    genererRecommandationsStrategiques();
+    
+    // Scroll vers le haut
+    document.getElementById('carte-nationale-container').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
-
 function calculerUrgencePrefecture(nomPrefecture, nomRegion) {
     var anneeSelect = document.getElementById('filter-pilotage-annee');
     var niveauSelect = document.getElementById('filter-pilotage-niveau');
@@ -7929,6 +7936,23 @@ function genererRecommandationsStrategiques() {
     var container = document.getElementById('recommandations-content');
     if (!container) return;
     
+    var sectionRecommandations = document.getElementById('recommandations-strategiques');
+    
+    // Vérifier si une carte régionale est affichée
+    var carteRegionale = document.getElementById('carte-regionale-container');
+    if (carteRegionale && carteRegionale.style.display !== 'none') {
+        // Si carte régionale visible, masquer recommandations nationales
+        if (sectionRecommandations) {
+            sectionRecommandations.style.display = 'none';
+        }
+        return;
+    }
+    
+    // Sinon, afficher recommandations nationales
+    if (sectionRecommandations) {
+        sectionRecommandations.style.display = 'block';
+    }
+    
     // Identifier les 3 régions les plus urgentes
     var regionsUrgence = [];
     
@@ -7990,7 +8014,6 @@ function genererRecommandationsStrategiques() {
     
     container.innerHTML = html;
 }
-
 // ========== FONCTIONS ANALYSE ACCÈS ÉQUITABLE ==========
 
 function updateAccesPrefectures() {
