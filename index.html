@@ -7660,12 +7660,149 @@ function afficherCarteRegionale(nomRegion) {
     }
     
     html += '</div>';
+    // ========== RECOMMANDATIONS DÉTAILLÉES PAR PRÉFECTURE ==========
+html += '<div style="background-color: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 24px;">';
+html += '<h4 style="color: #7c3aed; margin-bottom: 16px;">💡 Recommandations Détaillées par Préfecture</h4>';
+
+// Trier les préfectures par score d'urgence décroissant
+var prefecturesAvecUrgence = [];
+
+for (var i = 0; i < prefecturesRegion.length; i++) {
+    var pref = prefecturesRegion[i];
+    var urgence = calculerUrgencePrefecture(pref.nom, nomRegion);
     
+    prefecturesAvecUrgence.push({
+        nom: pref.nom,
+        urgence: urgence.urgence,
+        score: urgence.score,
+        couleur: urgence.couleur,
+        emoji: urgence.emoji
+    });
+}
+
+// Trier par score décroissant
+prefecturesAvecUrgence.sort(function(a, b) { return b.score - a.score; });
+
+// Générer les recommandations
+for (var i = 0; i < prefecturesAvecUrgence.length; i++) {
+    var pref = prefecturesAvecUrgence[i];
+    
+    // Récupérer les données détaillées de la préfecture
+    var detailsPref = obtenirDetailsPrefecture(pref.nom, nomRegion);
+    
+    html += '<div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border-left: 4px solid ' + pref.couleur + '; margin-bottom: 16px;">';
+    
+    // En-tête
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">';
+    html += '<div style="display: flex; align-items: center; gap: 12px;">';
+    html += '<span style="font-size: 32px;">' + pref.emoji + '</span>';
+    html += '<div>';
+    html += '<h5 style="margin: 0; color: ' + pref.couleur + '; font-size: 17px; font-weight: bold;">' + (i + 1) + '. ' + pref.nom + '</h5>';
+    html += '<div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Score d\'urgence : ' + pref.score + '/100</div>';
+    html += '</div></div>';
+    html += '<span style="background-color: ' + pref.couleur + '; color: white; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: bold;">' + pref.urgence.toUpperCase() + '</span>';
+    html += '</div>';
+    
+    // Diagnostic (2 colonnes)
+    html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">';
+    
+    // Colonne 1 : Indicateurs
+    html += '<div>';
+    html += '<div style="font-weight: bold; color: #374151; margin-bottom: 8px; font-size: 14px;">📊 Indicateurs clés</div>';
+    html += '<div style="font-size: 13px; color: #4b5563; line-height: 1.8;">';
+    html += '• Scolarisation : <strong>' + detailsPref.scolarisation + '%</strong><br>';
+    html += '• Taux abandon : <strong>' + detailsPref.abandon + '%</strong><br>';
+    html += '• Ratio É/Classe : <strong>' + detailsPref.ratioClasse + '</strong><br>';
+    html += '• Distance école : <strong>' + detailsPref.distance + ' km</strong>';
+    html += '</div></div>';
+    
+    // Colonne 2 : Points critiques
+    html += '<div>';
+    html += '<div style="font-weight: bold; color: #dc2626; margin-bottom: 8px; font-size: 14px;">⚠️ Points critiques</div>';
+    html += '<div style="font-size: 13px; color: #4b5563; line-height: 1.8;">';
+    
+    var critiques = [];
+    if (detailsPref.scolarisation < 60) critiques.push('Scolarisation très faible');
+    if (detailsPref.abandon > 15) critiques.push('Abandon scolaire élevé');
+    if (detailsPref.ratioClasse > 50) critiques.push('Classes surchargées');
+    if (detailsPref.distance > 4) critiques.push('Écoles trop éloignées');
+    
+    if (critiques.length > 0) {
+        for (var c = 0; c < critiques.length; c++) {
+            html += '• ' + critiques[c] + '<br>';
+        }
+    } else {
+        html += '<span style="color: #10b981;">✓ Pas de point critique majeur</span>';
+    }
+    
+    html += '</div></div>';
+    html += '</div>';
+    
+    // Actions recommandées
+    html += '<div style="background-color: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">';
+    html += '<div style="font-weight: bold; color: #7c3aed; margin-bottom: 10px; font-size: 14px;">🎯 Actions recommandées</div>';
+    html += '<div style="font-size: 13px; color: #374151; line-height: 1.8;">';
+    
+    // Générer recommandations selon l'urgence et les problèmes
+    if (pref.urgence === 'haute') {
+        html += '<strong style="color: #dc2626;">URGENCE MAXIMALE - Actions immédiates :</strong><br>';
+        
+        if (detailsPref.scolarisation < 60) {
+            html += '• <strong>Campagne de sensibilisation massive</strong> : Mobiliser chefs de village, imams, leaders communautaires<br>';
+        }
+        if (detailsPref.abandon > 15) {
+            html += '• <strong>Programme anti-abandon d\'urgence</strong> : Bourses, cantines scolaires gratuites, suivi individualisé<br>';
+        }
+        if (detailsPref.ratioClasse > 50) {
+            html += '• <strong>Recrutement massif d\'enseignants</strong> : Minimum ' + Math.ceil((detailsPref.ratioClasse - 45) / 45 * 100) + ' nouveaux enseignants<br>';
+            html += '• <strong>Construction salles de classe</strong> : Au moins ' + Math.ceil((detailsPref.ratioClasse - 45) / 45 * 10) + ' nouvelles salles<br>';
+        }
+        if (detailsPref.distance > 4) {
+            html += '• <strong>Construire écoles de proximité</strong> : Priorité zones > 5 km<br>';
+            html += '• <strong>Transport scolaire gratuit</strong> : Mise en place immédiate pour zones éloignées<br>';
+        }
+        
+        html += '• <strong>Audit complet</strong> : Mission d\'évaluation sur le terrain dans les 30 jours<br>';
+        html += '• <strong>Budget d\'urgence</strong> : Débloquer fonds exceptionnels';
+        
+    } else if (pref.urgence === 'moyenne') {
+        html += '<strong style="color: #f59e0b;">INTERVENTION NÉCESSAIRE - Court terme (3-6 mois) :</strong><br>';
+        
+        if (detailsPref.scolarisation < 70) {
+            html += '• Renforcer sensibilisation parents sur importance éducation<br>';
+        }
+        if (detailsPref.abandon > 10) {
+            html += '• Programme de tutorat et soutien scolaire renforcé<br>';
+        }
+        if (detailsPref.ratioClasse > 45) {
+            html += '• Recruter ' + Math.ceil((detailsPref.ratioClasse - 40) / 40 * 50) + ' enseignants supplémentaires<br>';
+        }
+        if (detailsPref.distance > 3) {
+            html += '• Améliorer infrastructures routières d\'accès aux écoles<br>';
+        }
+        
+        html += '• Formation continue des enseignants (pédagogie active)<br>';
+        html += '• Équiper écoles en matériel didactique moderne<br>';
+        html += '• Mettre en place cellules d\'écoute pour élèves en difficulté';
+        
+    } else {
+        html += '<strong style="color: #10b981;">MAINTIEN QUALITÉ - Consolidation :</strong><br>';
+        html += '• Capitaliser sur les bonnes pratiques actuelles<br>';
+        html += '• Partager expériences réussies avec autres préfectures<br>';
+        html += '• Formation continue des équipes pédagogiques<br>';
+        html += '• Surveiller indicateurs mensuellement pour éviter dégradation<br>';
+        html += '• Renforcer équipements existants (bibliothèques, laboratoires)<br>';
+        html += '• Programme d\'excellence pour élèves méritants';
+    }
+    
+    html += '</div></div>';
+
     container.innerHTML = html;
     container.style.display = 'block';
     
     // Scroll vers la carte régionale
     container.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
 }
 
 function fermerCarteRegionale() {
@@ -7735,6 +7872,47 @@ function calculerUrgencePrefecture(nomPrefecture, nomRegion) {
     
     return {urgence: urgence, couleur: couleur, emoji: emoji, score: score};
 }
+function obtenirDetailsPrefecture(nomPrefecture, nomRegion) {
+    var anneeSelect = document.getElementById('filter-pilotage-annee');
+    var niveauSelect = document.getElementById('filter-pilotage-niveau');
+    
+    var annee = anneeSelect ? anneeSelect.value : '2024-2025';
+    var niveau = niveauSelect ? niveauSelect.value : '';
+    
+    var statsPref = [];
+    
+    for (var i = 0; i < statistiquesData.length; i++) {
+        var stat = statistiquesData[i];
+        
+        if (stat.prefecture !== nomPrefecture) continue;
+        if (stat.region !== nomRegion) continue;
+        if (stat.annee_scolaire !== annee) continue;
+        if (niveau && stat.niveau !== niveau) continue;
+        
+        statsPref.push(stat);
+    }
+    
+    // Calculer moyennes
+    var scolarisation = 0, abandon = 0, ratioClasse = 0, distance = 0;
+    var countScol = 0, countAbandon = 0, countRatio = 0, countDist = 0;
+    
+    for (var i = 0; i < statsPref.length; i++) {
+        var stat = statsPref[i];
+        
+        if (stat.taux_scolarisation_total) { scolarisation += stat.taux_scolarisation_total; countScol++; }
+        if (stat.taux_abandon_total) { abandon += stat.taux_abandon_total; countAbandon++; }
+        if (stat.ratio_eleves_classe) { ratioClasse += stat.ratio_eleves_classe; countRatio++; }
+        if (stat.distance_moyenne_ecole_domicile) { distance += stat.distance_moyenne_ecole_domicile; countDist++; }
+    }
+    
+    return {
+        scolarisation: countScol > 0 ? Math.round(scolarisation / countScol * 10) / 10 : 0,
+        abandon: countAbandon > 0 ? Math.round(abandon / countAbandon * 10) / 10 : 0,
+        ratioClasse: countRatio > 0 ? Math.round(ratioClasse / countRatio) : 0,
+        distance: countDist > 0 ? Math.round(distance / countDist * 10) / 10 : 0
+    };
+}
+
 function appliquerFiltresPilotage() {
     console.log('🔍 Application des filtres Pilotage Stratégique');
     
