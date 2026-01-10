@@ -159,7 +159,6 @@ var users = [];
         var statistiquesData = [];
         var reussiteExamensData = [];
         var alphabetisationData = [];
-        var effectifsIreData = [];
         var documentsStrategiques = [];
         var regionsData = [];
         var prefecturesData = [];
@@ -406,20 +405,7 @@ if (documentsData) {
     documentsStrategiques = documentsData;
     console.log('✅ Documents stratégiques chargés:', documentsStrategiques.length);
 }
- // Charger effectifs IRE
-const { data: effectifsData, error: effectifsError } = await supabase
-    .from('effectifs_ire')
-    .select('*')
-    .order('annee_scolaire', { ascending: false })
-    .order('region', { ascending: true });
-
-if (effectifsError) {
-    console.error('❌ Erreur chargement effectifs IRE:', effectifsError);
-} else {
-    effectifsIreData = effectifsData || [];
-    console.log('📊 Effectifs IRE chargés:', effectifsIreData.length);
-}
-
+ 
         console.log('✅ Toutes les données chargées avec succès !');
         
     } catch (error) {
@@ -4735,7 +4721,7 @@ if (activeTab === 'statistiques') {
     
     // SOUS-MENU
     html += '<div style="background-color: white; padding: 16px; margin-bottom: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">';
-    html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">';
+    html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">';
 
     if (canSaisirStatsGenerales() || currentUser.role === 'chefdept') {
         html += '<button onclick="showStatistiquesModal()" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold;">📊 Stats Générales (BSD)</button>';
@@ -4748,9 +4734,7 @@ if (activeTab === 'statistiques') {
     if (canSaisirAlphabetisation() || currentUser.role === 'chefdept') {
         html += '<button onclick="showAlphabetisationModal()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold;">✍️ Alphabétisation (DNAENFP-LN)</button>';
     }
-     if (canSaisirEffectifs() || currentUser.role === 'chefdept') {
-    html += '<button onclick="showEffectifsIreModal()" style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: bold;">👥 Effectifs IRE</button>';
-}
+
     html += '</div></div>';
     
     // 🔥 FILTRE PRINCIPAL : ANNÉE
@@ -6227,353 +6211,6 @@ setTimeout(async function() {
     }
 }, 500);
 }
-function showEffectifsIreModal() {
-    var modalContainer = document.getElementById('modal-container');
-    var html = '<div class="modal"><div class="modal-content" style="max-width: 98vw; max-height: 98vh; overflow: hidden; display: flex; flex-direction: column;"><h2 style="margin-bottom: 16px;">👥 Saisir les Effectifs (Enseignants, Élèves, Salles)</h2>';
-    
-    // ========== FILTRE ANNÉE ==========
-    html += '<div style="background-color: #f3e8ff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #7c3aed;">';
-    html += '<div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px;">📅 Année scolaire *</label>';
-    html += '<select id="effectifs-annee" class="form-control" style="font-size: 14px; padding: 10px;" onchange="rechargerFormulaireEffectifs()">';
-    html += '<option value="2024-2025">2024-2025</option>';
-    html += '<option value="2023-2024">2023-2024</option>';
-    html += '<option value="2022-2023">2022-2023</option>';
-    html += '</select></div>';
-    html += '</div>';
-
-    // ========== FILTRES (5 FILTRES) ==========
-    html += '<div style="background-color: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #2563eb;">';
-    html += '<h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">🔍 Filtres d\'affichage</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
-    
-    // Filtre 1 : Région
-    html += '<div class="form-group"><label>Région</label><select id="filter-effectifs-region" class="form-control" onchange="updateEffectifsFilters()"><option value="">Toutes</option>';
-    for (var i = 0; i < regionsData.length; i++) {
-        html += '<option value="' + regionsData[i].id + '">' + regionsData[i].nom + '</option>';
-    }
-    html += '</select></div>';
-    
-    // Filtre 2 : Préfecture
-    html += '<div class="form-group"><label>Préfecture</label><select id="filter-effectifs-prefecture" class="form-control" onchange="filterEffectifsRows()"><option value="">Toutes</option></select></div>';
-    
-    // Filtre 3 : Zone
-    html += '<div class="form-group"><label>Zone</label><select id="filter-effectifs-zone" class="form-control" onchange="filterEffectifsRows()"><option value="">Toutes</option><option value="Urbaine">Urbaine</option><option value="Rurale">Rurale</option></select></div>';
-    
-    // Filtre 4 : Niveau
-    html += '<div class="form-group"><label>Niveau</label><select id="filter-effectifs-niveau" class="form-control" onchange="filterEffectifsRows()"><option value="">Tous</option><option value="Préscolaire">Préscolaire</option><option value="Primaire">Primaire</option><option value="Collège">Collège</option><option value="Lycée">Lycée</option></select></div>';
-    
-    // Filtre 5 : Genre (désactivé car pas applicable ici, ou à activer si besoin)
-    html += '<div class="form-group"><label>Genre</label><select id="filter-effectifs-genre" class="form-control" onchange="filterEffectifsRows()"><option value="">Tous</option><option value="Filles">Filles</option><option value="Garcons">Garçons</option><option value="Total">Total</option></select></div>';
-    
-    html += '</div></div>';
-    
-    // ========== TABLEAU ==========
-    html += '<div style="flex: 1; overflow-y: auto; overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 8px;">';
-    html += '<table id="effectifs-table" style="width: 100%; font-size: 11px; border-collapse: collapse;"><thead style="position: sticky; top: 0; background-color: #7c3aed; color: white; z-index: 10;"><tr>';
-    html += '<th style="padding: 8px; border: 1px solid #6d28d9; white-space: nowrap; background-color: #7c3aed !important; color: white !important; font-weight: bold;">Région</th>';
-    html += '<th style="padding: 8px; border: 1px solid #6d28d9; white-space: nowrap; background-color: #7c3aed !important; color: white !important; font-weight: bold;">Préfecture</th>';
-    html += '<th style="padding: 8px; border: 1px solid #6d28d9; white-space: nowrap; background-color: #7c3aed !important; color: white !important; font-weight: bold;">Zone</th>';
-    html += '<th style="padding: 8px; border: 1px solid #6d28d9; white-space: nowrap; background-color: #7c3aed !important; color: white !important; font-weight: bold;">Niveau</th>';
-    html += '<th style="padding: 8px; border: 1px solid #6d28d9; white-space: nowrap; width: 100px; background-color: #7c3aed !important; color: white !important; font-weight: bold;">Enseignants</th>';
-    html += '<th style="padding: 8px; border: 1px solid #6d28d9; white-space: nowrap; width: 100px; background-color: #7c3aed !important; color: white !important; font-weight: bold;">Élèves</th>';
-    html += '<th style="padding: 8px; border: 1px solid #6d28d9; white-space: nowrap; width: 100px; background-color: #7c3aed !important; color: white !important; font-weight: bold;">Salles</th>';
-    html += '</tr></thead><tbody>';
-    
-    var rowIndex = 0;
-    var zones = ['Urbaine', 'Rurale'];
-    var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
-    
-    // Générer les lignes
-    for (var r = 0; r < regionsData.length; r++) {
-        var region = regionsData[r];
-        
-        var prefecturesRegion = [];
-        for (var p = 0; p < prefecturesData.length; p++) {
-            if (prefecturesData[p].region_id == region.id) {
-                prefecturesRegion.push(prefecturesData[p]);
-            }
-        }
-        
-        for (var p = 0; p < prefecturesRegion.length; p++) {
-            var prefecture = prefecturesRegion[p];
-            
-            for (var z = 0; z < zones.length; z++) {
-                var zone = zones[z];
-                
-                for (var n = 0; n < niveaux.length; n++) {
-                    var niveau = niveaux[n];
-                    var bgColor = rowIndex % 2 === 0 ? '#ffffff' : '#f9fafb';
-                    
-                    html += '<tr class="effectifs-row" data-region="' + region.id + '" data-prefecture="' + prefecture.nom + '" data-zone="' + zone + '" data-niveau="' + niveau + '" style="background-color: ' + bgColor + ';">';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 600;">' + region.nom + '</td>';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + prefecture.nom + '</td>';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap;">' + zone + '</td>';
-                    html += '<td style="padding: 6px; border: 1px solid #e5e7eb; white-space: nowrap; font-weight: 700;">' + niveau + '</td>';
-                    
-                    // Enseignants
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" class="form-control" data-row="' + rowIndex + '" data-field="enseignants" style="width: 100%; font-size: 11px; padding: 4px;" min="0" placeholder="Ens"></td>';
-                    
-                    // Élèves
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" class="form-control" data-row="' + rowIndex + '" data-field="eleves" style="width: 100%; font-size: 11px; padding: 4px;" min="0" placeholder="Élèves"></td>';
-                    
-                    // Salles
-                    html += '<td style="padding: 2px; border: 1px solid #e5e7eb;"><input type="number" class="form-control" data-row="' + rowIndex + '" data-field="salles" style="width: 100%; font-size: 11px; padding: 4px;" min="0" placeholder="Salles"></td>';
-                    
-                    html += '</tr>';
-                    rowIndex++;
-                }
-            }
-        }
-    }
-    
-    html += '</tbody></table></div>';
-    
-    // ========== BOUTONS ==========
-    html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">';
-    html += '<button class="btn btn-primary" onclick="submitEffectifsData()">💾 Enregistrer</button>';
-    html += '<button class="btn btn-secondary" onclick="closeModal()">❌ Annuler</button>';
-    html += '</div>';
-    
-    html += '</div></div>';
-    modalContainer.innerHTML = html;
-    
-    // Charger données existantes
-    setTimeout(chargerEffectifsExistants, 500);
-}
-function updateEffectifsFilters() {
-    var regionSelect = document.getElementById('filter-effectifs-region');
-    var prefectureSelect = document.getElementById('filter-effectifs-prefecture');
-    
-    if (!regionSelect || !prefectureSelect) return;
-    
-    var regionId = regionSelect.value;
-    prefectureSelect.innerHTML = '<option value="">Toutes</option>';
-    
-    if (regionId && regionId !== '') {
-        for (var i = 0; i < prefecturesData.length; i++) {
-            if (prefecturesData[i].region_id == regionId) {
-                var option = document.createElement('option');
-                option.value = prefecturesData[i].nom;
-                option.textContent = prefecturesData[i].nom;
-                prefectureSelect.appendChild(option);
-            }
-        }
-    }
-    
-    filterEffectifsRows();
-}
-
-function filterEffectifsRows() {
-    var regionId = document.getElementById('filter-effectifs-region') ? document.getElementById('filter-effectifs-region').value : '';
-    var prefecture = document.getElementById('filter-effectifs-prefecture') ? document.getElementById('filter-effectifs-prefecture').value : '';
-    var zone = document.getElementById('filter-effectifs-zone') ? document.getElementById('filter-effectifs-zone').value : '';
-    var niveau = document.getElementById('filter-effectifs-niveau') ? document.getElementById('filter-effectifs-niveau').value : '';
-    
-    var rows = document.querySelectorAll('.effectifs-row');
-    var visibleCount = 0;
-    
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        var rowRegion = row.getAttribute('data-region');
-        var rowPrefecture = row.getAttribute('data-prefecture');
-        var rowZone = row.getAttribute('data-zone');
-        var rowNiveau = row.getAttribute('data-niveau');
-        
-        var showRow = true;
-        
-        if (regionId && regionId !== '' && rowRegion != regionId) showRow = false;
-        if (prefecture && prefecture !== '' && rowPrefecture != prefecture) showRow = false;
-        if (zone && zone !== '' && rowZone != zone) showRow = false;
-        if (niveau && niveau !== '' && rowNiveau != niveau) showRow = false;
-        
-        row.style.display = showRow ? '' : 'none';
-        if (showRow) visibleCount++;
-    }
-    
-    console.log('✅ Lignes visibles:', visibleCount);
-}
-
-function rechargerFormulaireEffectifs() {
-    showEffectifsIreModal();
-}
-        
-async function chargerEffectifsExistants() {
-    var anneeSelect = document.getElementById('effectifs-annee');
-    if (!anneeSelect) return;
-    
-    var annee = anneeSelect.value;
-    console.log('📥 Chargement effectifs pour année:', annee);
-    
-    try {
-        const { data: existingData, error } = await supabase
-            .from('effectifs_ire')
-            .select('*')
-            .eq('annee_scolaire', annee)
-            .eq('periode', 'Annuel');
-        
-        if (error) throw error;
-        
-        if (existingData && existingData.length > 0) {
-            console.log('📥 ' + existingData.length + ' effectifs chargés');
-            
-            var loaded = 0;
-            var zones = ['Urbaine', 'Rurale'];
-            var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
-            
-            for (var i = 0; i < existingData.length; i++) {
-                var eff = existingData[i];
-                
-                var rowIndex = 0;
-                var found = false;
-                
-                for (var r = 0; r < regionsData.length && !found; r++) {
-                    var region = regionsData[r];
-                    
-                    var prefecturesRegion = [];
-                    for (var p = 0; p < prefecturesData.length; p++) {
-                        if (prefecturesData[p].region_id == region.id) {
-                            prefecturesRegion.push(prefecturesData[p]);
-                        }
-                    }
-                    
-                    for (var p = 0; p < prefecturesRegion.length && !found; p++) {
-                        var prefecture = prefecturesRegion[p];
-                        
-                        if (prefecture.nom !== eff.prefecture) {
-                            rowIndex += 8; // 2 zones × 4 niveaux
-                            continue;
-                        }
-                        
-                        for (var z = 0; z < zones.length && !found; z++) {
-                            var zone = zones[z];
-                            
-                            if (zone !== eff.zone) {
-                                rowIndex += 4; // 4 niveaux
-                                continue;
-                            }
-                            
-                            for (var n = 0; n < niveaux.length && !found; n++) {
-                                if (niveaux[n] === eff.niveau) {
-                                    if (eff.nombre_enseignants !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="enseignants"]');
-                                        if (input) { input.value = eff.nombre_enseignants; input.style.background = '#e0e7ff'; loaded++; }
-                                    }
-                                    if (eff.nombre_eleves !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="eleves"]');
-                                        if (input) { input.value = eff.nombre_eleves; input.style.background = '#e0e7ff'; loaded++; }
-                                    }
-                                    if (eff.nombre_salles !== null) {
-                                        var input = document.querySelector('input[data-row="' + rowIndex + '"][data-field="salles"]');
-                                        if (input) { input.value = eff.nombre_salles; input.style.background = '#e0e7ff'; loaded++; }
-                                    }
-                                    
-                                    found = true;
-                                    break;
-                                }
-                                rowIndex++;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            if (loaded > 0) {
-                alert('📥 ' + loaded + ' champs chargés');
-            }
-        }
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-    }
-}
-
-async function submitEffectifsData() {
-    var anneeSelect = document.getElementById('effectifs-annee');
-    if (!anneeSelect) return;
-    
-    var annee = anneeSelect.value;
-    
-    var zones = ['Urbaine', 'Rurale'];
-    var niveaux = ['Préscolaire', 'Primaire', 'Collège', 'Lycée'];
-    var dataToInsert = [];
-    var rowIndex = 0;
-    
-    for (var r = 0; r < regionsData.length; r++) {
-        var region = regionsData[r];
-        var prefecturesRegion = [];
-        
-        for (var p = 0; p < prefecturesData.length; p++) {
-            if (prefecturesData[p].region_id == region.id) {
-                prefecturesRegion.push(prefecturesData[p]);
-            }
-        }
-        
-        for (var p = 0; p < prefecturesRegion.length; p++) {
-            var prefecture = prefecturesRegion[p];
-            
-            for (var z = 0; z < zones.length; z++) {
-                var zone = zones[z];
-                
-                for (var n = 0; n < niveaux.length; n++) {
-                    var niveau = niveaux[n];
-                    
-                    var enseignants = document.querySelector('input[data-row="' + rowIndex + '"][data-field="enseignants"]');
-                    var eleves = document.querySelector('input[data-row="' + rowIndex + '"][data-field="eleves"]');
-                    var salles = document.querySelector('input[data-row="' + rowIndex + '"][data-field="salles"]');
-                    
-                    var valEnseignants = enseignants && enseignants.value ? parseInt(enseignants.value) : null;
-                    var valEleves = eleves && eleves.value ? parseInt(eleves.value) : null;
-                    var valSalles = salles && salles.value ? parseInt(salles.value) : null;
-                    
-                    if (valEnseignants !== null || valEleves !== null || valSalles !== null) {
-                        dataToInsert.push({
-                            annee_scolaire: annee,
-                            periode: 'Annuel',
-                            region: region.nom,
-                            prefecture: prefecture.nom,
-                            zone: zone,
-                            niveau: niveau,
-                            nombre_enseignants: valEnseignants,
-                            nombre_eleves: valEleves,
-                            nombre_salles: valSalles,
-                            saisi_par: currentUser.nom
-                        });
-                    }
-                    
-                    rowIndex++;
-                }
-            }
-        }
-    }
-    
-    if (dataToInsert.length === 0) {
-        alert('⚠️ Aucune donnée à enregistrer');
-        return;
-    }
-    
-    if (!confirm('💾 Enregistrer ' + dataToInsert.length + ' lignes ?')) {
-        return;
-    }
-    
-    try {
-        const { error } = await supabase
-            .from('effectifs_ire')
-            .upsert(dataToInsert, { 
-                onConflict: 'annee_scolaire,periode,region,prefecture,zone,niveau',
-                ignoreDuplicates: false 
-            });
-        
-        if (error) throw error;
-        
-        alert('✅ Données enregistrées !');
-        await loadData();
-        closeModal();
-        render();
-        
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-        alert('❌ Erreur : ' + error.message);
-    }
-}
 
 // ========== FONCTIONS DE CALCUL DE MOYENNES ==========
 function calculerMoyenne(dataArray, fieldBase, genre) {
@@ -6956,14 +6593,6 @@ if (!currentUser) return false;
 if (currentUser.role === 'admin') return true;
 if (currentUser.service === 'DNAEFP-LN') return true;
 return false;
-}
-function canSaisirEffectifs() {
-    if (!currentUser) return false;
-    if (currentUser.role === 'admin') return true;
-    if (currentUser.role === 'chefdept') return true;
-    // Seuls les chefs de service IRE peuvent saisir
-    if (currentUser.role === 'chef' && currentUser.service && currentUser.service.includes('IRE')) return true;
-    return false;
 }
 
         // ========== FONCTIONS DE VISUALISATION ET EXPORT ==========
@@ -12555,7 +12184,6 @@ function afficherAnalyseImpact(alphaFiltre) {
 </body>
 </html>
    <!-- Variables d'environnement configurées --> 
-
 
 
 
